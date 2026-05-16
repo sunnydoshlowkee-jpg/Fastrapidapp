@@ -49,7 +49,7 @@ export default function Login() {
               <PhoneField value={phone} onChange={setPhone} />
             </div>
             <div className="mt-8">
-              <button disabled={phone.length < 10} onClick={() => navigate('/auth/verify')}
+              <button disabled={phone.length < 7} onClick={() => navigate('/auth/verify')}
                 className="w-full bg-[#1A1AF5] text-white font-semibold py-4 rounded-2xl hover:bg-[#1515d4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >Log In</button>
               <p className="text-center text-sm text-gray-500 mt-4">
@@ -76,7 +76,7 @@ export default function Login() {
               <PhoneField value={phone} onChange={setPhone} />
             </div>
 
-            <button disabled={phone.length < 10} onClick={() => navigate('/auth/verify')}
+            <button disabled={phone.length < 7} onClick={() => navigate('/auth/verify')}
               className="w-full bg-[#1A1AF5] text-white font-semibold py-3.5 rounded-xl hover:bg-[#1515d4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-1 mb-4"
             >Login →</button>
 

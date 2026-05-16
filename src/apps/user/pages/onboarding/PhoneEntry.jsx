@@ -34,7 +34,7 @@ export default function PhoneEntry() {
 
       <div className="mt-8">
         <button
-          disabled={phone.length < 10}
+          disabled={phone.length < 7}
           onClick={() => navigate('/onboarding/otp')}
           className="w-full bg-[#1A1AF5] text-white font-semibold py-4 rounded-2xl hover:bg-[#1515d4] transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
