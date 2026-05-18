@@ -47,7 +47,7 @@ function RadioCard({ item, selected, onSelect }) {
 
 function FormContent({ selected, setSelected, navigate }) {
   const handleContinue = () => {
-    navigate(selected === 'merchant' ? '/merchant/onboarding' : '/onboarding/location')
+    navigate(selected === 'merchant' ? '/merchant/login' : '/onboarding/location')
   }
   return (
     <div className="flex flex-col h-full">
