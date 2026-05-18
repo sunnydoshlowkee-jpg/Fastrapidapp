@@ -1,3 +1,6 @@
+/** Switch to `'empty'` to preview the empty-state dashboard */
+export const MERCHANT_DASHBOARD_MODE = 'active'
+
 export const MERCHANT_DASHBOARD_OVERVIEW = {
   merchantId: '44092',
   storeStatus: 'STORE LIVE',
@@ -137,5 +140,110 @@ export const MERCHANT_DASHBOARD_MOBILE = {
         iconTone: 'gray',
       },
     ],
+  },
+}
+
+export const MERCHANT_DASHBOARD_ACTIVE = {
+  merchantId: '44092',
+  /** Copy tuned for mobile overview (frame 622-520) */
+  mobileOverview: {
+    title: 'Dashboard',
+    subtitle: "Today's performance",
+  },
+  stats: [
+    {
+      id: 'revenue',
+      label: "Today's Revenue",
+      value: '₦ 124,500',
+      subtext: '+12% from yesterday',
+      subtextTone: 'positive',
+      icon: 'banknote',
+    },
+    {
+      id: 'live-orders',
+      label: 'Live Orders',
+      value: '18',
+      subtext: 'Currently in kitchen',
+      subtextTone: 'muted',
+      icon: 'refresh',
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      value: '142',
+      subtext: 'Last 24 hours',
+      subtextTone: 'muted',
+      icon: 'check',
+    },
+    {
+      id: 'rating',
+      label: 'Performance Rating',
+      value: '4.8/5.0',
+      subtext: 'Top 5% in category',
+      subtextTone: 'muted',
+      icon: 'star',
+      iconTone: 'warning',
+    },
+  ],
+  liveOrders: [
+    {
+      id: 'ORD-9021',
+      customer: 'Chukwudi O.',
+      items: '2x Jollof Rice (Party), 1x Fried Plantain',
+      icon: 'utensils',
+      iconTone: 'blue',
+      status: 'pending',
+    },
+    {
+      id: 'ORD-9020',
+      customer: 'Sarah M.',
+      items: '1x Family Combo, 2x Coke',
+      icon: 'cart',
+      iconTone: 'purple',
+      status: 'pending',
+    },
+    {
+      id: 'ORD-9019',
+      customer: 'David K.',
+      items: '3x Beef Burger, 1x Fries',
+      icon: 'burger',
+      iconTone: 'blue',
+      status: 'preparing',
+      timeRemaining: '12M REMAINING',
+    },
+  ],
+  stockAlerts: {
+    badge: 'ACTION REQUIRED',
+    items: [
+      {
+        id: 'pepper',
+        title: 'Fresh Atarodo (Pepper)',
+        detail: 'Critical low: 0.5kg remaining',
+        action: 'Restock Now',
+        severity: 'critical',
+        showIcon: true,
+      },
+      {
+        id: 'oil',
+        title: 'Refined Sunflower Oil',
+        detail: 'Running low: 2L remaining',
+        action: 'View Vendors',
+        severity: 'warning',
+        showIcon: false,
+      },
+      {
+        id: 'water',
+        title: 'Bottled Water (50cl)',
+        detail: 'Out of stock',
+        action: 'Restock Now',
+        severity: 'out',
+        showIcon: true,
+      },
+    ],
+    inventoryHealth: {
+      label: 'INVENTORY HEALTH',
+      percent: 82,
+      subtext: '82% Items in stock',
+    },
   },
 }

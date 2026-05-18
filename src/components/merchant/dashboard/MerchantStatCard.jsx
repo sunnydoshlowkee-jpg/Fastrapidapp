@@ -14,6 +14,7 @@ const icons = {
 
 const subtextStyles = {
   warning: 'text-merchant-warning',
+  positive: 'text-[#E67E22]',
   muted: 'text-merchant-muted',
 }
 
@@ -40,7 +41,7 @@ export default function MerchantStatCard({
             {value}
           </p>
           <p className={`mt-2 text-xs font-medium ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
-            {subtext}
+            {subtextTone === 'positive' ? `↗ ${subtext}` : subtext}
           </p>
         </div>
         <div

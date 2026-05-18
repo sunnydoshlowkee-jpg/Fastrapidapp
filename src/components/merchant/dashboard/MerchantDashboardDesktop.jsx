@@ -3,10 +3,19 @@ import MerchantDashboardHeader from './MerchantDashboardHeader'
 import MerchantStatCard from './MerchantStatCard'
 import MerchantEmptyState from './MerchantEmptyState'
 import MerchantTipCard from './MerchantTipCard'
-import { MERCHANT_DASHBOARD_OVERVIEW } from '../../../services/data/merchantDashboard.mock'
+import MerchantDashboardActiveDesktop from './MerchantDashboardActiveDesktop'
+import {
+  MERCHANT_DASHBOARD_MODE,
+  MERCHANT_DASHBOARD_OVERVIEW,
+} from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardDesktop() {
   const { openMobileNav } = useOutletContext()
+
+  if (MERCHANT_DASHBOARD_MODE === 'active') {
+    return <MerchantDashboardActiveDesktop />
+  }
+
   const { merchantId, storeStatus, stats, emptyState, tips } = MERCHANT_DASHBOARD_OVERVIEW
 
   const handleViewCustomerLink = () => {
@@ -52,3 +61,5 @@ export default function MerchantDashboardDesktop() {
     </div>
   )
 }
+
+

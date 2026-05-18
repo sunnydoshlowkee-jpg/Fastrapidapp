@@ -1,14 +1,28 @@
-import { Eye, Receipt, ShoppingBag, Wallet } from 'lucide-react'
+import {
+  Banknote,
+  CheckCircle2,
+  Eye,
+  Receipt,
+  RefreshCw,
+  ShoppingBag,
+  Star,
+  Wallet,
+} from 'lucide-react'
 
 const icons = {
   wallet: Wallet,
   bag: ShoppingBag,
   receipt: Receipt,
   eye: Eye,
+  banknote: Banknote,
+  refresh: RefreshCw,
+  check: CheckCircle2,
+  star: Star,
 }
 
 const subtextStyles = {
   warning: 'text-merchant-warning',
+  positive: 'text-[#E67E22]',
   muted: 'text-merchant-muted',
 }
 
@@ -31,7 +45,7 @@ export default function MerchantMobileStatCard({
         {value}
       </p>
       <p className={`mt-1 text-xs font-medium ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
-        {subtext}
+        {subtextTone === 'positive' ? `↗ ${subtext}` : subtext}
       </p>
     </article>
   )
