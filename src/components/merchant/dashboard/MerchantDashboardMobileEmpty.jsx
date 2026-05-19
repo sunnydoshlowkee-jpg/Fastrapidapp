@@ -12,7 +12,7 @@ export default function MerchantDashboardMobileEmpty() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-5">
+    <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-5 lg:pb-8">
       <MerchantMobileHeader />
 
       <section aria-labelledby="overview-heading">

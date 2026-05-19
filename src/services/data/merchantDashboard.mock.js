@@ -145,11 +145,6 @@ export const MERCHANT_DASHBOARD_MOBILE = {
 
 export const MERCHANT_DASHBOARD_ACTIVE = {
   merchantId: '44092',
-  /** Copy tuned for mobile overview (frame 622-520) */
-  mobileOverview: {
-    title: 'Dashboard',
-    subtitle: "Today's performance",
-  },
   stats: [
     {
       id: 'revenue',
@@ -244,6 +239,97 @@ export const MERCHANT_DASHBOARD_ACTIVE = {
       label: 'INVENTORY HEALTH',
       percent: 82,
       subtext: '82% Items in stock',
+    },
+  },
+}
+
+/** Mobile active dashboard — [Figma 622:520](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-520) */
+export const MERCHANT_DASHBOARD_ACTIVE_MOBILE = {
+  stats: [
+    {
+      id: 'revenue',
+      label: "Today's Revenue",
+      value: '₦124,500',
+      subtext: '+12% from yesterday',
+      subtextTone: 'positiveGreen',
+      icon: 'wallet',
+      iconAccent: 'primary',
+      iconAccent: 'primary',
+    },
+    {
+      id: 'live-orders',
+      label: 'Live Orders',
+      value: '18',
+      subtext: 'Currently in kitchen',
+      subtextTone: 'muted',
+      icon: 'chefhat',
+      iconAccent: 'primary',
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      value: '142',
+      subtext: 'Last 24 hrs',
+      subtextTone: 'muted',
+      icon: 'check',
+      iconAccent: 'primary',
+    },
+    {
+      id: 'performance',
+      label: 'Performance',
+      value: '4.8/5.0',
+      subtext: 'Top 5% in category',
+      subtextTone: 'muted',
+      icon: 'star',
+      iconAccent: 'primary',
+    },
+  ],
+  liveOrders: [
+    {
+      id: '8824',
+      displayId: '#8824',
+      customer: 'Adaeze',
+      amount: '₦4,500',
+      summary: '2 items • Jollof Rice, Chicken',
+      status: 'pending',
+    },
+    {
+      id: '8823',
+      displayId: '#8823',
+      customer: 'Michael',
+      amount: '₦3,200',
+      summary: '1 item • Fried Rice Special',
+      status: 'ready',
+      badge: 'Ready',
+    },
+  ],
+  stockAlerts: {
+    items: [
+      {
+        id: 'pepper',
+        title: 'Fresh Atarodo',
+        badge: 'Critical Low',
+        badgeTone: 'critical',
+        dot: 'red',
+      },
+      {
+        id: 'oil',
+        title: 'Refined Sunflower Oil',
+        badge: 'Running Low',
+        badgeTone: 'running',
+        dot: 'brown',
+      },
+      {
+        id: 'water',
+        title: 'Bottled Water 50cl',
+        badge: 'Out of Stock',
+        badgeTone: 'out',
+        dot: 'red',
+      },
+    ],
+    inventoryHealth: {
+      label: 'Inventory Health',
+      percent: 68,
     },
   },
 }

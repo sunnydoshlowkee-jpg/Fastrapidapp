@@ -16,15 +16,15 @@ export default function MerchantStockAlertsPanel({ stockAlerts }) {
   const { badge, items, inventoryHealth } = stockAlerts
 
   return (
-    <section className="flex flex-col rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat lg:p-6">
-      <div className="mb-3 flex items-center justify-between gap-2 lg:mb-4">
+    <section className="flex flex-col rounded-merchant-stat bg-merchant-surface p-5 shadow-merchant-stat lg:p-6">
+      <div className="mb-4 flex items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-merchant-ink">Stock Alerts</h2>
         <span className="rounded-full bg-[rgba(230,126,34,0.14)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-[#E67E22]">
           {badge}
         </span>
       </div>
 
-      <ul className="flex flex-col gap-3 lg:gap-4">
+      <ul className="flex flex-col gap-4">
         {items.map((item) => (
           <li key={item.id} className="flex gap-3">
             <span
@@ -48,7 +48,7 @@ export default function MerchantStockAlertsPanel({ stockAlerts }) {
         ))}
       </ul>
 
-      <div className="mt-4 rounded-lg bg-merchant-icon-tile p-3.5 lg:mt-5 lg:p-4">
+      <div className="mt-5 rounded-lg bg-merchant-icon-tile p-4">
         <div className="flex items-center gap-2">
           <Package size={16} className="text-merchant-primary" aria-hidden />
           <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-merchant-muted">
@@ -70,3 +70,4 @@ export default function MerchantStockAlertsPanel({ stockAlerts }) {
     </section>
   )
 }
+

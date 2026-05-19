@@ -1,9 +1,9 @@
 import {
   Banknote,
   CheckCircle2,
+  ChefHat,
   Eye,
   Receipt,
-  RefreshCw,
   ShoppingBag,
   Star,
   Wallet,
@@ -15,7 +15,8 @@ const icons = {
   receipt: Receipt,
   eye: Eye,
   banknote: Banknote,
-  refresh: RefreshCw,
+  refresh: ChefHat,
+  chefhat: ChefHat,
   check: CheckCircle2,
   star: Star,
 }
@@ -23,6 +24,7 @@ const icons = {
 const subtextStyles = {
   warning: 'text-merchant-warning',
   positive: 'text-[#E67E22]',
+  positiveGreen: 'text-emerald-600',
   muted: 'text-merchant-muted',
 }
 
@@ -32,20 +34,23 @@ export default function MerchantMobileStatCard({
   subtext,
   subtextTone = 'muted',
   icon,
+  iconAccent = 'muted',
 }) {
   const Icon = icons[icon] || Wallet
+  const iconColor =
+    iconAccent === 'primary' ? 'text-merchant-primary' : 'text-merchant-muted'
 
   return (
     <article className="rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-merchant-body">{label}</p>
-        <Icon size={18} strokeWidth={1.75} className="shrink-0 text-merchant-muted" aria-hidden />
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-medium leading-tight text-merchant-body sm:text-sm">{label}</p>
+        <Icon size={18} strokeWidth={1.75} className={`shrink-0 ${iconColor}`} aria-hidden />
       </div>
-      <p className="mt-3 text-2xl font-semibold leading-8 tracking-[-0.02em] text-merchant-ink">
+      <p className="mt-2 text-xl font-semibold leading-7 tracking-[-0.02em] text-merchant-ink sm:text-2xl sm:leading-8">
         {value}
       </p>
-      <p className={`mt-1 text-xs font-medium ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
-        {subtextTone === 'positive' ? `↗ ${subtext}` : subtext}
+      <p className={`mt-1 text-[11px] font-medium leading-snug sm:text-xs ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
+        {subtextTone === 'positive' || subtextTone === 'positiveGreen' ? `↗ ${subtext}` : subtext}
       </p>
     </article>
   )

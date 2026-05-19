@@ -1,8 +1,15 @@
+import MerchantOrdersDesktop from '../../../components/merchant/orders/MerchantOrdersDesktop'
+import MerchantOrdersMobile from '../../../components/merchant/orders/MerchantOrdersMobile'
+
 export default function Orders() {
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-bold text-gray-900 mb-4">Orders</h1>
-      <p className="text-sm text-gray-400">Incoming orders will appear here.</p>
-    </div>
+    <>
+      <div className="lg:hidden">
+        <MerchantOrdersMobile />
+      </div>
+      <div className="hidden lg:block">
+        <MerchantOrdersDesktop />
+      </div>
+    </>
   )
 }
