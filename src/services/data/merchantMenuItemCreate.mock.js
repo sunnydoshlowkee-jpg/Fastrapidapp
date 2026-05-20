@@ -1,0 +1,73 @@
+/** Desktop [272:7115](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-7115) · Mobile [622:1641](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1641) */
+export const MERCHANT_MENU_NEW_PATH = '/merchant/menu/new'
+
+export const MERCHANT_MENU_ITEM_CREATE = {
+  headerTitle: 'Menu Upload',
+  pageTitle: 'Create Menu Item',
+  subtitle:
+    'Add a new dish to your digital menu catalogue. Focus on high-quality visuals.',
+  fields: {
+    media: {
+      label: 'Media',
+      title: 'Upload product photo',
+      hint: '16:9 ratio recommended. High resolution JPG or PNG.',
+    },
+    productName: {
+      label: 'Product Name',
+      placeholder: 'e.g. Signature Smoky Jollof',
+    },
+    category: {
+      label: 'Category',
+      placeholder: 'Select category',
+    },
+    stockQuantity: {
+      label: 'Stock Quantity',
+      placeholder: '0',
+    },
+    price: {
+      label: 'Price (₦)',
+      placeholder: '0.00',
+    },
+    description: {
+      label: 'Description',
+      placeholder: 'Tell your customers about the ingredients and flavor profile...',
+    },
+  },
+  categories: [
+    { value: '', label: 'Select category' },
+    { value: 'mains', label: 'Mains' },
+    { value: 'sides', label: 'Sides' },
+    { value: 'drinks', label: 'Drinks' },
+    { value: 'desserts', label: 'Desserts' },
+    { value: 'combos', label: 'Combos' },
+  ],
+  actions: {
+    cancel: 'Cancel',
+    submit: 'Create Menu Item',
+  },
+  proTip: {
+    title: 'Pro Tip for Merchants',
+    body:
+      'Detailed descriptions with clear bullet points improve search discoverability by up to 40% on the Rapid marketplace.',
+  },
+  mobile: {
+    subtitle: 'Add a new dish to your digital menu catalogue.',
+    fields: {
+      media: {
+        hint: '16:9 ratio recommended.',
+        showLabel: false,
+      },
+      price: {
+        label: 'Price',
+      },
+      description: {
+        placeholder: 'Describe the ingredients and flavor profile...',
+      },
+    },
+    proTip: {
+      title: 'Pro Tip for Merchants',
+      body:
+        'Detailed descriptions with key ingredients improve search discoverability on the platform.',
+    },
+  },
+}

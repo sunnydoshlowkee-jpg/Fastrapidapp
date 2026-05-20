@@ -1,6 +1,12 @@
 import { useRef } from 'react'
 
-export default function MerchantOtpInput({ length = 6, value = '', onChange, id = 'merchant-otp' }) {
+export default function MerchantOtpInput({
+  length = 6,
+  value = '',
+  onChange,
+  id = 'merchant-otp',
+  className = '',
+}) {
   const inputs = useRef([])
 
   const handleChange = (e, idx) => {
@@ -29,7 +35,11 @@ export default function MerchantOtpInput({ length = 6, value = '', onChange, id 
   }
 
   return (
-    <div className="flex flex-wrap gap-3" role="group" aria-labelledby={`${id}-label`}>
+    <div
+      className={`grid w-full grid-cols-6 gap-1.5 sm:gap-2 ${className}`}
+      role="group"
+      aria-labelledby={`${id}-label`}
+    >
       {Array.from({ length }).map((_, i) => (
         <input
           key={i}
@@ -46,7 +56,7 @@ export default function MerchantOtpInput({ length = 6, value = '', onChange, id 
           onKeyDown={(e) => handleKeyDown(e, i)}
           onPaste={handlePaste}
           aria-label={`Digit ${i + 1} of ${length}`}
-          className="h-[52px] w-[52px] rounded-lg border border-[rgba(198,196,218,0.5)] bg-merchant-input text-center text-base font-semibold text-merchant-ink outline-none transition-colors focus:border-merchant-primary focus:ring-2 focus:ring-merchant-primary/10 md:h-14 md:w-14 md:text-lg"
+          className="h-11 w-full min-w-0 rounded-lg border-0 bg-merchant-input text-center text-base font-semibold text-merchant-ink outline-none transition-colors focus:border-2 focus:border-merchant-primary focus:bg-white focus:ring-0 sm:h-12 md:h-14 md:border md:border-[rgba(198,196,218,0.5)] md:bg-merchant-input md:text-lg md:focus:border-merchant-primary md:focus:bg-merchant-input md:focus:ring-2 md:focus:ring-merchant-primary/10"
         />
       ))}
     </div>

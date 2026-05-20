@@ -1,4 +1,4 @@
-/** [Figma 272:6754](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-6754) */
+/** Desktop [272:6754](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-6754) · Mobile [622:1396](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1396) */
 export const MERCHANT_MENU_UPLOAD = {
   title: 'Menu Upload',
   intro: {
@@ -28,5 +28,21 @@ export const MERCHANT_MENU_UPLOAD = {
     linkLabel: 'Merchant Documentation',
     bodyAfter:
       '. High-quality images (1:1 aspect ratio) are recommended for best customer engagement.',
+  },
+  mobile: {
+    intro: {
+      subheading:
+        'Choose your preferred method to populate your inventory. We recommend CSV upload for large menus.',
+    },
+    csvUpload: {
+      dropzoneSubtext: 'Supports .csv up to 10MB',
+      uploadLabel: 'Upload File',
+      templateLabel: 'Download Template',
+    },
+    help: {
+      title: 'Need help formatting?',
+      body:
+        'Ensure your CSV matches our exact column headers. Images must be hosted externally (public URLs) or added manually after import.',
+    },
   },
 }

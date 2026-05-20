@@ -14,9 +14,9 @@ import { clearMerchantSession } from '../../../services/merchantAuthService'
 const navItems = [
   { to: '/merchant', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/merchant/orders', icon: ClipboardList, label: 'Orders' },
-  { to: '/merchant/menu', icon: Package, label: 'Inventory' },
+  { to: '/merchant/menu', icon: Package, label: 'Inventory', matchPrefix: true },
   { to: '/merchant/analytics', icon: BarChart2, label: 'Analytics' },
-  { to: '/merchant/settings', icon: Settings, label: 'Settings' },
+  { to: '/merchant/settings', icon: Settings, label: 'Settings', matchPrefix: true },
 ]
 
 export default function MerchantSidebar({ mobileOpen, onClose }) {
@@ -47,7 +47,7 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
       </div>
 
       <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Merchant navigation">
-        {navItems.map(({ to, icon: Icon, label, end }) => (
+        {navItems.map(({ to, icon: Icon, label, end, matchPrefix }) => (
           <NavLink
             key={to}
             to={to}
@@ -60,6 +60,9 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
                   : 'text-merchant-muted hover:bg-merchant-icon-tile hover:text-merchant-ink'
               }`
             }
+            {...(matchPrefix
+              ? { isActive: (_, location) => location.pathname.startsWith(to) }
+              : {})}
           >
             {({ isActive }) => (
               <>
@@ -80,6 +83,10 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
       <div className="mt-6 flex flex-col gap-2 border-t border-merchant-divider pt-6">
         <button
           type="button"
+          onClick={() => {
+            navigate('/merchant/support')
+            onClose?.()
+          }}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-merchant-primary px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3837e6]"
         >
           <Headphones size={16} strokeWidth={1.75} aria-hidden />

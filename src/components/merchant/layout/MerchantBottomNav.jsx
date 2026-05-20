@@ -4,9 +4,9 @@ import { BarChart2, LayoutGrid, Package, Settings, ClipboardList } from 'lucide-
 const items = [
   { to: '/merchant', icon: LayoutGrid, label: 'Dashboard', end: true },
   { to: '/merchant/orders', icon: ClipboardList, label: 'Orders' },
-  { to: '/merchant/menu', icon: Package, label: 'Inventory' },
+  { to: '/merchant/menu', icon: Package, label: 'Inventory', matchPrefix: true },
   { to: '/merchant/analytics', icon: BarChart2, label: 'Analytics' },
-  { to: '/merchant/settings', icon: Settings, label: 'Settings' },
+  { to: '/merchant/settings', icon: Settings, label: 'Settings', matchPrefix: true },
 ]
 
 export default function MerchantBottomNav() {
@@ -16,11 +16,14 @@ export default function MerchantBottomNav() {
       aria-label="Merchant primary navigation"
     >
       <ul className="flex items-end justify-around gap-1">
-        {items.map(({ to, icon: Icon, label, end }) => (
+        {items.map(({ to, icon: Icon, label, end, matchPrefix }) => (
           <li key={to} className="min-w-0 flex-1">
             <NavLink
               to={to}
               end={end}
+              {...(matchPrefix
+                ? { isActive: (_, location) => location.pathname.startsWith(to) }
+                : {})}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-semibold transition-colors ${
                   isActive ? '' : 'text-merchant-muted hover:text-merchant-body'
