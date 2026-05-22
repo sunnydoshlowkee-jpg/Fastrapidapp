@@ -8,11 +8,11 @@ import AdminRoutes from './routes/AdminRoutes'
 export default function App() {
   return (
     <Routes>
-      <Route path="/*" element={<OnboardingRoutes />} />
       <Route path="/app/*" element={<AppRoutes />} />
       <Route path="/merchant/*" element={<MerchantRoutes />} />
       <Route path="/dispatch/*" element={<DispatchRoutes />} />
       <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="/*" element={<OnboardingRoutes />} />
     </Routes>
   )
 }
