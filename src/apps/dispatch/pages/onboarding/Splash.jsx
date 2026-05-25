@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Logo from '../../../../components/brand/Logo'
 
 export default function RiderSplash() {
   const navigate = useNavigate()
@@ -21,13 +22,8 @@ export default function RiderSplash() {
 
       {/* Logo + wordmark */}
       <div className="flex flex-col items-center gap-5 z-10">
-        {/* Icon box */}
         <div className="w-[88px] h-[88px] bg-white/20 backdrop-blur-sm rounded-[24px] flex items-center justify-center shadow-[0_8px_40px_rgba(0,0,0,0.25)]">
-          {/* Rapid R lettermark */}
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <path d="M10 8h16a10 10 0 0 1 0 20H18l12 12" stroke="white" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 8v32" stroke="white" strokeWidth="5.5" strokeLinecap="round"/>
-          </svg>
+          <Logo variant="icon" height={40} className="brightness-0 invert" />
         </div>
 
         {/* Wordmark */}
