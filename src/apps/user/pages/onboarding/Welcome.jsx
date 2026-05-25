@@ -20,7 +20,7 @@ function MobileWelcome() {
 
         {/* Illustration */}
         <div className="w-full aspect-square bg-[#F5F7FA] rounded-[2.5rem] flex items-center justify-center mb-12 relative overflow-hidden">
-          <img src="/grocery-hero.png" alt="Welcome" className="w-full h-full object-cover" />
+          <img src="/welcome-hero.png" alt="Welcome" className="w-full h-full object-contain p-6" />
         </div>
 
         <Link
@@ -50,7 +50,7 @@ function DesktopWelcome() {
              <div className="absolute top-8 left-8 z-10">
                <Logo variant="full" height={28} />
              </div>
-             <img src="/grocery-hero.png" alt="Welcome" className="w-full h-full object-cover" />
+             <img src="/welcome-hero.png" alt="Welcome" className="w-full h-full object-contain p-6" />
           </div>
 
           {/* Right: Content */}
