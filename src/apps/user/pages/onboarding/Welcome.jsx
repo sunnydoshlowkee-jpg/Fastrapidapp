@@ -20,19 +20,7 @@ function MobileWelcome() {
 
         {/* Illustration */}
         <div className="w-full aspect-square bg-[#F5F7FA] rounded-[2.5rem] flex items-center justify-center mb-12 relative overflow-hidden">
-          {/* Emojis representing people greeting */}
-          <div className="flex items-end justify-center gap-2 mt-8">
-            <span className="text-6xl -mb-4">🙋🏽‍♀️</span>
-            <div className="flex flex-col items-center z-10">
-              <div className="bg-white px-4 py-1.5 rounded-lg shadow-sm mb-2 border border-blue-100">
-                <span className="text-[#4F46E5] font-bold text-lg">Hi</span>
-              </div>
-              <span className="text-7xl">🧍🏽‍♂️</span>
-            </div>
-            <span className="text-6xl -mb-4">🙋🏼‍♂️</span>
-          </div>
-          {/* Foreground ribbon/barrier */}
-          <div className="absolute bottom-16 left-0 right-0 h-1.5 bg-blue-200/50" />
+          <img src="/grocery-hero.png" alt="Welcome" className="w-full h-full object-cover" />
         </div>
 
         <Link
@@ -58,21 +46,11 @@ function DesktopWelcome() {
         <div className="w-full max-w-4xl bg-white rounded-3xl shadow-sm border border-gray-100 flex overflow-hidden">
           
           {/* Left: Illustration */}
-          <div className="flex-1 bg-[#F5F7FA] flex flex-col items-center justify-center p-12 relative">
-             <div className="absolute top-8 left-8">
+          <div className="flex-1 bg-[#F5F7FA] flex flex-col items-center justify-center relative overflow-hidden">
+             <div className="absolute top-8 left-8 z-10">
                <Logo variant="full" height={28} />
              </div>
-             
-             <div className="flex items-end justify-center gap-4 mt-12">
-              <span className="text-7xl -mb-4">🙋🏽‍♀️</span>
-              <div className="flex flex-col items-center z-10">
-                <div className="bg-white px-5 py-2 rounded-xl shadow-sm mb-3 border border-blue-100">
-                  <span className="text-[#4F46E5] font-bold text-xl">Hi</span>
-                </div>
-                <span className="text-8xl">🧍🏽‍♂️</span>
-              </div>
-              <span className="text-7xl -mb-4">🙋🏼‍♂️</span>
-            </div>
+             <img src="/grocery-hero.png" alt="Welcome" className="w-full h-full object-cover" />
           </div>
 
           {/* Right: Content */}
