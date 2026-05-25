@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Clock, CreditCard } from 'lucide-react'
+import Logo from '../../../../components/brand/Logo'
 
 export default function RiderWelcome() {
   const navigate = useNavigate()
@@ -9,13 +10,7 @@ export default function RiderWelcome() {
 
       {/* Logo icon */}
       <div className="flex justify-center mb-6">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-md"
-          style={{ background: 'linear-gradient(135deg, #5B5BFF, #4040E8)' }}>
-          <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
-            <path d="M10 8h16a10 10 0 0 1 0 20H18l12 12" stroke="white" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 8v32" stroke="white" strokeWidth="5.5" strokeLinecap="round"/>
-          </svg>
-        </div>
+        <Logo variant="full" height={36} />
       </div>
 
       {/* Hero text */}

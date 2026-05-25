@@ -1,228 +1,277 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Copy, Share2 } from 'lucide-react'
+import { ArrowLeft, Copy, Share2, Search, MapPin, Home, Clock, Wallet, User, Send, ShoppingCart, Gift, Users } from 'lucide-react'
 
 export default function ReferEarn() {
   const navigate = useNavigate()
+  const [activeTab] = useState('profile')
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-24 md:pb-12 relative overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">
       
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                 MOBILE LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
       {/* Mobile Header */}
-      <div className="lg:hidden px-4 py-5 bg-transparent sticky top-0 z-30 flex items-center w-full gap-3">
-        <button onClick={() => navigate(-1)} className="text-[#3B3BFF] w-8 h-8 flex items-center justify-start hover:opacity-80 transition-opacity">
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">Refer & Earn</h1>
+      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-[17px] font-bold text-gray-900">Refer & Earn</h1>
+        </div>
       </div>
 
-      <div className="px-4 lg:px-8 max-w-6xl mx-auto w-full flex-1 flex flex-col items-center lg:items-stretch lg:pt-8">
+      <div className="md:hidden flex-1 px-6 w-full max-w-md mx-auto pt-2 flex flex-col items-center">
         
-        {/* Desktop Title Header (Hidden on mobile) */}
-        <div className="hidden lg:flex items-center justify-between w-full mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Refer & Earn</h1>
+        {/* Top Image */}
+        <div className="w-full h-[280px] rounded-3xl overflow-hidden mb-6 bg-gray-200">
+           <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+             <span className="text-8xl">🎁</span>
+           </div>
         </div>
 
-        {/* Hero Image / Banner */}
-        <div className="w-full max-w-sm lg:max-w-none rounded-[2rem] lg:rounded-[2.5rem] overflow-hidden mb-6 mt-2 lg:mt-0 shadow-sm relative lg:h-80 group">
-          <img 
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1976&auto=format&fit=crop" 
-            alt="Refer a friend" 
-            className="w-full h-64 lg:h-full object-cover lg:object-center group-hover:scale-105 transition-transform duration-700"
-          />
-          {/* Desktop Overlay Content */}
-          <div className="hidden lg:flex absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent p-12 flex-col justify-center text-white">
-            <div className="bg-red-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest inline-block w-max mb-6">
-              Exclusive Rewards
-            </div>
-            <h2 className="text-5xl font-bold mb-4 tracking-tight leading-tight max-w-xl">
-              Share the speed,<br/>get rewarded.
-            </h2>
-            <p className="text-gray-300 text-lg mb-8 max-w-md leading-relaxed">
-              Invite your friends to RAPID. When they complete their first order, you both get ₦500 in your wallet.
-            </p>
-            <button className="bg-[#3B3BFF] hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl w-max flex items-center gap-2 transition-colors">
-              Get Started Now <ArrowLeft className="rotate-180 w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Text Details (Hidden on Desktop) */}
-        <div className="lg:hidden text-center mb-8 px-4 w-full">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Gift ₦500, Get ₦500</h2>
-          <p className="text-gray-600 leading-relaxed text-sm">
+        {/* Copy */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Gift ₦500, Get ₦500</h2>
+          <p className="text-[13px] text-gray-500 font-medium leading-relaxed max-w-[280px] mx-auto">
             Your friend gets ₦500 off their first order. You get ₦500 when they complete it.
           </p>
         </div>
 
-        {/* Desktop Grid Layout */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 lg:mb-12">
-          
-          {/* Column 1: Referral Code & Actions */}
-          <div className="flex flex-col gap-6">
-            
-            <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
-              <div className="hidden lg:block mb-6">
-                <h3 className="font-bold text-gray-900 text-xl mb-1">Your Referral Code</h3>
-                <p className="text-gray-500 text-sm">Share this unique code with your network to start earning.</p>
-              </div>
-              <p className="lg:hidden text-xs font-bold text-gray-500 tracking-wider mb-3">YOUR REFERRAL CODE</p>
-              
-              <div className="bg-gray-50 border border-gray-200 lg:border-dashed lg:border-2 rounded-2xl p-4 lg:p-5 flex items-center justify-between mb-6">
-                <span className="font-mono font-bold text-lg lg:text-2xl text-[#3B3BFF] tracking-widest">RAPID-X88B2</span>
-                <button className="text-[#3B3BFF] hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors flex items-center gap-2 font-bold text-sm">
-                  <Copy size={20} />
-                  <span className="hidden lg:inline-block">COPY</span>
-                </button>
-              </div>
-
-              <button className="w-full bg-[#3B3BFF] hover:bg-blue-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors lg:shadow-lg lg:shadow-blue-500/20 mb-4">
-                <Share2 size={20} />
-                Share My Code
-              </button>
-
-              {/* Social Buttons (Desktop only or shown on mobile as well) */}
-              <div className="hidden lg:flex items-center gap-4">
-                <button className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 py-3 rounded-xl flex items-center justify-center transition-colors">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/></svg>
-                </button>
-                <button className="flex-1 bg-blue-50 hover:bg-blue-100 text-[#1877F2] py-3 rounded-xl flex items-center justify-center transition-colors">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </button>
-                <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-3 rounded-xl flex items-center justify-center transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Desktop 3 Steps Card */}
-            <div className="hidden lg:grid grid-cols-3 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-gray-100">
-                <div className="w-10 h-10 mx-auto rounded-full bg-blue-50 text-[#3B3BFF] flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
-                </div>
-                <h4 className="font-bold text-gray-900 text-sm mb-1">Send Invite</h4>
-                <p className="text-[10px] text-gray-500">Share your link or code with friends.</p>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-gray-100">
-                <div className="w-10 h-10 mx-auto rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                </div>
-                <h4 className="font-bold text-gray-900 text-sm mb-1">Friend Orders</h4>
-                <p className="text-[10px] text-gray-500">They make their first purchase on RAPID.</p>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-sm text-center border border-gray-100">
-                <div className="w-10 h-10 mx-auto rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-3">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <h4 className="font-bold text-gray-900 text-sm mb-1">Both Earn</h4>
-                <p className="text-[10px] text-gray-500">Wallet credited instantly after order completion.</p>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Column 2: Stats & Successes */}
-          <div className="flex flex-col gap-6">
-            
-            {/* Dark Earnings Card */}
-            <div className="bg-[#1C1C28] rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl shadow-gray-900/20">
-              <div className="absolute top-6 right-6 opacity-20">
-                <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-              </div>
-              <div className="relative z-10">
-                <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-1">Lifetime Earnings</p>
-                <p className="text-4xl lg:text-5xl font-bold mb-8 tracking-tight">₦6,000</p>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 rounded-2xl p-4">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Total Referrals</p>
-                    <p className="text-xl font-bold">12</p>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-4">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Pending</p>
-                    <p className="text-xl font-bold">4</p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#3B3BFF] blur-[60px] opacity-20 rounded-full"></div>
-            </div>
-
-            {/* Mobile Stats Grid (Hidden on Desktop) */}
-            <div className="lg:hidden w-full grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
-                <p className="text-xs font-medium text-gray-500 mb-1">Successful Refers</p>
-                <p className="text-2xl font-bold text-gray-900">12</p>
-              </div>
-              <div className="bg-blue-50 rounded-2xl p-5 shadow-sm border border-blue-100 flex flex-col justify-center">
-                <p className="text-xs font-medium text-[#3B3BFF] mb-1">Earnings</p>
-                <p className="text-2xl font-bold text-[#3B3BFF]">₦6,000</p>
-              </div>
-            </div>
-
-            {/* Recent Successes (Desktop Only) */}
-            <div className="hidden lg:block bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex-1">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-gray-900">Recent Successes</h3>
-                <button className="text-[#3B3BFF] text-xs font-bold">View All</button>
-              </div>
-              <div className="flex flex-col gap-5">
-                {[
-                  { name: "Chukwudi O.", status: "Completed 1st order", amount: "+₦500", highlight: true },
-                  { name: "Amina J.", status: "Completed 1st order", amount: "+₦500", highlight: true },
-                  { name: "Tunde W.", status: "Signed up", amount: "Pending order", highlight: false }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm text-gray-900">{item.name}</p>
-                        <p className="text-xs text-gray-500">{item.status}</p>
-                      </div>
-                    </div>
-                    <span className={`text-sm font-bold ${item.highlight ? 'text-green-500' : 'text-gray-400'}`}>
-                      {item.amount}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Bottom Desktop Banner */}
-        <div className="hidden lg:flex w-full bg-blue-50/50 rounded-3xl p-6 items-center justify-between border border-blue-100">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-[#3B3BFF] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 rotate-3">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">Join the Rapid Elite Circle</h3>
-              <p className="text-gray-500 text-sm">Refer 20 friends to unlock Elite Merchant perks, including 0% delivery fees for a month.</p>
-            </div>
-          </div>
-          <div className="flex flex-col items-end">
-            <div className="flex -space-x-2 mb-2">
-              <img src="https://i.pravatar.cc/100?img=1" className="w-8 h-8 rounded-full border-2 border-white bg-gray-100" />
-              <img src="https://i.pravatar.cc/100?img=2" className="w-8 h-8 rounded-full border-2 border-white bg-gray-100" />
-              <img src="https://i.pravatar.cc/100?img=3" className="w-8 h-8 rounded-full border-2 border-white bg-gray-100" />
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[8px] font-bold text-gray-500 z-10">+8k</div>
-            </div>
-            <p className="text-[#3B3BFF] text-xs font-bold tracking-wider uppercase">8,421 users joined this week</p>
+        {/* Referral Code Box */}
+        <div className="w-full bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Your Referral Code</p>
+          <div className="bg-[#F4F5F7] rounded-2xl p-4 flex items-center justify-between">
+            <span className="font-bold text-gray-900 text-lg tracking-wider">RAPIDJIDE500</span>
+            <button className="text-[#4F46E5] p-2 hover:bg-indigo-50 rounded-xl transition-colors">
+              <Copy size={20} />
+            </button>
           </div>
         </div>
 
-        {/* Mobile Action Buttons (Hidden on Desktop) */}
-        <div className="w-full mt-auto lg:hidden">
-          <button className="w-full text-center text-xs text-gray-500 font-medium hover:text-gray-700 transition-colors py-2">
-            Terms and Conditions apply
+        {/* Stats */}
+        <div className="flex gap-4 w-full mb-8">
+          <div className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
+            <p className="text-[11px] font-bold text-gray-500 mb-1">Successful Refers</p>
+            <p className="text-2xl font-bold text-gray-900">12</p>
+          </div>
+          <div className="flex-1 bg-indigo-50/50 rounded-[24px] p-5 shadow-sm border border-indigo-50 flex flex-col justify-center">
+            <p className="text-[11px] font-bold text-[#4F46E5] mb-1">Earnings</p>
+            <p className="text-2xl font-bold text-[#4F46E5]">₦6,000</p>
+          </div>
+        </div>
+
+        <div className="w-full mt-auto flex flex-col items-center">
+          <button className="w-full bg-[#4F46E5] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors text-sm mb-4">
+            <Share2 size={18} /> Share My Code
           </button>
+          <p className="text-[10px] text-gray-400 font-bold">Terms and Conditions apply</p>
         </div>
 
       </div>
+
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                DESKTOP LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      <div className="hidden md:flex w-full px-10 pt-8 pb-6 items-center border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-40">
+        <div className="flex items-center gap-3 w-[280px] shrink-0">
+          <h1 className="text-[24px] font-bold text-gray-900">Refer & Earn</h1>
+        </div>
+        <div className="flex-1 max-w-2xl bg-[#F4F5F7] rounded-xl px-5 py-3.5 flex items-center gap-3 mx-6">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input 
+            type="text" 
+            placeholder="Search rewards..." 
+            className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
+          />
+        </div>
+        <div className="flex items-center gap-6 shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+            <MapPin size={20} className="text-gray-500" strokeWidth={2} />
+          </div>
+          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+            <ShoppingCart size={20} className="text-gray-500" strokeWidth={2} />
+          </div>
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1.5 rounded-full border border-gray-200 transition-colors">
+            <div className="w-7 h-7 rounded-full bg-gray-200 overflow-hidden">
+               <img src="/driver.png" className="w-full h-full object-cover" onError={(e) => {e.target.style.display='none'}} />
+            </div>
+            <ChevronDown size={16} className="text-gray-500 mr-1" />
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex flex-1 w-full mx-auto pb-12">
+        
+        {/* Content Area */}
+        <div className="flex-1 px-12 pt-8 max-w-[1200px]">
+          
+          {/* Hero Banner */}
+          <div className="relative w-full h-[320px] rounded-[32px] overflow-hidden mb-10 shadow-sm group cursor-pointer">
+            <div className="absolute inset-0 bg-[#2C2E3E]">
+              {/* Fallback pattern for the hero graphic */}
+              <div className="w-full h-full bg-gradient-to-r from-gray-900 via-[#1a1b26] to-[#2d3748] flex items-center justify-end pr-20">
+                <span className="text-[150px] opacity-20">👨🏽‍💼</span>
+              </div>
+            </div>
+            
+            <div className="absolute inset-0 flex flex-col justify-center p-12 w-2/3">
+              <div className="bg-[#D92D20] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded w-max mb-6">
+                Exclusive Rewards
+              </div>
+              <h1 className="text-[48px] font-bold text-white leading-[1.1] tracking-tight mb-4 text-shadow-sm">
+                Share the speed,<br />get rewarded.
+              </h1>
+              <p className="text-[16px] text-gray-300 font-medium mb-8 max-w-md">
+                Invite your friends to RAPID. When they complete their first order, you both get ₦500 in your wallet.
+              </p>
+              <button className="bg-[#2D2AEE] hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-xl transition-colors shadow-lg shadow-blue-500/20 text-[15px] w-max flex items-center gap-2">
+                Get Started Now <ArrowLeft size={18} className="rotate-180" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-8 mb-10 items-start">
+            
+            {/* Left Column (Referral Code & Steps) */}
+            <div className="flex-1 flex flex-col gap-8">
+              
+              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
+                <h3 className="font-bold text-gray-900 text-[18px] mb-1">Your Referral Code</h3>
+                <p className="text-[14px] text-gray-500 mb-6">Share this unique code with your network to start earning.</p>
+                
+                <div className="bg-[#F4F5F7] border border-gray-200 border-dashed rounded-2xl p-5 flex items-center justify-between mb-6">
+                  <span className="font-bold text-[#2D2AEE] text-[20px] tracking-wider">RAPID-X88B2</span>
+                  <button className="text-[#2D2AEE] font-bold text-[13px] flex items-center gap-2 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors">
+                    <Copy size={16} /> COPY
+                  </button>
+                </div>
+
+                <button className="w-full bg-[#2D2AEE] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors text-[15px] mb-6">
+                  <Share2 size={18} /> Share My Code
+                </button>
+
+                <div className="flex gap-4">
+                  {['bg-[#1DB954]', 'bg-[#1877F2]', 'bg-black'].map((color, i) => (
+                    <button key={i} className={`flex-1 ${color} rounded-xl py-3.5 flex justify-center items-center text-white hover:opacity-90 transition-opacity`}>
+                      <div className="w-5 h-5 bg-white/20 rounded-md"></div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-[#2D2AEE] mb-4">
+                    <Send size={20} />
+                  </div>
+                  <h4 className="font-bold text-gray-900 text-[14px] mb-2">Send Invite</h4>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">Share your link or code with friends.</p>
+                </div>
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 mb-4">
+                    <ShoppingCart size={20} />
+                  </div>
+                  <h4 className="font-bold text-gray-900 text-[14px] mb-2">Friend Orders</h4>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">They make their first purchase on RAPID.</p>
+                </div>
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center text-pink-500 mb-4">
+                    <Wallet size={20} />
+                  </div>
+                  <h4 className="font-bold text-gray-900 text-[14px] mb-2">Both Earn</h4>
+                  <p className="text-[12px] text-gray-500 leading-relaxed">Wallet credited instantly after order completion.</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column (Stats & Recent) */}
+            <div className="w-[360px] shrink-0 flex flex-col gap-6">
+              
+              <div className="bg-gradient-to-br from-[#1E1E2F] to-[#12121D] rounded-[32px] p-8 text-white shadow-xl relative overflow-hidden border border-white/5">
+                <div className="absolute top-8 right-8 text-gray-400/30">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase mb-2">Lifetime Earnings</p>
+                <h3 className="text-[42px] font-bold mb-10">₦6,000</h3>
+                <div className="flex gap-4">
+                  <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Referrals</p>
+                    <p className="text-[20px] font-bold">12</p>
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pending</p>
+                    <p className="text-[20px] font-bold">4</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 flex-1">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-gray-900 text-[16px]">Recent Successes</h3>
+                  <button className="text-[#2D2AEE] text-[12px] font-bold">View All</button>
+                </div>
+                
+                <div className="flex flex-col gap-6">
+                  {[
+                    { name: 'Chukwudi O.', status: 'Completed 1st order', amount: '+₦500', color: 'text-green-500' },
+                    { name: 'Amina J.', status: 'Completed 1st order', amount: '+₦500', color: 'text-green-500' },
+                    { name: 'Tunde W.', status: 'Signed up', amount: 'Pending order', color: 'text-gray-400 text-[12px]' }
+                  ].map((user, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
+                          <User size={16} />
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900 text-[14px] mb-0.5">{user.name}</p>
+                          <p className="text-[12px] text-gray-500">{user.status}</p>
+                        </div>
+                      </div>
+                      <span className={`font-bold ${user.color}`}>{user.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Bottom Elite Banner */}
+          <div className="w-full bg-[#F8F9FF] rounded-[32px] border border-indigo-100 p-8 flex items-center justify-between mt-auto">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 bg-[#2D2AEE] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                <Gift size={28} />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-[20px] mb-1">Join the Rapid Elite Circle</h3>
+                <p className="text-[14px] text-gray-500">Refer 20 friends to unlock Elite Merchant perks, including 0% delivery fees for a month.</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-[-8px]">
+                <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-200 z-30">
+                  <img src="/driver.png" className="w-full h-full object-cover" onError={(e) => {e.target.style.display='none'}} />
+                </div>
+                <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-300 z-20 -ml-3">
+                  <img src="/grocery-hero.png" className="w-full h-full object-cover" onError={(e) => {e.target.style.display='none'}} />
+                </div>
+                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center -ml-3 text-[10px] font-bold text-gray-500 z-10 shadow-sm">
+                  +8k
+                </div>
+              </div>
+              <p className="text-[#2D2AEE] text-[12px] font-bold">8,421 users joined this week</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
   )
 }

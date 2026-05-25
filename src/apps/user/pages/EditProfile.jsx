@@ -1,153 +1,205 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera, CheckCircle2 } from 'lucide-react'
-import { useStore } from '../../../store/useStore'
+import { ArrowLeft, Camera, CheckCircle2, User, Clock, CreditCard, MapPin, Wallet, Bell, Shield, LogOut } from 'lucide-react'
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const { user, updateUser } = useStore()
-  
-  const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
-    phone: user.phone
-  })
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSave = () => {
-    updateUser(formData)
-    navigate(-1)
-  }
+  const [activeTab, setActiveTab] = useState('personal')
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-32 relative">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12 relative">
       
-      {/* Mobile Header (Hidden on Desktop) */}
-      <div className="lg:hidden px-4 py-5 bg-transparent sticky top-0 z-30 flex items-center w-full gap-3">
-        <button onClick={() => navigate(-1)} className="text-[#1A1AF5] w-8 h-8 flex items-center justify-start hover:opacity-80 transition-opacity">
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">Edit Profile</h1>
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                 MOBILE LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-[17px] font-bold text-gray-900">Edit Profile</h1>
+        </div>
       </div>
 
-      <div className="px-4 lg:px-8 max-w-4xl mx-auto w-full flex-1 lg:pt-12">
+      <div className="md:hidden flex-1 px-6 w-full max-w-md mx-auto pt-6 flex flex-col items-center">
         
-        {/* Desktop Header */}
-        <div className="hidden lg:block mb-10 text-center lg:text-left">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Personal Information</h1>
-          <p className="text-gray-500 text-sm max-w-lg">
-            Update your photo and personal details here. Changes will be reflected across all RAPID services.
-          </p>
+        {/* Avatar */}
+        <div className="relative mb-10">
+          <div className="w-24 h-24 rounded-full overflow-hidden bg-orange-100 border-4 border-white shadow-sm flex items-end justify-center pt-2">
+            <img src="/driver.png" alt="Profile" className="w-full h-full object-cover" onError={(e) => {e.target.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzNCODJGNiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjRkVGMzhDIi8+PHBhdGggZD0iTTMwIDEwMCBDMzAgNjAgNzAgNjAgNzAgMTAwIiBmaWxsPSIjRkVGMzhDIi8+PC9zdmc+'}} />
+          </div>
+          <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#4F46E5] rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm">
+            <Camera size={14} />
+          </button>
         </div>
 
-        <div className="bg-transparent lg:bg-white lg:rounded-[2.5rem] lg:p-12 lg:shadow-sm">
+        <div className="w-full flex flex-col gap-6 mb-8">
           
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center justify-center mb-10">
-            <div className="relative mb-3">
-              <img src={user.avatar} alt="Avatar" className="w-24 h-24 lg:w-32 lg:h-32 rounded-full border-4 border-white lg:border-gray-50 object-cover shadow-sm bg-gray-100" />
-              <button className="absolute bottom-0 right-0 lg:-right-2 w-8 h-8 lg:w-10 lg:h-10 bg-[#3B3BFF] rounded-full flex items-center justify-center border-2 border-white lg:border-none text-white hover:bg-blue-700 transition-colors shadow-sm">
-                <Camera size={16} />
-              </button>
-            </div>
-            <div className="text-center hidden lg:block">
-              <h3 className="font-bold text-gray-900">Update Avatar</h3>
-              <p className="text-xs text-gray-400 mt-1">JPG, GIF or PNG. Max size 2MB</p>
+          {/* Full Name */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2">Full Name</label>
+            <input 
+              type="text" 
+              defaultValue="Jide Johnson"
+              className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 font-medium outline-none focus:ring-2 focus:ring-[#4F46E5] transition-all"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2">Email</label>
+            <input 
+              type="email" 
+              defaultValue="jide.j@rapid.ng"
+              className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 font-medium outline-none focus:ring-2 focus:ring-[#4F46E5] transition-all"
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-2">Phone</label>
+            <div className="relative flex items-center">
+              <input 
+                type="tel" 
+                defaultValue="+234 803 123 4567"
+                className="w-full bg-[#F4F5F7] rounded-2xl p-4 pr-12 text-[13px] text-gray-900 font-medium outline-none focus:ring-2 focus:ring-[#4F46E5] transition-all"
+                readOnly
+              />
+              <div className="absolute right-4 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                <CheckCircle2 size={12} strokeWidth={4} className="text-white" />
+              </div>
             </div>
           </div>
 
-          {/* Form Fields */}
-          <div className="flex flex-col gap-6">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-2 ml-1">Full Name</label>
-                <input 
-                  type="text" 
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full bg-gray-100/80 lg:bg-gray-50 border-none rounded-xl px-4 py-4 text-gray-900 font-medium focus:ring-2 focus:ring-[#3B3BFF]/20 focus:outline-none transition-all"
-                />
-              </div>
+        </div>
 
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-2 ml-1">Email Address</label>
-                <input 
-                  type="email" 
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full bg-gray-100/80 lg:bg-gray-50 border-none rounded-xl px-4 py-4 text-gray-900 font-medium focus:ring-2 focus:ring-[#3B3BFF]/20 focus:outline-none transition-all"
-                />
+        {/* Security Box */}
+        <div className="w-full bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+          <h3 className="font-bold text-gray-900 text-sm mb-2">Account Security</h3>
+          <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+            Your phone number is verified. Changes to your primary email address will require a one-time verification code for your security.
+          </p>
+        </div>
+
+      </div>
+
+      {/* Mobile Floating Save Button */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA] to-transparent pb-safe z-40">
+        <div className="w-full max-w-md mx-auto">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors text-sm"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                DESKTOP LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      <div className="hidden md:flex w-full px-10 pt-8 pb-6 items-center border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-40">
+        <button onClick={() => navigate(-1)} className="mr-6 p-2 text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </button>
+        <div className="flex-1 max-w-2xl bg-[#F4F5F7] rounded-xl px-5 py-3.5 flex items-center gap-3">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input 
+            type="text" 
+            placeholder="Search for food, groceries, or essentials..." 
+            className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
+          />
+        </div>
+        <div className="flex items-center gap-6 shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+            <MapPin size={20} className="text-[#2D2AEE]" strokeWidth={2} />
+            <span className="font-semibold text-[#2D2AEE] text-[15px]">Lagos, NG</span>
+          </div>
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex flex-1 w-full mx-auto pb-12">
+        
+        {/* Content Area */}
+        <div className="flex-1 px-10 pt-10">
+          <h1 className="text-[32px] font-bold text-gray-900 mb-10">Edit profile</h1>
+
+          <div className="w-full max-w-[800px] bg-white rounded-[32px] shadow-sm border border-gray-100 p-12 mb-8">
+            
+            <div className="flex flex-col items-center mb-12">
+              <div className="relative w-32 h-32 rounded-full overflow-hidden border border-gray-200 mb-4 bg-gray-50">
+                <img src="/driver.png" alt="Profile" className="w-full h-full object-cover" onError={(e) => {e.target.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzNCODJGNiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjRkVGMzhDIi8+PHBhdGggZD0iTTMwIDEwMCBDMzAgNjAgNzAgNjAgNzAgMTAwIiBmaWxsPSIjRkVGMzhDIi8+PC9zdmc+'}} />
+                <div className="absolute inset-0 bg-black/10"></div>
+                <button className="absolute bottom-2 right-2 w-10 h-10 bg-[#2D2AEE] rounded-full flex items-center justify-center text-white border-[3px] border-white shadow-sm hover:bg-blue-700 transition-colors">
+                  <Camera size={18} />
+                </button>
               </div>
+              <h3 className="font-bold text-gray-900 text-[18px] mb-1">Update Avatar</h3>
+              <p className="text-[13px] text-gray-500">JPG, GIF or PNG. Max size 2MB</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-600 mb-2 ml-1">Phone Number</label>
-              <div className="relative">
-                <input 
-                  type="tel" 
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full bg-gray-100/80 lg:bg-gray-50 border-none rounded-xl pl-4 pr-32 py-4 text-gray-900 font-medium focus:ring-2 focus:ring-[#3B3BFF]/20 focus:outline-none transition-all"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-md text-xs font-bold tracking-wider">
-                    <CheckCircle2 size={14} className="fill-green-600 text-white" />
-                    VERIFIED
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <label className="block text-[13px] font-bold text-gray-700 mb-2">Full Name</label>
+                <div className="relative">
+                  <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input 
+                    type="text" 
+                    defaultValue="Alexander Mitchell"
+                    className="w-full bg-[#F4F5F7] border border-transparent focus:border-[#2D2AEE] focus:bg-white rounded-xl py-4 pl-12 pr-4 text-[15px] text-gray-900 font-medium outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-700 mb-2">Email Address</label>
+                <div className="relative">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  <input 
+                    type="email" 
+                    defaultValue="alex.m@rapid.io"
+                    className="w-full bg-[#F4F5F7] border border-transparent focus:border-[#2D2AEE] focus:bg-white rounded-xl py-4 pl-12 pr-4 text-[15px] text-gray-900 font-medium outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-[13px] font-bold text-gray-700 mb-2">Phone Number</label>
+                <div className="relative">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  <input 
+                    type="tel" 
+                    defaultValue="+1 (555) 0123-4567"
+                    className="w-full bg-[#F4F5F7] border border-transparent focus:border-[#2D2AEE] focus:bg-white rounded-xl py-4 pl-12 pr-24 text-[15px] text-gray-900 font-medium outline-none transition-all"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-green-50 text-green-600 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                    <CheckCircle2 size={12} strokeWidth={3} /> Verified
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Professional Bio (Desktop Only / Optional for mobile) */}
-            <div className="hidden lg:block">
-              <label className="block text-sm font-bold text-gray-600 mb-2 ml-1">Professional Bio</label>
-              <textarea 
-                rows="3"
-                className="w-full bg-gray-50 border-none rounded-xl px-4 py-4 text-gray-900 font-medium focus:ring-2 focus:ring-[#3B3BFF]/20 focus:outline-none transition-all resize-none"
-                defaultValue="Passionate about efficient marketplaces and streamlined logistics. Currently scaling operations at RAPID Lagos."
-              ></textarea>
-            </div>
-
-            {/* Account Security Info (Mobile Only) */}
-            <div className="lg:hidden bg-white rounded-2xl p-6 shadow-sm border border-gray-50 mt-2">
-              <h3 className="font-bold text-gray-900 mb-2">Account Security</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Your phone number is verified. Changes to your primary email address will require a one-time verification code for your security.
-              </p>
-            </div>
-
+            
           </div>
-        </div>
-      </div>
 
-      {/* Sticky Bottom Save Bar */}
-      <div className="fixed bottom-0 left-0 lg:left-[280px] lg:w-[calc(100%-280px)] w-full bg-white lg:border-t-2 lg:border-red-600 p-4 lg:py-4 lg:px-8 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:shadow-none flex flex-col lg:flex-row items-center justify-between gap-4">
-        <div className="hidden lg:flex items-center gap-2 text-gray-400 text-xs font-medium">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Last edited 3 days ago
+          <div className="w-full max-w-[800px] flex gap-4 justify-center">
+            <button className="bg-[#F4F5F7] text-gray-900 font-bold px-10 py-4 rounded-xl hover:bg-gray-200 transition-colors text-[15px]">
+              Discard
+            </button>
+            <button className="bg-[#2D2AEE] text-white font-bold px-10 py-4 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 text-[15px] flex items-center gap-2">
+              Save Changes <CheckCircle2 size={18} />
+            </button>
+          </div>
+
         </div>
-        <div className="flex w-full lg:w-auto items-center gap-3">
-          <button 
-            onClick={() => navigate(-1)}
-            className="hidden lg:block bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold py-3.5 px-8 rounded-xl transition-colors"
-          >
-            Discard
-          </button>
-          <button 
-            onClick={handleSave}
-            className="w-full lg:w-auto bg-[#3B3BFF] hover:bg-blue-700 text-white font-bold py-3.5 lg:px-8 rounded-xl shadow-lg shadow-blue-500/20 transition-colors flex items-center justify-center gap-2"
-          >
-            Save Changes
-            <CheckCircle2 size={18} className="hidden lg:block" />
-          </button>
-        </div>
+
       </div>
 
     </div>

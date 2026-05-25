@@ -1,117 +1,166 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { User, Store, ArrowLeft } from 'lucide-react'
-import OnboardingShell from '../../../../components/onboarding/OnboardingShell'
-import DesktopNav from '../../../../components/onboarding/DesktopNav'
-import DesktopFooter from '../../../../components/onboarding/DesktopFooter'
+import { Link, useNavigate } from 'react-router-dom'
+import { User, Store } from 'lucide-react'
 
-const types = [
-  {
-    id: 'customer',
-    label: 'Customer',
-    desc: 'I want to book services and track orders.',
-    icon: User,
-  },
-  {
-    id: 'merchant',
-    label: 'Merchant',
-    desc: 'I want to manage my business and services.',
-    icon: Store,
-  },
-]
+function MobileAccountType() {
+  const navigate = useNavigate()
+  const [type, setType] = useState('customer')
 
-function RadioCard({ item, selected, onSelect }) {
-  const isActive = selected === item.id
   return (
-    <button
-      onClick={() => onSelect(item.id)}
-      className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all text-left ${
-        isActive ? 'border-[#1A1AF5] bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-[#1A1AF5]' : 'bg-gray-100'}`}>
-          <item.icon size={17} className={isActive ? 'text-white' : 'text-gray-500'} />
-        </div>
-        <div>
-          <p className={`text-sm font-semibold ${isActive ? 'text-[#1A1AF5]' : 'text-gray-800'}`}>{item.label}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
-        </div>
-      </div>
-      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isActive ? 'border-[#1A1AF5]' : 'border-gray-300'}`}>
-        {isActive && <div className="w-2.5 h-2.5 rounded-full bg-[#1A1AF5]" />}
-      </div>
-    </button>
-  )
-}
+    <div className="flex flex-col min-h-screen bg-white">
+      <div className="flex-1 flex flex-col justify-center px-6 w-full max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Who are you?</h1>
+        <p className="text-gray-500 text-sm mb-8">
+          Select your account type
+        </p>
 
-function FormContent({ selected, setSelected, navigate }) {
-  const handleContinue = () => {
-    navigate(selected === 'merchant' ? '/merchant/login' : '/onboarding/location')
-  }
-  return (
-    <div className="flex flex-col h-full">
-      <h1 className="text-2xl font-bold text-gray-900 mt-2 mb-1">Who are you?</h1>
-      <p className="text-gray-500 text-sm mb-6">Select your account type to continue your journey.</p>
-      <div className="flex flex-col gap-3 flex-1">
-        {types.map((t) => <RadioCard key={t.id} item={t} selected={selected} onSelect={setSelected} />)}
-      </div>
-      <div className="mt-8">
+        <div className="flex flex-col gap-4 mb-16">
+          {/* Customer Option */}
+          <button
+            onClick={() => setType('customer')}
+            className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all ${
+              type === 'customer'
+                ? 'bg-indigo-50/50 border-[#4F46E5]'
+                : 'bg-gray-50 border-transparent hover:bg-gray-100'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                type === 'customer' ? 'bg-[#4F46E5] text-white' : 'bg-transparent text-[#4F46E5]'
+              }`}>
+                <User size={20} strokeWidth={2.5} />
+              </div>
+              <span className="font-semibold text-gray-900">Customer</span>
+            </div>
+            {/* Radio circle */}
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              type === 'customer' ? 'border-[#4F46E5] bg-[#4F46E5]' : 'border-gray-300'
+            }`} />
+          </button>
+
+          {/* Merchant Option */}
+          <button
+            onClick={() => setType('merchant')}
+            className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all ${
+              type === 'merchant'
+                ? 'bg-indigo-50/50 border-[#4F46E5]'
+                : 'bg-gray-50 border-transparent hover:bg-gray-100'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                type === 'merchant' ? 'bg-[#4F46E5] text-white' : 'bg-transparent text-[#4F46E5]'
+              }`}>
+                <Store size={20} strokeWidth={2.5} />
+              </div>
+              <span className="font-semibold text-gray-900">Merchant</span>
+            </div>
+            {/* Radio circle */}
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              type === 'merchant' ? 'border-[#4F46E5] bg-[#4F46E5]' : 'border-gray-300'
+            }`} />
+          </button>
+        </div>
+
         <button
-          onClick={handleContinue}
-          className="w-full bg-[#1A1AF5] text-white font-semibold py-3.5 rounded-xl hover:bg-[#1515d4] transition-colors text-sm flex items-center justify-center gap-1"
+          onClick={() => navigate('/onboarding/phone')}
+          className="w-full bg-[#4F46E5] text-white text-base font-medium py-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 mb-6"
         >
-          Continue →
+          Continue
         </button>
-        <p className="text-center text-sm text-gray-500 mt-4">
+
+        <p className="text-base text-gray-600 text-center">
           Already have an account?{' '}
-          <a href="/auth/login" className="text-[#1A1AF5] font-semibold">Log In</a>
+          <Link to="/auth/login" className="text-[#4F46E5] font-semibold">Log In</Link>
         </p>
       </div>
     </div>
   )
 }
 
-export default function AccountType() {
-  const [selected, setSelected] = useState('customer')
+function DesktopAccountType() {
   const navigate = useNavigate()
+  const [type, setType] = useState('customer')
 
   return (
-    <>
-      {/* Mobile */}
-      <div className="md:hidden">
-        <OnboardingShell>
-          <FormContent selected={selected} setSelected={setSelected} navigate={navigate} />
-        </OnboardingShell>
-      </div>
+    <div className="flex flex-col min-h-screen bg-gray-50/50">
+      <div className="flex-1 flex items-center justify-center py-16 px-6">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-sm border border-gray-100 p-12">
+          
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Who are you?</h1>
+          <p className="text-gray-500 text-base mb-10">
+            Select your account type
+          </p>
 
-      {/* Desktop — two-column split */}
-      <div className="hidden md:flex flex-col min-h-screen bg-gray-50">
-        <DesktopNav />
-        <div className="flex-1 flex">
-          {/* Left: gradient decoration */}
-          <div className="flex-1 bg-gradient-to-br from-[#1A1AF5] via-[#4040ff] to-[#7b5ea7] relative overflow-hidden flex items-end p-10">
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: 'radial-gradient(circle at 30% 50%, #fff 0%, transparent 60%)' }}
-            />
-            <p className="text-white/40 text-xs tracking-widest uppercase relative z-10">Fastrapid Delivery Network</p>
+          <div className="flex flex-col gap-4 mb-12">
+            {/* Customer Option */}
+            <button
+              onClick={() => setType('customer')}
+              className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
+                type === 'customer'
+                  ? 'bg-indigo-50/30 border-[#4F46E5]'
+                  : 'bg-gray-50 border-transparent hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  type === 'customer' ? 'bg-[#4F46E5] text-white' : 'bg-[#E0E7FF] text-[#4F46E5]'
+                }`}>
+                  <User size={24} strokeWidth={2.5} />
+                </div>
+                <span className="font-semibold text-lg text-gray-900">Customer</span>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                type === 'customer' ? 'border-[#4F46E5] bg-[#4F46E5]' : 'border-gray-300'
+              }`} />
+            </button>
+
+            {/* Merchant Option */}
+            <button
+              onClick={() => setType('merchant')}
+              className={`w-full flex items-center justify-between p-6 rounded-2xl border-2 transition-all ${
+                type === 'merchant'
+                  ? 'bg-indigo-50/30 border-[#4F46E5]'
+                  : 'bg-gray-50 border-transparent hover:bg-gray-100'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  type === 'merchant' ? 'bg-[#4F46E5] text-white' : 'bg-[#E0E7FF] text-[#4F46E5]'
+                }`}>
+                  <Store size={24} strokeWidth={2.5} />
+                </div>
+                <span className="font-semibold text-lg text-gray-900">Merchant</span>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                type === 'merchant' ? 'border-[#4F46E5] bg-[#4F46E5]' : 'border-gray-300'
+              }`} />
+            </button>
           </div>
 
-          {/* Right: form */}
-          <div className="w-[460px] bg-white flex flex-col justify-between py-12 px-12 shadow-[-4px_0_24px_rgba(0,0,0,0.04)]">
-            <div className="flex-1 flex flex-col justify-center">
-              <button
-                onClick={() => navigate(-1)}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors mb-8 self-start"
-              >
-                <ArrowLeft size={16} className="text-gray-700" />
-              </button>
-              <FormContent selected={selected} setSelected={setSelected} navigate={navigate} />
-            </div>
-          </div>
+          <button
+            onClick={() => navigate('/onboarding/phone')}
+            className="w-full bg-[#4F46E5] text-white text-base font-medium py-4 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 mb-8"
+          >
+            Continue
+          </button>
+
+          <p className="text-base text-gray-600 text-center">
+            Already have an account?{' '}
+            <Link to="/auth/login" className="text-[#4F46E5] font-semibold">Log In</Link>
+          </p>
+
         </div>
-        <DesktopFooter />
       </div>
+    </div>
+  )
+}
+
+export default function AccountType() {
+  return (
+    <>
+      <div className="md:hidden"><MobileAccountType /></div>
+      <div className="hidden md:block"><DesktopAccountType /></div>
     </>
   )
 }

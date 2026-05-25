@@ -70,7 +70,7 @@ export default function RiderVerify() {
       </div>
 
       {/* OTP boxes */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 justify-center mb-6 max-w-[280px] mx-auto">
         {otp.map((digit, i) => (
           <input
             key={i}
@@ -80,7 +80,7 @@ export default function RiderVerify() {
             value={digit}
             onChange={e => handleChange(e.target.value, i)}
             onKeyDown={e => handleKeyDown(e, i)}
-            className="flex-1 h-[64px] text-center text-2xl font-bold text-gray-900 rounded-2xl border-2 transition-colors focus:outline-none"
+            className="w-14 h-14 text-center text-2xl font-bold text-gray-900 rounded-2xl border-2 transition-colors focus:outline-none shadow-sm"
             style={{
               borderColor: digit ? '#5B5BFF' : '#E5E7EB',
               background: digit ? 'rgba(91,91,255,0.04)' : '#F9FAFB',

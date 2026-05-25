@@ -4,7 +4,7 @@ import Logo from '../components/brand/Logo'
 
 const navItems = [
   { to: '/app', icon: Home, label: 'Home', desktopLabel: 'Home' },
-  { to: '/app/search', icon: Search, label: 'Search', desktopLabel: 'Discovery' },
+  { to: '/app/promotions', icon: Search, label: 'Search', desktopLabel: 'Discovery' },
   { to: '/app/orders', icon: ShoppingBag, label: 'Orders', desktopLabel: 'Orders' },
   { to: '/app/wallet', icon: Wallet, label: 'Wallet', desktopLabel: 'Wallet' },
   { to: '/app/profile', icon: User, label: 'Profile', desktopLabel: 'Profile' },

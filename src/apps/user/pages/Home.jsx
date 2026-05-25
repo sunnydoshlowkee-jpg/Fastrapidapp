@@ -1,274 +1,386 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, ChevronDown, ShoppingCart, Search, Car, Heart, Plus, ArrowRight } from 'lucide-react'
+import { MapPin, ChevronDown, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Utensils, ShoppingBasket, Package, Pill } from 'lucide-react'
 
-// Mock Data
-const quickReorder = [
+// Mock Data (Shared/Mobile)
+const mobileQuickReorder = [
   { id: 1, name: 'Burger King', img: '/burger.png' },
   { id: 2, name: 'Pizza Hut', img: '/pizza.png' },
   { id: 3, name: 'Bowl Hub', img: '/burger.png' },
   { id: 4, name: 'The Salad Bar', img: '/pizza.png' },
 ]
 
-const desktopServices = [
-  { id: 'rides', label: 'Rides', icon: '🚙' },
-  { id: 'food', label: 'Food', icon: '🍽️' },
-  { id: 'grocery', label: 'Grocery', icon: '🛍️' },
-  { id: 'package', label: 'Package', icon: '📦' },
-  { id: 'health', label: 'Health', icon: '⚕️' },
-]
-
 const restaurants = [
-  { id: 1, name: 'The Lagos Bistro', tags: 'Continental • 20–30 mins', rating: 4.8, badge: 'TOP RATED', delivery: 'Free Delivery', img: '/burger.png' },
-  { id: 2, name: 'Pepper & Spice', tags: 'African Fusion • 15–25 mins', rating: 4.5, delivery: '₦1,200 del.', img: '/pizza.png' },
-  { id: 3, name: 'Pizza Express', tags: 'Italian • 10–15 mins', rating: 4.2, badge: 'FASTEST', delivery: 'Free Delivery', img: '/pizza.png' },
-  { id: 4, name: "Wok n' Roll", tags: 'Asian • 25–40 mins', rating: 4.7, delivery: '₦800 del.', img: '/burger.png' },
+  { id: 1, name: 'Burger Shop Deluxe', tags: 'Burgers • American • Fast Food', rating: 4.8, distance: '900m', delivery: '₦500', img: '/burger.png', time: '15-25 min' },
+  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: '/pizza.png', time: '20-30 min' },
 ]
 
-const trendingItems = [
+const groceryStores = [
+  { id: 1, name: 'Fresh Market Reserve', tags: 'Organic • Fresh • Market', rating: 4.8, distance: '900m', delivery: '₦500', img: '/burger.png', time: '15-25 min' },
+  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: '/pizza.png', time: '20-30 min' },
+]
+
+const trendingFood = [
   { id: 1, name: 'KFC Mega Bucket', store: 'KFC - Sabo', price: '₦8,500', img: '/burger.png' },
   { id: 2, name: 'Large Fries & Dip', store: 'Burger King', price: '₦2,200', img: '/pizza.png' },
   { id: 3, name: 'Classic Pepperoni', store: "Domino's Pizza", price: '₦6,800', img: '/pizza.png' },
   { id: 4, name: 'Chocolate Sundae', store: 'Cold Stone', price: '₦3,500', img: '/burger.png' },
 ]
 
+const trendingGrocery = [
+  { id: 1, name: 'Avocados large', store: 'Produce', price: '₦8,500', img: '/pizza.png' },
+  { id: 2, name: 'Organic milk', store: 'Dairy', price: '₦2,200', img: '/burger.png' },
+  { id: 3, name: 'Sourdough Loaf', store: 'Bakery', price: '₦6,800', img: '/pizza.png' },
+  { id: 4, name: 'Brown Eggs', store: 'Dairy & Eggs', price: '₦3,500', img: '/burger.png' },
+]
+
+// Mock Data (Desktop Only)
+const desktopServices = [
+  { name: 'Rides', icon: Car },
+  { name: 'Food', icon: Utensils },
+  { name: 'Grocery', icon: ShoppingBasket },
+  { name: 'Package', icon: Package },
+  { name: 'Health', icon: Pill },
+]
+
+const desktopQuickReorder = [
+  { id: 1, name: 'Margherita\nPizza', img: '/pizza.png', color: 'ring-blue-500' },
+  { id: 2, name: 'Cheeseburger\nMeal', img: '/burger.png', color: 'ring-yellow-500' },
+  { id: 3, name: 'Greek\nBowl', img: '/pizza.png', color: 'ring-green-500' },
+  { id: 4, name: 'Salmon\nSushi', img: '/pizza.png', color: 'ring-orange-500' },
+  { id: 5, name: 'Grill\nMix', img: '/burger.png', color: 'ring-red-500' },
+]
+
+const desktopPopular = [
+  { id: 1, name: 'The Lagos Bistro', tags: 'Continental • 20–30 mins', rating: 4.8, badge: 'TOP RATED', badgeColor: 'bg-blue-600', fee: 'Free Delivery', img: '/burger.png' },
+  { id: 2, name: 'Pepper & Spice', tags: 'African Fusion • 15–25 mins', rating: 4.5, badge: null, fee: '₦1,200 del.', img: '/pizza.png' },
+  { id: 3, name: 'Pizza Express', tags: 'Italian • 10–15 mins', rating: 4.2, badge: 'FASTEST', badgeColor: 'bg-red-600', fee: 'Free Delivery', img: '/pizza.png' },
+  { id: 4, name: "Wok n' Roll", tags: 'Asian • 25–40 mins', rating: 4.7, badge: null, fee: '₦800 del.', img: '/burger.png' },
+]
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('food') // food | groceries
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('Food')
+  const [bannerIndex, setBannerIndex] = useState(0)
+
+  const trending = activeTab === 'Food' ? trendingFood : trendingGrocery
+  const stores = activeTab === 'Food' ? restaurants : groceryStores
 
   return (
-    <div className="flex flex-col w-full bg-white md:bg-gray-50 min-h-full pb-8">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
       
-      {/* --- MOBILE HEADER --- */}
-      <div className="md:hidden flex items-center justify-between px-4 py-4 bg-white sticky top-0 z-30">
-        <div className="flex items-center gap-1.5 text-gray-900">
-          <MapPin size={18} className="text-[#1A1AF5]" />
-          <span className="text-sm font-semibold">Yaba, Lagos</span>
-          <ChevronDown size={16} className="text-gray-500" />
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                 MOBILE LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+      
+      {/* Mobile Top Bar */}
+      <div className="md:hidden px-5 pt-12 pb-3 flex items-center justify-between sticky top-0 bg-[#FAFAFA]/95 backdrop-blur-md z-40 border-b border-gray-100">
+        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-100/50 p-2 rounded-xl transition-colors -ml-2">
+          <MapPin size={18} className="text-[#4F46E5]" strokeWidth={2} />
+          <span className="font-semibold text-gray-900 text-[14px]">Yaba, Lagos</span>
+          <ChevronDown size={14} className="text-gray-400" />
         </div>
-        <div className="bg-blue-50 px-3 py-1.5 rounded-full text-[#1A1AF5] font-bold text-xs tracking-wide">
-          ₦4,500
+        <div 
+          className="cursor-pointer bg-indigo-50 px-3 py-1.5 rounded-full hover:shadow-sm transition-all"
+          onClick={() => navigate('/app/wallet')}
+        >
+          <span className="font-bold text-[#4F46E5] text-[14px] flex items-center gap-2">
+            ₦4,500
+          </span>
         </div>
       </div>
 
-      {/* --- DESKTOP HEADER --- */}
-      <div className="hidden md:flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 sticky top-0 z-30">
-        <div className="relative w-[400px]">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search for food, groceries..." 
-            className="w-full bg-gray-50 rounded-xl py-3 pl-11 pr-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#1A1AF5]/20 focus:border-[#1A1AF5] border border-transparent transition-all"
+      <div className="md:hidden flex-1 w-full max-w-md mx-auto px-5 pt-2 flex flex-col">
+        {/* Mobile Hero Banner */}
+        <div className="relative w-full h-[140px] rounded-2xl overflow-hidden mb-3">
+          <div className={`absolute inset-0 ${activeTab === 'Food' ? 'bg-gradient-to-r from-[#4F46E5] to-[#6366F1]' : 'bg-gradient-to-r from-[#10B981] to-[#34D399]'}`} />
+          <div className="absolute inset-0 p-5 flex flex-col justify-center w-[65%]">
+            <span className="hidden px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full w-max mb-3 backdrop-blur-sm">Limited Offer</span>
+            <h2 className="text-white text-[17px] font-bold leading-snug mb-1">
+              {activeTab === 'Food' ? '50% off your first grocery haul' : 'Fresh groceries, 50% off today'}
+            </h2>
+            <p className="text-white/80 text-[11px] font-medium mb-3">Fresh items delivered fast to your door</p>
+            <button className="bg-white text-gray-900 px-4 py-2 rounded-full text-[12px] font-bold w-max flex items-center gap-1 hover:scale-105 transition-transform shadow-lg shadow-black/10">
+              Order now <ChevronRight size={16} />
+            </button>
+          </div>
+          <img 
+            src={activeTab === 'Food' ? "/burger.png" : "/pizza.png"} 
+            alt="Promo" 
+            className="absolute -right-4 -bottom-4 w-36 h-36 object-cover opacity-80 drop-shadow-2xl" 
           />
         </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 cursor-pointer transition-colors">
-            <MapPin size={16} />
-            <span className="text-sm font-medium">Victoria Island, Lagos</span>
-            <ChevronDown size={14} className="text-gray-400" />
-          </div>
-          <button className="relative p-2 text-gray-700 hover:text-[#1A1AF5] transition-colors rounded-full hover:bg-blue-50">
-            <ShoppingCart size={22} />
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
-          </button>
-        </div>
-      </div>
 
-      <div className="px-4 md:px-8 py-2 md:py-6 max-w-6xl mx-auto w-full">
-        
-        {/* --- HERO BANNER (MOBILE) --- */}
-        <div className="md:hidden bg-[#3b3bff] rounded-2xl p-6 text-white mb-6 relative overflow-hidden shadow-lg shadow-blue-500/20">
-          {/* Subtle background decoration */}
-          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
-          <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-purple-500 opacity-20 rounded-full blur-xl"></div>
-          
-          <h2 className="text-2xl font-bold leading-tight mb-2 relative z-10 w-2/3">50% off your first grocery haul</h2>
-          <p className="text-sm text-blue-100 mb-5 relative z-10">Fresh items delivered fast</p>
-          <button className="bg-white text-[#1A1AF5] px-4 py-2 rounded-full text-xs font-bold inline-flex items-center gap-1 hover:bg-gray-50 transition-colors relative z-10">
-            Order now <ArrowRight size={14} />
-          </button>
-          {/* Pagination dots mock */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            <div className="w-4 h-1 bg-white rounded-full"></div>
-            <div className="w-1 h-1 bg-white/40 rounded-full"></div>
-            <div className="w-1 h-1 bg-white/40 rounded-full"></div>
-          </div>
+        {/* Mobile Carousel Dots */}
+        <div className="flex justify-center gap-1.5 mb-5">
+          {[0, 1, 2].map(i => (
+            <div 
+              key={i} 
+              className={`rounded-full transition-all ${i === bannerIndex ? 'w-5 h-[6px] bg-[#4F46E5]' : 'w-[6px] h-[6px] bg-gray-300'}`}
+            />
+          ))}
         </div>
 
-        {/* --- MOBILE ACTIVE ORDER TRACKER --- */}
-        <div className="md:hidden bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between mb-8">
+        {/* Mobile: What do you need? */}
+        <div className="mb-7">
+          <h3 className="text-[15px] font-bold text-gray-900 mb-3">What do you need?</h3>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#1A1AF5]">
-              <Car size={18} />
+            <div 
+              onClick={() => setActiveTab('Food')}
+              className={`flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl transition-all duration-200 ${
+                activeTab === 'Food' ? 'bg-[#4F46E5] h-[100px] shadow-lg shadow-indigo-200' : 'bg-[#F0F0F5] h-[85px]'
+              }`}
+            >
+              <span className="text-[28px]">🍽️</span>
+              <span className={`text-[12px] font-semibold ${activeTab === 'Food' ? 'text-white' : 'text-gray-700'}`}>Food</span>
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">On the way · 8 mins</p>
-              <p className="text-xs text-gray-500">KFC - Yaba Branch</p>
+            <div 
+              onClick={() => setActiveTab('Groceries')}
+              className={`flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl transition-all duration-200 ${
+                activeTab === 'Groceries' ? 'bg-[#4F46E5] h-[100px] shadow-lg shadow-indigo-200' : 'bg-[#F0F0F5] h-[85px]'
+              }`}
+            >
+              <span className="text-[28px]">🧺</span>
+              <span className={`text-[12px] font-semibold ${activeTab === 'Groceries' ? 'text-white' : 'text-gray-700'}`}>Groceries</span>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#F0F0F5] rounded-2xl h-[85px]">
+              <div className="w-8 h-8 bg-[#2E7D32] rounded-full flex items-center justify-center">
+                <Plus size={18} className="text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[12px] font-semibold text-gray-700">more</span>
             </div>
           </div>
-          <button className="text-[#1A1AF5] text-sm font-bold bg-blue-50 px-4 py-1.5 rounded-full">Track</button>
         </div>
 
-        {/* --- HERO BANNER (DESKTOP) --- */}
-        <div className="hidden md:flex bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl overflow-hidden relative h-[280px] mb-10 shadow-xl shadow-gray-200/50">
-          <div className="w-1/2 p-10 flex flex-col justify-center relative z-10">
-            <span className="bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full self-start mb-4">Limited Offer</span>
-            <h2 className="text-4xl font-bold text-white leading-tight mb-3">50% off your first grocery haul</h2>
-            <p className="text-gray-300 text-sm mb-6">Freshness delivered from the farm to your doorstep in 30 minutes.</p>
-            <button className="bg-[#1A1AF5] text-white px-6 py-3 rounded-xl text-sm font-bold self-start hover:bg-[#1515d4] transition-colors">
-              Shop Groceries Now
-            </button>
-          </div>
-          {/* Decorative image background */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 flex items-end justify-end p-4">
-             <img src="/grocery-hero.png" alt="Groceries" className="h-[90%] object-contain object-bottom drop-shadow-2xl translate-y-4 translate-x-4" />
+        {/* Mobile: Active Order Tracker */}
+        <div className="mb-7">
+          <div className="bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => navigate('/app/track/123')}>
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-[#F3F4F6] rounded-full flex items-center justify-center">
+                <span className="text-[18px]">🛵</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-[13px] leading-tight">On the way <span className="text-[#4F46E5]">• 8 mins</span></h3>
+                <p className="text-[11px] text-gray-500 mt-0.5">KFC · Yaba Branch</p>
+              </div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
+              <ChevronRight size={16} className="text-gray-400" />
+            </div>
           </div>
         </div>
 
-        {/* --- SERVICES / "WHAT DO YOU NEED?" --- */}
+        {/* Mobile: Stores / Restaurants */}
+        <div className="mb-7">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[15px] font-bold text-gray-900">
+              {activeTab === 'Food' ? 'Restaurants near you' : 'Grocery stores near you'}
+            </h3>
+            <span className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+            {stores.map((store, i) => (
+              <div key={store.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 cursor-pointer group flex-shrink-0 w-[190px] transition-shadow" onClick={() => navigate(`/app/vendor/${store.id}`)}>
+                <div className="w-full h-[120px] bg-gray-100 overflow-hidden relative">
+                  <img src={store.img} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm">{store.time}</div>
+                  <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
+                    <Heart size={14} className={i === 0 ? "fill-[#4F46E5]" : ""} />
+                  </button>
+                </div>
+                <div className="p-3.5">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="font-bold text-gray-900 text-[13px] truncate">{store.name}</h4>
+                    <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-700 shrink-0">
+                      <Star size={10} className="text-yellow-500 fill-yellow-500" /> {store.rating}
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-gray-500 font-medium mb-3 truncate">{store.tags}</p>
+                  <div className="flex items-center gap-2 text-[10px] font-semibold text-gray-500">
+                    <span className="flex items-center gap-1"><MapPin size={12} /> {store.distance}</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span>Delivery: {store.delivery}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile: Quick Reorder */}
+        <div className="mb-7">
+          <h3 className="text-[15px] font-bold text-gray-900 mb-3">Quick reorder</h3>
+          <div className="flex gap-5 overflow-x-auto pb-2 hide-scrollbar">
+            {mobileQuickReorder.map(brand => (
+              <div key={brand.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+                <div className="w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#4F46E5] transition-colors">
+                  <img src={brand.img} alt={brand.name} className="w-full h-full object-cover" />
+                </div>
+                <span className="text-[10px] font-medium text-gray-600">{brand.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile: Trending Items */}
         <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 md:hidden">What do you need?</h3>
-          <div className="flex items-center justify-between md:hidden gap-3">
-            <button 
-              onClick={() => setActiveTab('food')}
-              className={`flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 transition-colors border-2 ${activeTab === 'food' ? 'bg-[#1A1AF5] text-white border-[#1A1AF5]' : 'bg-gray-50 text-gray-600 border-transparent'}`}
-            >
-              <span className="text-2xl">🍽️</span>
-              <span className="text-xs font-semibold">Food</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('groceries')}
-              className={`flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 transition-colors border-2 ${activeTab === 'groceries' ? 'bg-[#1A1AF5] text-white border-[#1A1AF5]' : 'bg-gray-50 text-gray-600 border-transparent'}`}
-            >
-              <span className="text-2xl">🛍️</span>
-              <span className="text-xs font-semibold">Groceries</span>
-            </button>
-            <button className="flex-1 py-4 rounded-2xl flex flex-col items-center gap-2 bg-gray-50 text-gray-600 border-2 border-transparent">
-              <span className="text-2xl">➡️</span>
-              <span className="text-xs font-semibold">more</span>
-            </button>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[15px] font-bold text-gray-900">Trending Items</h3>
+            <span className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">View Market</span>
           </div>
-
-          <div className="hidden md:flex flex-col mb-10">
-            <div className="flex justify-between items-end mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Our Services</h3>
-              <button onClick={() => navigate('/app/vendors/food')} className="text-[#1A1AF5] text-sm font-semibold hover:underline">See all ›</button>
-            </div>
-            <div className="grid grid-cols-5 gap-6">
-              {desktopServices.map((s) => (
-                <button key={s.id} className="bg-white rounded-3xl p-6 flex flex-col items-center gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(26,26,245,0.08)] transition-all group">
-                  <div className="text-4xl group-hover:scale-110 transition-transform">{s.icon}</div>
-                  <span className="text-sm font-bold text-gray-800">{s.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* --- QUICK REORDER --- */}
-        <div className="mb-10 md:mb-12">
-          <div className="mb-4">
-            <h3 className="text-lg md:text-xl font-bold text-gray-900">Quick reorder</h3>
-            <p className="text-xs text-gray-500 hidden md:block">Based on your favorites</p>
-          </div>
-          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 hide-scrollbar">
-            {quickReorder.map((item) => (
-              <div key={item.id} className="flex flex-col items-center gap-2 min-w-[72px]">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-0.5 bg-gradient-to-tr from-orange-400 to-[#1A1AF5] shadow-md flex-shrink-0 cursor-pointer transform hover:scale-105 transition-transform">
-                  <div className="w-full h-full bg-white rounded-full border-2 border-white overflow-hidden">
-                     <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-                <span className="text-[10px] md:text-xs font-semibold text-gray-600 text-center leading-tight whitespace-nowrap">{item.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* --- RESTAURANTS / STORES --- */}
-        <div className="mb-10">
-          <div className="flex justify-between items-end mb-4">
-            <div>
-              <h3 className="text-lg md:text-xl font-bold text-gray-900 md:mb-1">{activeTab === 'groceries' ? 'Grocery stores near you' : 'Restaurants near you'}</h3>
-              <p className="text-xs text-gray-500 hidden md:block">Trending in Victoria Island</p>
-            </div>
-            <button 
-              onClick={() => navigate(`/app/vendors/${activeTab}`)} 
-              className="text-[#1A1AF5] text-xs md:text-sm font-semibold hover:underline"
-            >
-              {activeTab === 'groceries' ? 'See all' : 'View all vendors'}
-            </button>
-          </div>
-          
-          <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 hide-scrollbar md:pb-0 md:overflow-visible">
-            {restaurants.map((r) => (
-              <div key={r.id} className="min-w-[240px] md:min-w-0 bg-white rounded-2xl md:rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group flex flex-col">
-                <div className="relative h-36 md:h-40 overflow-hidden">
-                  <img src={r.img} alt={r.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-full p-1.5 shadow-sm">
-                    <Heart size={16} className="text-gray-500 hover:text-red-500 transition-colors" />
-                  </div>
-                  {/* Badges */}
-                  <div className="absolute top-3 left-3 flex gap-1.5">
-                    {r.badge && (
-                      <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded shadow-sm text-white ${r.badge === 'FASTEST' ? 'bg-red-500' : 'bg-[#1A1AF5]'}`}>
-                        {r.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur text-gray-900 text-[11px] font-bold px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
-                    <span className="text-yellow-500">★</span> {r.rating}
-                  </div>
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-bold text-gray-900 text-sm md:text-base line-clamp-1">{r.name}</h4>
-                    {r.delivery !== 'Free Delivery' && <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap ml-2 hidden md:block">{r.delivery}</span>}
-                  </div>
-                  <p className="text-[11px] md:text-xs text-gray-500 mb-2">{r.tags}</p>
-                  <div className="mt-auto">
-                     {r.delivery === 'Free Delivery' ? (
-                       <span className="text-[10px] bg-blue-50 text-[#1A1AF5] font-bold px-2 py-1 rounded inline-block">Free Delivery</span>
-                     ) : (
-                       <span className="text-[10px] text-gray-500 font-medium md:hidden">{r.delivery}</span>
-                     )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* --- TRENDING ITEMS (MOBILE) --- */}
-        <div className="md:hidden pb-6">
-          <div className="flex justify-between items-end mb-4">
-            <h3 className="text-lg font-bold text-gray-900">Trending Items</h3>
-            <button className="text-[#1A1AF5] text-xs font-semibold hover:underline">View Market</button>
-          </div>
-          
           <div className="grid grid-cols-2 gap-3">
-            {trendingItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 p-3 flex flex-col relative">
-                <button className="absolute top-3 right-3 bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm z-10">
-                  <Heart size={14} className="text-gray-500" />
-                </button>
-                <div className="h-28 rounded-xl overflow-hidden mb-3 bg-gray-50 flex items-center justify-center">
-                   <img src={item.img} alt={item.name} className="h-full object-cover" />
+            {trending.map(item => (
+              <div key={item.id} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md border border-gray-100 flex flex-col group cursor-pointer transition-all hover:-translate-y-1">
+                <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-gray-50">
+                  <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <button className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] shadow-sm">
+                    <Heart size={14} />
+                  </button>
                 </div>
-                <h4 className="font-bold text-gray-900 text-xs mb-0.5 line-clamp-1">{item.name}</h4>
-                <p className="text-[10px] text-gray-500 mb-2">{item.store}</p>
-                <div className="mt-auto flex items-center justify-between">
-                  <span className="font-bold text-gray-900 text-sm">{item.price}</span>
-                  <button className="w-7 h-7 rounded-full bg-[#1A1AF5] flex items-center justify-center shadow-md shadow-blue-500/20 hover:bg-[#1515d4] transition-colors">
-                    <Plus size={16} className="text-white" />
+                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5 truncate group-hover:text-[#4F46E5] transition-colors">{item.name}</h4>
+                <p className="text-[10px] font-medium text-gray-400 mb-3 truncate">{item.store}</p>
+                <div className="flex items-center justify-between mt-auto pt-1 border-t border-gray-50">
+                  <span className="font-bold text-gray-900 text-[14px]">₦{item.price.replace('₦', '')}</span>
+                  <button className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
+                    <Plus size={16} />
                   </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
+      </div>
+
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                DESKTOP LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      {/* Desktop Top Bar */}
+      <div className="hidden md:flex w-full px-10 pt-8 pb-6 items-center border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-40">
+        <div className="flex-1 flex justify-center px-8">
+          <div className="w-full max-w-2xl bg-gray-100/70 hover:bg-gray-100 rounded-xl px-5 py-3.5 flex items-center gap-3 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-500 border border-transparent">
+            <Search size={20} className="text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search for food, groceries, or essentials..." 
+              className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-6 shrink-0">
+          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+            <MapPin size={20} className="text-[#4F46E5]" strokeWidth={2} />
+            <span className="font-semibold text-[#4F46E5] text-[15px]">Lagos, NG</span>
+          </div>
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+            <ShoppingCart size={24} className="text-gray-700" />
+            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex flex-col flex-1 w-full max-w-[1200px] mx-auto px-10 pt-10 pb-12">
+        
+        {/* Desktop Banner */}
+        <div className="w-full bg-[#463F3A] rounded-[24px] overflow-hidden mb-12 relative h-[320px] flex items-center">
+          <img src="/pizza.png" alt="Groceries background" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#463F3A] via-[#463F3A]/90 to-transparent" />
+          
+          <div className="relative z-10 px-14 py-10 w-[60%]">
+            <span className="inline-block px-4 py-1.5 bg-red-600 text-white text-[12px] font-bold rounded-md tracking-wider mb-5">LIMITED OFFER</span>
+            <h2 className="text-white text-[52px] font-bold leading-[1.1] mb-4">
+              50% off your first grocery haul
+            </h2>
+            <p className="text-gray-200 text-[18px] mb-8 font-medium">
+              Freshness delivered from the farm to your doorstep in 30 minutes.
+            </p>
+            <button className="bg-[#2D2AEE] hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-[15px] font-bold transition-all shadow-lg shadow-blue-900/30">
+              Shop Groceries Now
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Services */}
+        <div className="mb-14">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-[22px] font-bold text-gray-900">Our Services</h3>
+            <span className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">See all &gt;</span>
+          </div>
+          <div className="grid grid-cols-5 gap-6">
+            {desktopServices.map((service, index) => {
+              const Icon = service.icon
+              return (
+                <div key={index} className="flex flex-col items-center gap-4 cursor-pointer group">
+                  <div className="w-full aspect-[4/3] bg-white rounded-3xl border border-gray-100/50 shadow-sm shadow-gray-200/50 flex items-center justify-center group-hover:shadow-md group-hover:border-indigo-100 transition-all">
+                    <Icon size={42} className="text-[#2D2AEE] group-hover:scale-110 transition-transform" />
+                  </div>
+                  <span className="font-bold text-[15px] text-gray-900">{service.name}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Desktop Quick Reorder */}
+        <div className="mb-14">
+          <div className="mb-6">
+            <h3 className="text-[22px] font-bold text-gray-900 mb-1">Quick reorder</h3>
+            <p className="text-gray-500 text-[14px]">Based on your favorites</p>
+          </div>
+          <div className="flex gap-10">
+            {desktopQuickReorder.map(item => (
+              <div key={item.id} className="flex flex-col items-center gap-3 cursor-pointer group">
+                <div className={`w-[85px] h-[85px] rounded-full p-1 ring-2 ${item.color} group-hover:scale-105 transition-transform bg-white`}>
+                  <img src={item.img} alt={item.name.replace('\n', ' ')} className="w-full h-full object-cover rounded-full" />
+                </div>
+                <span className="font-bold text-[13px] text-gray-900 text-center leading-tight whitespace-pre-line">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Popular Near You */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-[22px] font-bold text-gray-900 mb-1">Popular Near You</h3>
+              <p className="text-gray-500 text-[14px]">Trending restaurants in Victoria Island</p>
+            </div>
+            <span className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
+          </div>
+          <div className="grid grid-cols-4 gap-6">
+            {desktopPopular.map(item => (
+              <div key={item.id} className="flex flex-col cursor-pointer group">
+                <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden mb-4 relative shadow-sm">
+                  <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {/* Rating Top Right */}
+                  <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
+                    <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                    <span className="text-[12px] font-bold text-gray-900">{item.rating}</span>
+                  </div>
+                  {/* Badge Bottom Left */}
+                  {item.badge && (
+                    <div className={`absolute bottom-3 left-3 px-3 py-1.5 rounded-lg ${item.badgeColor} shadow-sm`}>
+                      <span className="text-[10px] font-bold text-white tracking-wide">{item.badge}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h4 className="font-bold text-gray-900 text-[18px]">{item.name}</h4>
+                  {item.fee === 'Free Delivery' ? (
+                    <span className="px-2.5 py-1 bg-blue-50 text-[#2D2AEE] rounded text-[11px] font-bold whitespace-nowrap">Free Delivery</span>
+                  ) : (
+                    <span className="text-[13px] font-medium text-gray-400 whitespace-nowrap">{item.fee}</span>
+                  )}
+                </div>
+                <p className="text-[13px] text-gray-500 font-medium">{item.tags}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
       </div>
+
     </div>
   )
 }

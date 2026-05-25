@@ -1,138 +1,104 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Heart, ShoppingCart, Minus, Plus } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, Star, Minus, Plus } from 'lucide-react'
 
 export default function ItemDetail() {
   const navigate = useNavigate()
   const [quantity, setQuantity] = useState(1)
-  const [extraChicken, setExtraChicken] = useState(false)
-  const [instructions, setInstructions] = useState('')
+  const [hasAddon, setHasAddon] = useState(false)
 
   const basePrice = 4500
-  const extraPrice = 1200
-  const total = (basePrice + (extraChicken ? extraPrice : 0)) * quantity
+  const addonPrice = 1200
+  const total = (basePrice + (hasAddon ? addonPrice : 0)) * quantity
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-28 md:pb-0 relative">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24">
       
-      {/* Hero Image & Top Nav */}
-      <div className="relative h-72 md:h-96 w-full bg-gray-200">
-        <img src="/pizza.png" alt="Jollof Rice Special" className="w-full h-full object-cover" />
-        
-        {/* Top gradient for icons */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/60 to-transparent"></div>
-        
-        <div className="absolute top-safe-4 left-4 right-4 flex justify-between items-center z-10">
-          <button 
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-900 shadow-sm"
-          >
-            <ArrowLeft size={20} />
+      {/* Header Image */}
+      <div className="relative h-64 md:h-80 w-full">
+        <img src="/pizza.png" alt="Item Cover" className="w-full h-full object-cover" />
+        <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
+            <ArrowLeft size={20} className="text-gray-900" />
           </button>
-          
-          <div className="flex items-center gap-3">
-            <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-900 shadow-sm">
-              <Heart size={20} />
-            </button>
-            <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-900 shadow-sm">
-              <ShoppingCart size={20} />
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Content Container */}
-      <div className="bg-white px-5 md:px-8 pt-6 pb-8 -mt-6 rounded-t-3xl relative z-20 flex-1 max-w-3xl mx-auto w-full">
+      <div className="flex-1 px-6 w-full max-w-md mx-auto pt-6">
         
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Jollof Rice Special</h1>
-            <p className="text-sm text-gray-500">Mama's Kitchen Lagos</p>
-          </div>
-          <div className="bg-orange-50 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-            <StarIcon /> 4.8
+        {/* Item Info */}
+        <div className="flex justify-between items-start mb-1">
+          <h1 className="text-2xl font-bold text-gray-900">Jollof Rice Special</h1>
+          <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-md text-gray-800 font-bold ml-auto flex-shrink-0">
+            <Star size={12} className="fill-yellow-500 text-yellow-500" /> 4.8
           </div>
         </div>
+        <p className="text-sm text-gray-500 mb-2">Mama's Kitchen Lagos</p>
+        <p className="text-xl font-bold text-gray-900 mb-6">₦4,500</p>
 
-        <div className="text-2xl font-bold text-gray-900 mb-6">₦4,500</div>
-
-        <h3 className="font-bold text-gray-900 mb-2">Description</h3>
-        <p className="text-sm text-gray-500 leading-relaxed mb-8">
-          Authentic firewood-smoked Jollof rice served with spicy peppered chicken, fried ripe plantains (dodo), and a side of fresh vegetable coleslaw. The ultimate Nigerian party experience.
+        {/* Description */}
+        <h3 className="text-sm font-bold text-gray-900 mb-2">Description</h3>
+        <p className="text-[13px] text-gray-500 leading-relaxed mb-8">
+          Authentic firewood smoked jollof rice served with spicy peppered chicken, fried ripe plantains (dodo), and a side of mixed vegetable coleslaw. The ultimate Nigerian party experience.
         </p>
 
-        {/* Quantity Selector */}
-        <div className="flex flex-col items-center mb-10">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Quantity</span>
-          <div className="flex items-center gap-6 bg-gray-50 rounded-full p-1 border border-gray-100 shadow-sm">
+        {/* Quantity */}
+        <div className="flex flex-col items-center mb-8">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Quantity</p>
+          <div className="flex items-center gap-6">
             <button 
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-sm disabled:opacity-50"
-              disabled={quantity <= 1}
+              onClick={() => quantity > 1 && setQuantity(q => q - 1)}
+              className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 disabled:opacity-50"
             >
-              <Minus size={20} />
+              <Minus size={18} />
             </button>
             <span className="text-xl font-bold text-gray-900 w-4 text-center">{quantity}</span>
             <button 
-              onClick={() => setQuantity(quantity + 1)}
-              className="w-12 h-12 rounded-full bg-[#1A1AF5] text-white flex items-center justify-center shadow-sm shadow-blue-500/20 hover:bg-[#1515d4] transition-colors"
+              onClick={() => setQuantity(q => q + 1)}
+              className="w-10 h-10 rounded-full bg-[#4F46E5] flex items-center justify-center text-white shadow-md shadow-indigo-200"
             >
-              <Plus size={20} />
+              <Plus size={18} />
             </button>
           </div>
         </div>
 
-        {/* Extras */}
-        <div className="mb-8">
-          <label className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors border border-gray-100">
-            <div className="flex items-center gap-3">
-              <span className="text-gray-500">🍴</span>
-              <span className="text-sm font-semibold text-gray-900">Extra Grilled Chicken</span>
+        {/* Addons */}
+        <label className="flex items-center justify-between p-4 bg-indigo-50/50 rounded-2xl mb-8 cursor-pointer border border-transparent hover:border-indigo-100 transition-colors">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🍴</span>
+            <span className="text-sm font-semibold text-gray-900">Extra Grilled Chicken</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold text-[#4F46E5]">+₦1,200</span>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#4F46E5] border-[#4F46E5]' : 'border-gray-300'}`}>
+              {hasAddon && <div className="w-2 h-2 bg-white rounded-full" />}
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[#1A1AF5] text-sm font-bold">+₦1,200</span>
-              <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
-                extraChicken ? 'bg-[#1A1AF5] border-[#1A1AF5]' : 'border-gray-300 bg-white'
-              }`}>
-                {extraChicken && <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-              </div>
-            </div>
-            {/* Hidden actual checkbox to make it accessible */}
-            <input type="checkbox" className="hidden" checked={extraChicken} onChange={(e) => setExtraChicken(e.target.checked)} />
-          </label>
-        </div>
+          </div>
+          {/* Hidden input to make it accessible */}
+          <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
+        </label>
 
         {/* Special Instructions */}
-        <div className="mb-6">
-          <h3 className="text-sm text-gray-900 mb-3">Special Instructions</h3>
-          <textarea
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:border-[#1A1AF5] focus:ring-1 focus:ring-[#1A1AF5] min-h-[100px] resize-none transition-all placeholder:text-gray-400"
-            placeholder="Add any special requests here..."
-          ></textarea>
-        </div>
+        <h3 className="text-sm font-bold text-gray-900 mb-2">Special Instructions</h3>
+        <textarea 
+          placeholder="Add a note (e.g. no onions, extra spicy...)"
+          className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] resize-none h-24 mb-4 border border-transparent"
+        ></textarea>
 
       </div>
 
-      {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 z-40 md:relative md:bg-transparent md:border-none md:p-8 md:max-w-3xl md:mx-auto">
-        <button 
-          onClick={() => navigate(-1)} // Navigate back to vendor for now
-          className="w-full bg-[#1A1AF5] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-blue-500/20 hover:bg-[#1515d4] transition-colors"
-        >
-          Add to cart — ₦{total.toLocaleString()}
-        </button>
+      {/* Floating Add to Cart Button */}
+      <div className="fixed bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-white via-white to-transparent pb-safe z-40">
+        <div className="w-full max-w-md mx-auto">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors"
+          >
+            Add to cart — ₦{total.toLocaleString()}
+          </button>
+        </div>
       </div>
 
     </div>
-  )
-}
-
-function StarIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
   )
 }

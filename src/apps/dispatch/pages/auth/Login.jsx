@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
+import Logo from '../../../../components/brand/Logo'
 
 export default function RiderLogin() {
   const navigate = useNavigate()
@@ -11,13 +12,7 @@ export default function RiderLogin() {
 
       {/* Logo */}
       <div className="flex flex-col items-center gap-3 mb-12">
-        <div className="w-16 h-16 rounded-[20px] flex items-center justify-center shadow-md"
-          style={{ background: 'linear-gradient(135deg, #5B5BFF, #4040E8)' }}>
-          <svg width="34" height="34" viewBox="0 0 48 48" fill="none">
-            <path d="M10 8h16a10 10 0 0 1 0 20H18l12 12" stroke="white" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 8v32" stroke="white" strokeWidth="5.5" strokeLinecap="round"/>
-          </svg>
-        </div>
+        <Logo variant="icon" height={40} />
         <p className="text-gray-900 text-xl">
           <span className="font-black">Rapid</span>
           <span className="font-light"> Rider</span>

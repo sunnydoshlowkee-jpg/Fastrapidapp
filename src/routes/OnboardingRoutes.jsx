@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Splash from '../apps/user/pages/onboarding/Splash'
+import Slider from '../apps/user/pages/onboarding/Slider'
 import Welcome from '../apps/user/pages/onboarding/Welcome'
 import AccountType from '../apps/user/pages/onboarding/AccountType'
 import Location from '../apps/user/pages/onboarding/Location'
@@ -14,6 +15,7 @@ export default function OnboardingRoutes() {
   return (
     <Routes>
       <Route index element={<Splash />} />
+      <Route path="onboarding/slider" element={<Slider />} />
       <Route path="onboarding/welcome" element={<Welcome />} />
       <Route path="onboarding/account-type" element={<AccountType />} />
       <Route path="onboarding/location" element={<Location />} />

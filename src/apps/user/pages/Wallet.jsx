@@ -1,234 +1,182 @@
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, Send, ArrowDownLeft, PlusSquare, Phone, Globe, Receipt, Zap, ArrowUpRight, ArrowDown, Copy, Eye } from 'lucide-react'
+import { ShoppingCart, Send, ArrowDownLeft, PlusSquare, Phone, Globe, Receipt, Zap, ArrowDown, ArrowUpRight, Copy, Eye, EyeOff, QrCode } from 'lucide-react'
+import { useState } from 'react'
+
+const transactions = [
+  { id: 1, title: 'Fund Wallet', date: 'May 12, 10:24 AM', amount: '+ ₦ 15,000.00', type: 'credit', status: 'Completed', icon: ArrowDown, iconBg: 'bg-green-50', iconColor: 'text-green-500' },
+  { id: 2, title: 'IKEDC Prepaid', date: 'May 10, 04:30 PM', amount: '- ₦ 5,000.00', type: 'debit', status: 'DEBIT', icon: Zap, iconBg: 'bg-red-50', iconColor: 'text-red-500' },
+  { id: 3, title: 'MTN Data Purchase', date: 'May 11, 09:15 PM', amount: '- ₦ 2,500.00', type: 'debit', status: 'DEBIT', icon: ArrowUpRight, iconBg: 'bg-orange-50', iconColor: 'text-orange-500' },
+]
 
 export default function Wallet() {
   const navigate = useNavigate()
+  const [showBalance, setShowBalance] = useState(true)
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-24 md:pb-12 relative overflow-x-hidden">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
       
-      {/* Mobile Header */}
-      <div className="lg:hidden px-4 py-5 bg-transparent sticky top-0 z-30 flex items-center justify-between w-full md:max-w-2xl md:mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900">Wallet</h1>
-        <button className="text-gray-600 hover:opacity-80 transition-opacity">
-          <ShoppingCart size={24} />
+      {/* Header */}
+      <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 flex items-center justify-between border-b md:border-none border-gray-100">
+        <h1 className="text-[20px] md:text-[24px] font-bold text-gray-900">Wallet</h1>
+        <button className="text-gray-600 hover:text-gray-900 transition-colors bg-white border border-gray-200 p-2 rounded-full shadow-sm">
+          <ShoppingCart size={20} />
         </button>
       </div>
 
-      <div className="px-4 w-full flex-1 md:max-w-2xl lg:max-w-7xl md:mx-auto lg:px-8 lg:py-8 lg:grid lg:grid-cols-12 lg:gap-8">
+      <div className="px-5 md:px-8 w-full max-w-md md:max-w-5xl lg:max-w-[1200px] mx-auto flex flex-col pt-2">
         
-        {/* Desktop Header (inside layout flow or handled by UserLayout, but let's add a local title for Desktop if needed) */}
-        <div className="hidden lg:block lg:col-span-12 mb-2">
-          <h1 className="text-3xl font-bold text-gray-900">Wallet Overview</h1>
-        </div>
-
-        {/* Left Column (Desktop) */}
-        <div className="lg:col-span-8 flex flex-col">
+        <div className="md:grid md:grid-cols-12 md:gap-8 lg:gap-12">
           
-          {/* Balance Card */}
-          <div className="bg-[#3B3BFF] rounded-3xl p-6 lg:p-8 text-white mb-6 shadow-lg shadow-blue-500/20 relative overflow-hidden">
-            <div className="flex justify-between items-start mb-2 lg:mb-6">
-              <div className="flex items-center gap-2">
-                <span className="text-blue-100 text-sm font-medium lg:text-base">Available Balance</span>
-                <Eye size={16} className="text-blue-200 lg:hidden" />
-              </div>
-              <div className="hidden lg:flex bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm text-xs font-bold uppercase tracking-wider">
-                Default
-              </div>
-              <div className="lg:hidden w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-              </div>
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-bold mb-8 lg:mb-12 tracking-tight">₦284,500.00</h2>
+          {/* Left Column (Desktop) - Balance & Actions */}
+          <div className="md:col-span-7 flex flex-col">
             
-            <div className="flex items-center justify-between relative z-10">
-              <div className="bg-black/10 lg:bg-transparent rounded-2xl p-4 lg:p-0 flex items-center gap-2 backdrop-blur-sm lg:backdrop-blur-none border border-white/10 lg:border-none">
-                <div className="hidden lg:block text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-1">Virtual Account</div>
-                <span className="text-sm font-medium text-blue-50 lg:text-base lg:font-bold">Wema Bank • 0123456789</span>
-                <button className="text-blue-100 hover:text-white transition-colors p-1">
+            {/* Balance Card */}
+            <div className="bg-[#4F46E5] rounded-3xl p-5 md:p-8 text-white mb-5 md:mb-8 relative overflow-hidden shadow-xl shadow-indigo-500/20">
+              <div className="flex justify-between items-start mb-2 md:mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-indigo-200 text-[12px] md:text-[14px] font-medium">Available Balance</span>
+                  <button onClick={() => setShowBalance(!showBalance)} className="text-indigo-200 hover:text-white transition-colors">
+                    {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                </div>
+                <div className="w-9 h-9 md:w-12 md:h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors">
+                  <QrCode size={20} className="text-white" />
+                </div>
+              </div>
+              <h2 className="text-[32px] md:text-[48px] font-bold mb-6 md:mb-10 tracking-tight">
+                {showBalance ? '₦284,500.00' : '₦•••••••'}
+              </h2>
+              <div className="bg-white/15 rounded-xl px-3.5 md:px-5 py-2.5 md:py-3 flex items-center justify-between backdrop-blur-sm">
+                <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">Wema Bank • 0123456789</span>
+                <button className="text-indigo-200 hover:text-white transition-colors">
                   <Copy size={16} />
                 </button>
               </div>
-              <div className="hidden lg:flex w-12 h-12 bg-white/20 rounded-full items-center justify-center backdrop-blur-sm">
-                <Zap size={20} className="fill-white" />
-              </div>
+              {/* Decorative blob */}
+              <div className="absolute -top-10 -right-10 md:-top-20 md:-right-20 w-40 h-40 md:w-80 md:h-80 bg-white/10 rounded-full blur-2xl md:blur-3xl" />
             </div>
-            <div className="absolute -top-12 -right-12 w-48 h-48 lg:w-96 lg:h-96 bg-white/10 rounded-full blur-2xl lg:blur-3xl"></div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-3 gap-4 mb-8 lg:flex lg:gap-6">
-            <button 
-              onClick={() => navigate('/app/wallet/send')}
-              className="bg-[#3B3BFF] text-white rounded-3xl lg:rounded-2xl p-4 lg:py-5 lg:px-8 flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-4 shadow-md shadow-blue-500/20 hover:bg-blue-700 transition-colors lg:flex-1"
-            >
-              <div className="w-12 h-12 lg:w-auto lg:h-auto rounded-2xl bg-white/20 lg:bg-transparent flex items-center justify-center text-white">
-                <Send size={20} />
-              </div>
-              <span className="text-sm lg:text-lg font-bold">Send</span>
-            </button>
-            <button 
-              onClick={() => navigate('/app/wallet/receive')}
-              className="bg-white rounded-3xl lg:rounded-2xl p-4 lg:py-5 lg:px-8 flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100 lg:flex-1"
-            >
-              <div className="w-12 h-12 lg:w-auto lg:h-auto rounded-2xl bg-orange-50 lg:bg-transparent flex items-center justify-center text-[#3B3BFF]">
-                <ArrowDownLeft size={24} className="lg:w-6 lg:h-6" />
-              </div>
-              <span className="text-sm lg:text-lg font-bold text-gray-900">Receive</span>
-            </button>
-            <button 
-              onClick={() => navigate('/app/wallet/fund')}
-              className="bg-white rounded-3xl lg:rounded-2xl p-4 lg:py-5 lg:px-8 flex flex-col lg:flex-row items-center justify-center gap-3 lg:gap-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100 lg:flex-1"
-            >
-              <div className="w-12 h-12 lg:w-auto lg:h-auto rounded-2xl bg-blue-50 lg:bg-transparent flex items-center justify-center text-[#3B3BFF]">
-                <PlusSquare size={20} className="lg:w-6 lg:h-6" />
-              </div>
-              <span className="text-sm lg:text-lg font-bold text-gray-900">Fund</span>
-            </button>
-          </div>
-
-          {/* Utility Services */}
-          <div className="mb-8 lg:mb-0">
-            <h3 className="text-xs lg:text-lg font-bold text-gray-500 lg:text-gray-900 tracking-wider uppercase lg:capitalize lg:tracking-normal mb-4 pl-1">
-              <span className="lg:hidden">Utility Services</span>
-              <span className="hidden lg:block">Quick Utilities</span>
-            </h3>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              <button className="bg-white rounded-3xl lg:rounded-2xl p-5 lg:p-8 shadow-sm border border-gray-100 flex lg:flex-col items-center lg:justify-center gap-4 hover:shadow-md transition-all group">
-                <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0 group-hover:scale-110 transition-transform">
-                  <Phone size={20} className="lg:w-6 lg:h-6" />
+            {/* Action Buttons */}
+            <div className="grid grid-cols-3 gap-3 md:gap-5 mb-7 md:mb-8">
+              <button 
+                onClick={() => navigate('/app/wallet/send')}
+                className="bg-white rounded-2xl p-4 md:py-6 flex flex-col items-center gap-2.5 md:gap-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-[#4F46E5] transition-all group"
+              >
+                <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-[#EEF2FF] group-hover:bg-[#4F46E5] flex items-center justify-center text-[#4F46E5] group-hover:text-white transition-colors">
+                  <Send size={20} className="md:w-6 md:h-6" />
                 </div>
-                <span className="font-bold text-gray-900 text-sm lg:text-xs lg:uppercase lg:tracking-widest">Airtime</span>
-              </button>
-              <button className="bg-white rounded-3xl lg:rounded-2xl p-5 lg:p-8 shadow-sm border border-gray-100 flex lg:flex-col items-center lg:justify-center gap-4 hover:shadow-md transition-all group">
-                <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-blue-50 flex items-center justify-center text-[#3B3BFF] shrink-0 group-hover:scale-110 transition-transform">
-                  <Globe size={20} className="lg:w-6 lg:h-6" />
-                </div>
-                <span className="font-bold text-gray-900 text-sm lg:text-xs lg:uppercase lg:tracking-widest leading-tight text-left lg:text-center">Data</span>
+                <span className="text-[12px] md:text-[14px] font-bold text-gray-900">Send</span>
               </button>
               <button 
-                onClick={() => navigate('/app/wallet/pay-bills')}
-                className="bg-white rounded-3xl lg:rounded-2xl p-5 lg:p-8 shadow-sm border border-gray-100 flex lg:flex-col items-center lg:justify-center gap-4 hover:shadow-md transition-all group"
+                onClick={() => navigate('/app/wallet/receive')}
+                className="bg-white rounded-2xl p-4 md:py-6 flex flex-col items-center gap-2.5 md:gap-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-orange-500 transition-all group"
               >
-                <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shrink-0 group-hover:scale-110 transition-transform">
-                  <Receipt size={20} className="lg:w-6 lg:h-6" />
+                <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-orange-50 group-hover:bg-orange-500 flex items-center justify-center text-orange-500 group-hover:text-white transition-colors">
+                  <ArrowDownLeft size={22} className="md:w-7 md:h-7" />
                 </div>
-                <span className="font-bold text-gray-900 text-sm lg:text-xs lg:uppercase lg:tracking-widest leading-tight text-left lg:text-center">Bills</span>
+                <span className="text-[12px] md:text-[14px] font-bold text-gray-900">Receive</span>
               </button>
-              <button className="bg-white rounded-3xl lg:rounded-2xl p-5 lg:p-8 shadow-sm border border-gray-100 flex lg:flex-col items-center lg:justify-center gap-4 hover:shadow-md transition-all group">
-                <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-green-50 flex items-center justify-center text-green-500 shrink-0 group-hover:scale-110 transition-transform">
-                  <Zap size={20} className="lg:w-6 lg:h-6" />
+              <button 
+                onClick={() => navigate('/app/wallet/fund')}
+                className="bg-white rounded-2xl p-4 md:py-6 flex flex-col items-center gap-2.5 md:gap-4 shadow-sm border border-gray-100 hover:shadow-md hover:border-[#4F46E5] transition-all group"
+              >
+                <div className="w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-[#EEF2FF] group-hover:bg-[#4F46E5] flex items-center justify-center text-[#4F46E5] group-hover:text-white transition-colors">
+                  <PlusSquare size={20} className="md:w-6 md:h-6" />
                 </div>
-                <span className="font-bold text-gray-900 text-sm lg:text-xs lg:uppercase lg:tracking-widest">Power</span>
+                <span className="text-[12px] md:text-[14px] font-bold text-gray-900">Fund</span>
               </button>
             </div>
-          </div>
-        </div>
 
-        {/* Right Column (Desktop) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          
-          {/* Transaction History (Mobile flow + Desktop Sidebar) */}
-          <div className="bg-transparent lg:bg-white lg:rounded-3xl lg:p-6 lg:shadow-sm lg:border lg:border-gray-100">
-            <div className="flex items-center justify-between mb-4 pl-1 lg:pl-0">
-              <h3 className="text-xs lg:text-lg font-bold text-gray-500 lg:text-gray-900 tracking-wider uppercase lg:capitalize lg:tracking-normal">
-                <span className="lg:hidden">Transaction History</span>
-                <span className="hidden lg:block">Recent Activity</span>
+            {/* Desktop Only Pro Tip */}
+            <div className="hidden md:block bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100/50 mb-8">
+              <p className="text-[10px] font-bold text-[#4F46E5] uppercase tracking-widest mb-2">Pro Tip</p>
+              <p className="font-bold text-gray-900 text-sm leading-relaxed mb-4">Refer a friend and earn ₦500 on their first fund.</p>
+              <button 
+                onClick={() => navigate('/app/profile/refer-earn')}
+                className="w-full py-3 rounded-xl border border-indigo-200 text-[#4F46E5] font-bold text-sm hover:bg-indigo-100 transition-colors"
+              >
+                Share Link
+              </button>
+            </div>
+
+          </div>
+
+          {/* Right Column (Desktop) - Utilities & History */}
+          <div className="md:col-span-5 flex flex-col">
+            
+            {/* Utility Services */}
+            <div className="mb-7 md:mb-10">
+              <h3 className="text-[11px] md:text-[13px] font-bold text-gray-400 md:text-gray-900 tracking-widest uppercase md:normal-case md:tracking-normal mb-3 md:mb-4 pl-0.5 md:pl-0">
+                <span className="md:hidden">Utility Services</span>
+                <span className="hidden md:inline">Quick Utilities</span>
               </h3>
-              <button className="text-[#3B3BFF] text-xs font-bold hover:opacity-80">View All</button>
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
+                    <Phone size={18} className="md:w-5 md:h-5" />
+                  </div>
+                  <span className="font-semibold text-gray-900 text-[13px] md:text-[14px]">Airtime</span>
+                </button>
+                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
+                    <Globe size={18} className="md:w-5 md:h-5" />
+                  </div>
+                  <span className="font-semibold text-gray-900 text-[13px] md:text-[14px] leading-tight">Data Bundles</span>
+                </button>
+                <button 
+                  onClick={() => navigate('/app/wallet/pay-bills')}
+                  className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group"
+                >
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
+                    <Receipt size={18} className="md:w-5 md:h-5" />
+                  </div>
+                  <span className="font-semibold text-gray-900 text-[13px] md:text-[14px]">Pay Bills</span>
+                </button>
+                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
+                    <Zap size={18} className="md:w-5 md:h-5" />
+                  </div>
+                  <span className="font-semibold text-gray-900 text-[13px] md:text-[14px]">Electricity</span>
+                </button>
+              </div>
             </div>
-            
-            <div className="flex flex-col gap-4">
-            
-            <button 
-              onClick={() => navigate('/app/wallet/receipt/1')}
-              className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-5 lg:p-2 lg:py-3 shadow-sm lg:shadow-none border border-gray-100 lg:border-none lg:border-b lg:border-gray-50 flex items-center justify-between hover:shadow-md lg:hover:bg-gray-50 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-green-500 shrink-0">
-                  <ArrowDown size={20} />
-                </div>
-                <div className="text-left">
-                  <h4 className="font-bold text-gray-900 mb-0.5">Fund Wallet</h4>
-                  <p className="text-xs text-gray-500 font-medium">Bank Transfer • 10:24 AM</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="block font-bold text-green-600 mb-0.5">+ ₦ 15,000</span>
-                <span className="lg:hidden text-[10px] font-bold text-green-500 uppercase tracking-wider">Completed</span>
-              </div>
-            </button>
 
-            <button 
-              onClick={() => navigate('/app/wallet/receipt/3')}
-              className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-5 lg:p-2 lg:py-3 shadow-sm lg:shadow-none border border-gray-100 lg:border-none lg:border-b lg:border-gray-50 flex items-center justify-between hover:shadow-md lg:hover:bg-gray-50 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-[#3B3BFF] shrink-0">
-                  <ArrowUpRight size={20} />
-                </div>
-                <div className="text-left">
-                  <h4 className="font-bold text-gray-900 mb-0.5">MTN Data</h4>
-                  <p className="text-xs text-gray-500 font-medium">0803 234 5678 • 08:45 AM</p>
-                </div>
+            {/* Transaction History */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3 md:mb-4 pl-0.5 md:pl-0">
+                <h3 className="text-[11px] md:text-[13px] font-bold text-gray-400 md:text-gray-900 tracking-widest uppercase md:normal-case md:tracking-normal">
+                  <span className="md:hidden">Transaction History</span>
+                  <span className="hidden md:inline">Recent Activity</span>
+                </h3>
+                <button className="text-[#4F46E5] text-[12px] font-semibold hover:underline">View All</button>
               </div>
-              <div className="text-right">
-                <span className="block font-bold text-gray-900 mb-0.5">- ₦ 2,500</span>
-                <span className="lg:hidden text-[10px] font-bold text-gray-500 uppercase tracking-wider">Debit</span>
+              
+              <div className="flex flex-col gap-3 md:gap-2 md:bg-white md:p-2 md:rounded-3xl md:border md:border-gray-100 md:shadow-sm">
+                {transactions.map(tx => (
+                  <button 
+                    key={tx.id}
+                    onClick={() => navigate(`/app/wallet/receipt/${tx.id}`)}
+                    className="bg-white md:bg-transparent rounded-2xl md:rounded-xl p-4 md:p-3 shadow-sm md:shadow-none border border-gray-100 md:border-none md:hover:bg-gray-50 flex items-center justify-between transition-colors"
+                  >
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full ${tx.iconBg} flex items-center justify-center ${tx.iconColor} shrink-0`}>
+                        <tx.icon size={18} className="md:w-5 md:h-5" />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-bold text-gray-900 text-[13px] md:text-[14px] mb-0.5">{tx.title}</h4>
+                        <p className="text-[11px] md:text-[12px] text-gray-500 font-medium">{tx.date}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`block font-bold text-[13px] md:text-[14px] mb-0.5 ${tx.type === 'credit' ? 'text-green-600' : 'text-gray-900'}`}>{tx.amount}</span>
+                      <span className={`md:hidden text-[10px] font-bold uppercase tracking-wider ${tx.type === 'credit' ? 'text-green-500' : 'text-gray-400'}`}>{tx.status}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-            </button>
-
-            <button 
-              onClick={() => navigate('/app/wallet/receipt/2')}
-              className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-5 lg:p-2 lg:py-3 shadow-sm lg:shadow-none border border-gray-100 lg:border-none lg:border-b lg:border-gray-50 flex items-center justify-between hover:shadow-md lg:hover:bg-gray-50 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
-                  <Zap size={20} />
-                </div>
-                <div className="text-left">
-                  <h4 className="font-bold text-gray-900 mb-0.5">KEDC Prepaid</h4>
-                  <p className="text-xs text-gray-500 font-medium">Meter #142234 • Yesterday</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="block font-bold text-gray-900 mb-0.5">- ₦ 5,000</span>
-                <span className="lg:hidden text-[10px] font-bold text-gray-500 uppercase tracking-wider">Debit</span>
-              </div>
-            </button>
-
-            <button 
-              className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none p-5 lg:p-2 lg:py-3 shadow-sm lg:shadow-none border border-gray-100 lg:border-none lg:border-b lg:border-gray-50 flex items-center justify-between hover:shadow-md lg:hover:bg-gray-50 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
-                  <ShoppingCart size={20} />
-                </div>
-                <div className="text-left">
-                  <h4 className="font-bold text-gray-900 mb-0.5">Jumia Order</h4>
-                  <p className="text-xs text-gray-500 font-medium">Order #4421 • Oct 12</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="block font-bold text-gray-900">- ₦ 12,400</span>
-              </div>
-            </button>
+            </div>
 
           </div>
-        </div>
-
-        {/* Pro Tip Card (Desktop Only) */}
-        <div className="hidden lg:block bg-indigo-50/50 rounded-2xl p-6 border border-indigo-100/50">
-          <p className="text-[10px] font-bold text-[#3B3BFF] uppercase tracking-widest mb-2">Pro Tip</p>
-          <p className="font-bold text-gray-900 text-sm leading-relaxed mb-4">Refer a friend and earn ₦500 on their first fund.</p>
-          <button 
-            onClick={() => navigate('/app/profile/refer-earn')}
-            className="w-full py-3 rounded-xl border border-blue-200 text-[#3B3BFF] font-bold text-sm hover:bg-blue-50 transition-colors"
-          >
-            Share Link
-          </button>
-        </div>
-
         </div>
 
       </div>

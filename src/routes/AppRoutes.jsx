@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import UserLayout from '../layouts/UserLayout'
 import Home from '../apps/user/pages/Home'
 import Search from '../apps/user/pages/Search'
+import Promotions from '../apps/user/pages/Promotions'
 import Orders from '../apps/user/pages/Orders'
 import Profile from '../apps/user/pages/Profile'
 import Wallet from '../apps/user/pages/Wallet'
@@ -38,6 +39,7 @@ export default function AppRoutes() {
         <Route path="track/:id" element={<TrackOrder />} />
         <Route path="order/:id" element={<OrderDetail />} />
         <Route path="search" element={<Search />} />
+        <Route path="promotions" element={<Promotions />} />
         <Route path="orders" element={<Orders />} />
         {/* Wallet Routes */}
         <Route path="wallet" element={<Wallet />} />

@@ -1,215 +1,247 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ShoppingCart, Search, MapPin, ChevronDown, Heart, SlidersHorizontal, Star } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Search, Navigation, Star, Truck, SlidersHorizontal, MapPin, Heart } from 'lucide-react'
 
 // Mock Data
 const foodVendors = [
-  { id: 1, name: "Mama's Kitchen Lagos", tags: 'Continental • African fusion • ₦₦', rating: 4.8, distance: '1.2 km', delivery: 'Free Delivery', img: '/pizza.png', time: '25-35 min', isOpen: true },
-  { id: 2, name: 'The Burger Project', tags: 'American • Gourmet Burgers • ₦₦', rating: 4.5, distance: '2.5 km', delivery: '₦2099 Delivery', img: '/burger.png', time: '15-25 min', isOpen: true },
-  { id: 3, name: 'Green Leaf Salads', tags: 'Healthy • Organic • Vegan • ₦', rating: 4.9, distance: '0.8 km', delivery: '₦1050 Delivery', img: '/pizza.png', time: '30-45 min', isOpen: true },
-  { id: 4, name: 'Lagos Fusion', tags: 'African • Continental • ₦₦₦', rating: 4.9, distance: '3.1 km', delivery: 'Free Delivery', img: '/burger.png', time: '15-25 min', isOpen: true },
-  { id: 5, name: 'Grill & Chill', tags: 'Steakhouse • BBQ • ₦₦', rating: 4.6, distance: '4.0 km', delivery: '₦1500 Delivery', img: '/pizza.png', time: '30-45 min', isOpen: false },
-  { id: 6, name: 'Zen Sushi', tags: 'Japanese • Sushi • ₦₦₦', rating: 4.9, distance: '1.5 km', delivery: 'Free Delivery', img: '/burger.png', time: '35-50 min', isOpen: true },
+  { id: 1, name: "Mama's Kitchen Lagos", tags: 'Continental • African fusion', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: '/pizza.png', time: '25-35 min', isOpen: true },
+  { id: 2, name: 'The Burger Project', tags: 'American • Gourmet Burgers', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: '/burger.png', time: '15-25 min', isOpen: true },
+  { id: 3, name: 'Green Leaf Salads', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: '/pizza.png', time: '30-45 min', isOpen: true },
 ]
 
 const groceryVendors = [
-  { id: 1, name: 'Fresh Forte Supermarket', tags: 'Groceries • Household • Drinks', rating: 4.8, distance: '1.2 km', delivery: '₦500 Delivery', img: '/grocery-hero.png', time: '20-30 min', isOpen: true },
-  { id: 2, name: 'Mile 12 Fresh Vendors', tags: 'Fresh Produce • Spices • Grains', rating: 4.6, distance: '4.8 km', delivery: '₦800 Delivery', img: '/pizza.png', time: '35-45 min', isOpen: true },
-  { id: 3, name: 'HealthPlus Pharmacy', tags: 'Wellness • Personal Care • Medicine', rating: 4.9, distance: '0.8 km', delivery: '₦300 Delivery', img: '/burger.png', time: '15-25 min', isOpen: true },
-  { id: 4, name: 'Spar Market', tags: 'Groceries • Supermarket', rating: 4.7, distance: '2.1 km', delivery: 'Free Delivery', img: '/grocery-hero.png', time: '25-40 min', isOpen: true },
-  { id: 5, name: 'Justrite Superstore', tags: 'Household • Groceries • Cheap', rating: 4.5, distance: '5.5 km', delivery: '₦1200 Delivery', img: '/pizza.png', time: '40-60 min', isOpen: false },
-  { id: 6, name: 'FoodCo', tags: 'Groceries • Bakery', rating: 4.8, distance: '3.0 km', delivery: '₦600 Delivery', img: '/burger.png', time: '20-35 min', isOpen: true },
+  { id: 1, name: 'Fresh Forte Supermarket', tags: 'Groceries • Household • Drinks', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: '/grocery-hero.png', time: '20-30 min', isOpen: true },
+  { id: 2, name: 'Mile 12 Fresh Vendors', tags: 'Fresh Produce • Spices • Grains', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: '/pizza.png', time: '35-45 min', isOpen: true },
+  { id: 3, name: 'HealthPlus Pharmacy', tags: 'Wellness • Personal Care • Medicine', rating: 4.9, distance: '0.8 km', delivery: '₦300', img: '/burger.png', time: '15-25 min', isOpen: true },
+]
+
+const desktopVendors = [
+  { id: 101, name: 'The Rustic Kitchen', tags: 'Italian • Pizza • ₦₦', rating: 4.8, time: '20–30 min', img: '/pizza.png' },
+  { id: 102, name: 'Lagos Fusion', tags: 'African • Continental • ₦₦₦', rating: 4.9, time: '15–25 min', img: '/burger.png' },
+  { id: 103, name: 'Grill & Chill', tags: 'Steakhouse • BBQ • ₦₦', rating: 4.6, time: '30–45 min', img: '/pizza.png' },
+  { id: 104, name: 'Burger Empire', tags: 'Fast Food • American • ₦', rating: 4.7, time: '10–20 min', img: '/burger.png' },
+  { id: 105, name: 'Green Garden', tags: 'Healthy • Salads • Vegan • ₦₦', rating: 4.8, time: '25–35 min', img: '/pizza.png' },
+  { id: 106, name: 'Zen Sushi', tags: 'Japanese • Sushi • ₦₦₦', rating: 4.9, time: '35–50 min', img: '/burger.png' },
 ]
 
 export default function Vendors() {
   const { type } = useParams()
   const navigate = useNavigate()
-  
   const isFood = type === 'food'
+  
   const title = isFood ? 'Food' : 'Groceries'
   const vendors = isFood ? foodVendors : groceryVendors
   
-  const mobileFilters = isFood 
+  const filters = isFood 
     ? ['All', 'Nearest', 'Top Rated', 'Free Delivery']
-    : ['Nearest', 'Supermarkets', 'Local Markets', 'Pharmacies']
-    
-  const desktopFilters = ['All Vendors', 'Nearest', 'Top Rated', 'Free Delivery']
+    : ['Nearest', 'Supermarkets', 'Local Markets']
+
+  const [activeFilter, setActiveFilter] = useState(filters[0])
 
   return (
-    <div className="flex flex-col w-full bg-white md:bg-gray-50 min-h-full pb-8">
+    <div className="flex flex-col w-full bg-[#FAFAFA] min-h-screen pb-24 md:pb-8">
       
-      {/* --- MOBILE HEADER --- */}
-      <div className="md:hidden flex items-center justify-between px-4 py-4 bg-white sticky top-0 z-30">
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                 MOBILE LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+      
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#1A1AF5] hover:bg-blue-50 rounded-full transition-colors">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+          <h1 className="text-lg font-bold text-gray-900">{title}</h1>
         </div>
-        <button className="relative p-2 text-[#1A1AF5] hover:bg-blue-50 rounded-full transition-colors">
+        <button className="relative p-1 text-[#4F46E5] rounded-full transition-colors">
           <ShoppingCart size={22} />
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
         </button>
       </div>
 
-      {/* --- DESKTOP HEADER (Reused from Home roughly) --- */}
-      <div className="hidden md:flex items-center justify-between px-8 py-5 bg-white border-b border-gray-100 sticky top-0 z-30">
-        <div className="relative w-[400px]">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Search for food, groceries, or essentials..." 
-            className="w-full bg-gray-50 rounded-xl py-3 pl-11 pr-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#1A1AF5]/20 focus:border-[#1A1AF5] border border-transparent transition-all"
-          />
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1.5 text-[#1A1AF5] font-medium cursor-pointer transition-colors">
-            <MapPin size={16} />
-            <span className="text-sm">Lagos, NG</span>
-            <ChevronDown size={14} className="text-gray-400" />
-          </div>
-          <button className="relative p-2 text-gray-700 hover:text-[#1A1AF5] transition-colors rounded-full hover:bg-blue-50">
-            <ShoppingCart size={22} />
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">3</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="px-4 md:px-8 py-4 md:py-8 max-w-6xl mx-auto w-full">
-        
-        {/* DESKTOP TITLE */}
-        <h2 className="hidden md:block text-3xl font-bold text-gray-900 mb-6">Featured Vendors</h2>
-        
-        {/* MOBILE SEARCH */}
-        <div className="md:hidden relative mb-4">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+      <div className="md:hidden px-6 w-full max-w-md mx-auto">
+        {/* Mobile Search */}
+        <div className="relative mb-6">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input 
             type="text" 
             placeholder={isFood ? "Search for vendors or dishes" : "Search markets and stores..."} 
-            className="w-full bg-gray-100/80 rounded-xl py-3 pl-11 pr-4 text-sm text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-[#1A1AF5] border border-transparent transition-all"
+            className="w-full bg-gray-100/70 rounded-full py-3.5 pl-11 pr-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] transition-all"
           />
         </div>
 
-        {/* FILTERS */}
-        <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-6 md:mb-8">
-          {/* Mobile version */}
-          <div className="md:hidden flex gap-2">
-            {mobileFilters.map((filter, index) => (
-              <button 
-                key={filter} 
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
-                  index === 0 
-                    ? (isFood ? 'bg-[#1A1AF5] text-white border-[#1A1AF5]' : 'bg-blue-50 text-[#1A1AF5] border-[#1A1AF5]') 
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
+        {/* Mobile Filters */}
+        <div className="flex gap-2.5 overflow-x-auto hide-scrollbar -mx-6 px-6 mb-8">
+          {filters.map((filter) => {
+            const isActive = activeFilter === filter
+            let buttonClass = 'whitespace-nowrap px-5 py-2 rounded-full text-[13px] font-medium transition-colors border '
+            
+            if (isFood) {
+              buttonClass += isActive ? 'bg-[#4F46E5] text-white border-[#4F46E5]' : 'bg-gray-100/70 text-gray-700 border-transparent'
+            } else {
+              buttonClass += isActive ? 'bg-white text-[#4F46E5] border-[#4F46E5]' : 'bg-white text-gray-600 border-gray-200'
+            }
 
-          {/* Desktop version */}
-          <div className="hidden md:flex gap-3">
-            {desktopFilters.map((filter, index) => (
+            return (
               <button 
-                key={filter} 
-                className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${
-                  index === 0 
-                    ? 'bg-[#1A1AF5] text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={buttonClass}
               >
-                {filter === 'Nearest' && <MapPin size={16} />}
-                {filter === 'Top Rated' && <Star size={16} />}
                 {filter}
               </button>
-            ))}
-            <button className="bg-gray-100 text-gray-700 hover:bg-gray-200 whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ml-2">
-              <SlidersHorizontal size={16} /> Filters
-            </button>
-          </div>
+            )
+          })}
         </div>
 
-        {/* VENDOR LIST / GRID */}
-        <div className="flex flex-col md:grid md:grid-cols-3 gap-6">
+        {/* Mobile Vendor List */}
+        <div className="flex flex-col gap-6">
           {vendors.map((v) => (
             <div 
               key={v.id} 
               onClick={() => navigate(`/app/vendor/${v.id}`)}
-              className="bg-white rounded-3xl md:rounded-2xl md:shadow-[0_2px_12px_rgba(0,0,0,0.03)] md:border md:border-gray-100 overflow-hidden cursor-pointer group flex flex-col"
+              className="bg-white rounded-3xl p-4 pb-5 border border-gray-100 shadow-sm cursor-pointer flex flex-col"
             >
-              <div className="relative h-48 md:h-52 overflow-hidden rounded-2xl md:rounded-t-2xl md:rounded-b-none">
-                <img src={v.img} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                
-                {/* Desktop Badges overlay */}
-                <div className="hidden md:block absolute top-3 left-3 bg-white/90 backdrop-blur text-[#1A1AF5] text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+              <div className="relative h-44 rounded-2xl overflow-hidden mb-4">
+                <img src={v.img} alt={v.name} className="w-full h-full object-cover" />
+                <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   {v.time}
-                </div>
-                <div className="hidden md:flex absolute top-3 right-3 bg-white/90 backdrop-blur rounded-full p-2 shadow-sm">
-                  <Heart size={18} className="text-gray-500 hover:text-red-500 transition-colors" />
-                </div>
-
-                {/* Mobile time badge */}
-                <div className="md:hidden absolute bottom-3 right-3 bg-black/70 backdrop-blur text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                  {isFood && <span>⏱</span>} {v.time}
                 </div>
               </div>
               
-              <div className="pt-3 md:p-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="font-bold text-gray-900 text-lg md:text-xl line-clamp-1 flex-1">{v.name}</h4>
-                  
-                  {/* Mobile open status (food only) */}
-                  {isFood && (
-                    <div className="md:hidden flex items-center gap-1.5 ml-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${v.isOpen ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                      <span className={`text-[11px] font-bold ${v.isOpen ? 'text-green-500' : 'text-gray-400'}`}>
-                        {v.isOpen ? 'Open' : 'Closed'}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Desktop rating */}
-                  <div className="hidden md:flex items-center gap-1 bg-orange-50 text-orange-600 text-xs font-bold px-2 py-1 rounded-lg ml-3">
-                    <Star size={12} className="fill-orange-600" /> {v.rating}
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-bold text-gray-900 text-[15px]">{v.name}</h4>
+                {isFood && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    <span className="text-[11px] font-bold text-green-500 uppercase tracking-wider">Open</span>
                   </div>
+                )}
+              </div>
+              
+              <p className="text-[11px] text-gray-500 mb-2">{v.tags}</p>
+              
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                <span className="flex items-center gap-0.5 text-yellow-500 font-bold"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {v.rating}</span>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <span>{v.distance}</span>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <span>{v.delivery} Delivery</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                DESKTOP LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      {/* Desktop Top Bar */}
+      <div className="hidden md:flex w-full px-10 pt-8 pb-6 items-center border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-40">
+        <div className="flex-1 flex justify-center px-8">
+          <div className="w-full max-w-2xl bg-gray-100/70 hover:bg-gray-100 rounded-xl px-5 py-3.5 flex items-center gap-3 transition-colors focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-500 border border-transparent">
+            <Search size={20} className="text-gray-400" />
+            <input 
+              type="text" 
+              placeholder="Search for food, groceries, or essentials..." 
+              className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-6 shrink-0">
+          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+            <MapPin size={20} className="text-[#4F46E5]" strokeWidth={2} />
+            <span className="font-semibold text-[#4F46E5] text-[15px]">Lagos, NG</span>
+          </div>
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+            <ShoppingCart size={24} className="text-gray-700" />
+            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex flex-col flex-1 w-full max-w-[1200px] mx-auto px-10 pt-10 pb-12">
+        {/* Header */}
+        <h1 className="text-[34px] font-bold text-gray-900 mb-8">Featured Vendors</h1>
+        
+        {/* Filters Row */}
+        <div className="flex items-center gap-4 mb-10">
+          <button className="bg-[#2D2AEE] text-white px-7 py-3 rounded-full text-[14px] font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition-colors">
+            All Vendors
+          </button>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-full text-[14px] font-bold flex items-center gap-2 transition-colors">
+             <Navigation size={16} className="text-gray-600"/> Nearest
+          </button>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-full text-[14px] font-bold flex items-center gap-2 transition-colors">
+             <Star size={16} className="text-gray-600"/> Top Rated
+          </button>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-full text-[14px] font-bold flex items-center gap-2 transition-colors">
+             <Truck size={16} className="text-gray-600"/> Free Delivery
+          </button>
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-full text-[14px] font-bold flex items-center gap-2 transition-colors">
+             <SlidersHorizontal size={16} className="text-gray-600"/> Filters
+          </button>
+        </div>
+
+        {/* Vendors Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          {desktopVendors.map(v => (
+            <div 
+              key={v.id} 
+              onClick={() => navigate(`/app/vendor/${v.id}`)}
+              className="bg-transparent cursor-pointer group flex flex-col"
+            >
+              <div className="w-full aspect-[16/10] rounded-[24px] overflow-hidden relative shadow-sm mb-4">
+                <img src={v.img} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                {/* Top Left Badge */}
+                <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-full text-[13px] font-bold text-[#2D2AEE] shadow-sm">
+                  {v.time}
                 </div>
-                
-                <p className="text-xs md:text-sm text-gray-500 mb-2">{v.tags}</p>
-                
-                {/* Mobile bottom info */}
-                <div className="flex md:hidden items-center gap-2 text-xs font-medium text-gray-500 mt-1">
-                  <span className="flex items-center gap-1 text-yellow-500 font-bold"><Star size={12} className="fill-yellow-500" /> {v.rating}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                  <span>{v.distance}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                  <span>{v.delivery}</span>
+                {/* Top Right Heart */}
+                <button className="absolute top-4 right-4 w-10 h-10 bg-white hover:bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                  <Heart size={20} />
+                </button>
+              </div>
+              <div className="flex items-start justify-between gap-2 px-1">
+                <div>
+                  <h4 className="font-bold text-gray-900 text-[20px] mb-1">{v.name}</h4>
+                  <p className="text-[14px] text-gray-500 font-medium">{v.tags}</p>
+                </div>
+                <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded text-[13px] font-bold text-gray-700 shrink-0">
+                  <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                  {v.rating}
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* DESKTOP BANNER */}
-        <div className="hidden md:flex mt-12 bg-gradient-to-r from-[#2B35F4] to-[#4D55F6] rounded-3xl overflow-hidden relative shadow-xl shadow-blue-500/10">
-          <div className="w-1/2 p-12 flex flex-col justify-center relative z-10">
-            <h2 className="text-4xl font-bold text-white leading-tight mb-4">Hungry? Get free delivery on your first order!</h2>
+        {/* Promo Banner */}
+        <div className="w-full bg-gradient-to-br from-[#4F46E5] to-[#3B38F6] rounded-[24px] overflow-hidden relative p-12 flex flex-col justify-center min-h-[280px]">
+          {/* Abstract background shapes - mock with radial gradients */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent_40%)]" />
+          <div className="absolute -right-20 -bottom-20 w-[400px] h-[400px] bg-white/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 w-[55%]">
+            <h2 className="text-white text-[38px] font-bold leading-[1.1] mb-6">
+              Hungry? Get free delivery on your first order!
+            </h2>
             <div className="flex items-center gap-2 mb-8">
-              <span className="text-white/80 text-lg">Use code</span>
-              <span className="bg-white/20 text-white px-3 py-1 rounded-lg font-bold tracking-widest">RAPID50</span>
-              <span className="text-white/80 text-lg">to claim your discount.</span>
+              <span className="text-white/80 text-[18px]">Use code</span>
+              <span className="bg-white/20 px-3 py-1 rounded text-white font-bold tracking-wider text-[18px] backdrop-blur-sm">RAPID50</span>
+              <span className="text-white/80 text-[18px]">to claim your discount.</span>
             </div>
-            <button className="bg-red-600 text-white px-8 py-4 rounded-xl text-lg font-bold self-start hover:bg-red-700 transition-colors shadow-lg shadow-red-600/30">
+            <button className="bg-[#D32F2F] hover:bg-red-700 text-white px-8 py-4 rounded-xl text-[16px] font-bold transition-all shadow-lg shadow-red-900/30 w-max">
               Order Now
             </button>
           </div>
-          {/* Decorative graphic (using burger placeholder for now, styled creatively) */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none">
-             <div className="w-full h-full bg-[url('/burger.png')] bg-cover bg-center transform scale-150 rotate-12 mix-blend-overlay"></div>
-          </div>
+
+          <img src="/burger.png" alt="Promo" className="absolute right-0 bottom-0 h-[120%] object-contain translate-y-10 translate-x-10 mix-blend-overlay opacity-80" />
         </div>
 
       </div>
+
     </div>
   )
 }
