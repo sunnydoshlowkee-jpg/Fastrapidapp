@@ -1,16 +1,65 @@
 import { Routes, Route } from 'react-router-dom'
 import DispatchLayout from '../layouts/DispatchLayout'
+
+// Auth
+import RiderLogin from '../apps/dispatch/pages/auth/Login'
+
+// Onboarding screens
+import RiderSplash from '../apps/dispatch/pages/onboarding/Splash'
+import RiderWelcome from '../apps/dispatch/pages/onboarding/Welcome'
+import RiderPhone from '../apps/dispatch/pages/onboarding/PhoneEntry'
+import RiderVerify from '../apps/dispatch/pages/onboarding/Verify'
+import RiderPersonalInfo from '../apps/dispatch/pages/onboarding/PersonalInfo'
+import RiderIdentity from '../apps/dispatch/pages/onboarding/Identity'
+import RiderVehicle from '../apps/dispatch/pages/onboarding/VehicleDetails'
+import RiderPayment from '../apps/dispatch/pages/onboarding/PaymentDetails'
+import RiderSuccess from '../apps/dispatch/pages/onboarding/Success'
+
+// Main app screens
 import MapView from '../apps/dispatch/pages/MapView'
+import ActiveDelivery from '../apps/dispatch/pages/ActiveDelivery'
+import DeliverySuccess from '../apps/dispatch/pages/DeliverySuccess'
+import Earnings from '../apps/dispatch/pages/Earnings'
+import Withdraw from '../apps/dispatch/pages/Withdraw'
 import Deliveries from '../apps/dispatch/pages/Deliveries'
 import RiderProfile from '../apps/dispatch/pages/RiderProfile'
+import EditProfile from '../apps/dispatch/pages/EditProfile'
+import HelpCenter from '../apps/dispatch/pages/HelpCenter'
+import MyDocuments from '../apps/dispatch/pages/MyDocuments'
+import Notifications from '../apps/dispatch/pages/Notifications'
 
 export default function DispatchRoutes() {
   return (
     <Routes>
+      {/* Auth */}
+      <Route path="login" element={<RiderLogin />} />
+
+      {/* Onboarding — no layout wrapper */}
+      <Route path="splash" element={<RiderSplash />} />
+      <Route path="welcome" element={<RiderWelcome />} />
+      <Route path="onboarding/phone" element={<RiderPhone />} />
+      <Route path="onboarding/verify" element={<RiderVerify />} />
+      <Route path="onboarding/personal" element={<RiderPersonalInfo />} />
+      <Route path="onboarding/identity" element={<RiderIdentity />} />
+      <Route path="onboarding/vehicle" element={<RiderVehicle />} />
+      <Route path="onboarding/payment" element={<RiderPayment />} />
+      <Route path="onboarding/success" element={<RiderSuccess />} />
+
+      {/* Active Delivery Flow (Full screen, no bottom nav) */}
+      <Route path="delivery/:id" element={<ActiveDelivery />} />
+      <Route path="delivery/:id/success" element={<DeliverySuccess />} />
+
+      {/* Main rider app — with layout */}
       <Route element={<DispatchLayout />}>
         <Route index element={<MapView />} />
         <Route path="deliveries" element={<Deliveries />} />
+        <Route path="earnings" element={<Earnings />} />
+        <Route path="earnings/withdraw" element={<Withdraw />} />
         <Route path="profile" element={<RiderProfile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
+        <Route path="profile/help" element={<HelpCenter />} />
+        <Route path="profile/documents" element={<MyDocuments />} />
+        <Route path="notifications" element={<Notifications />} />
       </Route>
     </Routes>
   )
