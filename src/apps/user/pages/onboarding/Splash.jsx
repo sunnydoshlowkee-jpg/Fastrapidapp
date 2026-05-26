@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Logo from '../../../../components/brand/Logo'
 
 export default function Splash() {
   const navigate = useNavigate()
@@ -22,12 +23,7 @@ export default function Splash() {
         <div className="flex items-center gap-3">
           {/* F/R combined Logo icon placeholder */}
           <div className="flex items-center justify-center">
-             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 24L24 24L30 14L40 14" stroke="white" strokeWidth="6" strokeLinecap="square" strokeLinejoin="miter"/>
-              <path d="M12 14L28 14" stroke="white" strokeWidth="6" strokeLinecap="square" strokeLinejoin="miter"/>
-              <path d="M22 24L32 40" stroke="white" strokeWidth="6" strokeLinecap="square" strokeLinejoin="miter"/>
-              <path d="M14 24L22 38" stroke="white" strokeWidth="6" strokeLinecap="square" strokeLinejoin="miter"/>
-            </svg>
+            <Logo variant="icon" height={48} />
           </div>
           
           {phase === 'two' && (
