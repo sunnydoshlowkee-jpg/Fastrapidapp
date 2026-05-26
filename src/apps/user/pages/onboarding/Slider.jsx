@@ -6,7 +6,6 @@ const slides = [
   {
     title: 'Fast. Fresh. Reliable.',
     emoji: '🛍️',
-    img: '/slide1-hero.png',
     description: 'The best delivery experience in Lagos, tailored just for you.',
     decorations: (
       <>
@@ -19,7 +18,6 @@ const slides = [
   {
     title: 'Order in seconds',
     emoji: '📱',
-    img: '/slide2-hero.png',
     description: 'Experience fast checkout and secure payments with card or cash.',
     decorations: (
       <>
@@ -32,7 +30,6 @@ const slides = [
   {
     title: 'Track your delivery live',
     emoji: '🛵',
-    img: '/slide3-hero.png',
     description: 'Stay updated with real-time tracking from the kitchen to your doorstep.',
     decorations: (
       <>
@@ -44,7 +41,6 @@ const slides = [
   {
     title: 'Find vendors near you',
     emoji: '🗺️',
-    img: '/slide4-hero.png',
     description: 'Browse the best restaurants and local shops in your neighborhood.',
     decorations: (
       <>
@@ -89,10 +85,13 @@ export default function Slider() {
           {slide.img ? (
             <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
           ) : (
-            <div className="relative inline-block">
-              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl">
+            <div className="relative inline-block mt-20" key={currentSlide}>
+              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl relative z-10">
                 {slide.emoji}
               </span>
+              <div className="absolute inset-0 z-0 scale-150 opacity-80 pointer-events-none">
+                {slide.decorations}
+              </div>
             </div>
           )}
         </div>
