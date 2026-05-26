@@ -6,6 +6,7 @@ const slides = [
   {
     title: 'Fast. Fresh. Reliable.',
     emoji: '🛍️',
+    img: '/slide1-hero.png',
     description: 'The best delivery experience in Lagos, tailored just for you.',
     decorations: (
       <>
@@ -18,6 +19,7 @@ const slides = [
   {
     title: 'Order in seconds',
     emoji: '📱',
+    img: '/slide2-hero.png',
     description: 'Experience fast checkout and secure payments with card or cash.',
     decorations: (
       <>
@@ -30,6 +32,7 @@ const slides = [
   {
     title: 'Track your delivery live',
     emoji: '🛵',
+    img: '/slide3-hero.png',
     description: 'Stay updated with real-time tracking from the kitchen to your doorstep.',
     decorations: (
       <>
@@ -41,6 +44,7 @@ const slides = [
   {
     title: 'Find vendors near you',
     emoji: '🗺️',
+    img: '/slide4-hero.png',
     description: 'Browse the best restaurants and local shops in your neighborhood.',
     decorations: (
       <>
