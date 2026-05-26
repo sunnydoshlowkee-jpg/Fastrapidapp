@@ -85,17 +85,14 @@ export default function Slider() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-900 opacity-20 blur-[80px]"></div>
 
         {/* Hero Image */}
-        <div className="relative z-10 w-full max-w-[440px] flex justify-center">
+        <div className="relative z-10 w-full max-w-lg flex justify-center">
           {slide.img ? (
-            <img src={slide.img} alt={slide.title} className="w-full h-auto max-h-[300px] object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
+            <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
           ) : (
-            <div className="relative inline-block mt-20" key={currentSlide}>
-              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl relative z-10">
+            <div className="relative inline-block">
+              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl">
                 {slide.emoji}
               </span>
-              <div className="absolute inset-0 z-0 scale-150 opacity-80 pointer-events-none">
-                {slide.decorations}
-              </div>
             </div>
           )}
         </div>
