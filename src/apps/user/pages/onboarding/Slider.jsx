@@ -87,9 +87,7 @@ export default function Slider() {
         {/* Hero Image */}
         <div className="relative z-10 w-full max-w-[440px] flex justify-center">
           {slide.img ? (
-            <div className="bg-white p-8 rounded-[40px] shadow-[0_32px_64px_rgba(0,0,0,0.15)] flex justify-center items-center transform hover:scale-105 transition-transform duration-700">
-              <img src={slide.img} alt={slide.title} className="w-full h-auto max-h-[300px] object-contain" />
-            </div>
+            <img src={slide.img} alt={slide.title} className="w-full h-auto max-h-[300px] object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
           ) : (
             <div className="relative inline-block mt-20" key={currentSlide}>
               <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl relative z-10">
