@@ -24,39 +24,8 @@ export default function RiderWelcome() {
       </div>
 
       {/* Hero image */}
-      <div className="rounded-3xl overflow-hidden mb-8 flex-shrink-0" style={{ height: '220px', background: '#1a1a2e' }}>
-        <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
-          {/* Stylised dark background with rider silhouette */}
-          <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #111128 100%)' }} />
-          {/* Road glow */}
-          <div className="absolute bottom-0 left-0 right-0 h-16"
-            style={{ background: 'linear-gradient(to top, rgba(91,91,255,0.15), transparent)' }} />
-          {/* Rider icon placeholder */}
-          <div className="relative z-10 flex flex-col items-center">
-            <svg width="140" height="90" viewBox="0 0 140 90" fill="none">
-              {/* Scooter body */}
-              <ellipse cx="70" cy="70" rx="50" ry="6" fill="rgba(91,91,255,0.2)"/>
-              <rect x="35" y="45" width="70" height="22" rx="10" fill="#3535AA"/>
-              {/* Wheels */}
-              <circle cx="42" cy="68" r="10" fill="#222" stroke="#4040E8" strokeWidth="3"/>
-              <circle cx="98" cy="68" r="10" fill="#222" stroke="#4040E8" strokeWidth="3"/>
-              {/* Delivery box */}
-              <rect x="80" y="28" width="28" height="24" rx="4" fill="#4040E8"/>
-              <line x1="94" y1="28" x2="94" y2="52" stroke="#6666FF" strokeWidth="1.5"/>
-              {/* Rider */}
-              <circle cx="65" cy="28" r="9" fill="#555"/>
-              <rect x="56" y="37" width="18" height="14" rx="4" fill="#666"/>
-              {/* Handlebar */}
-              <rect x="96" y="42" width="12" height="3" rx="1.5" fill="#888"/>
-            </svg>
-          </div>
-          {/* Speed lines */}
-          {[0,1,2].map(i => (
-            <div key={i} className="absolute left-4 rounded-full opacity-20"
-              style={{ top: `${30 + i * 16}px`, width: `${20 + i * 10}px`, height: '2px', background: '#5B5BFF' }} />
-          ))}
-        </div>
+      <div className="rounded-3xl overflow-hidden mb-8 flex-shrink-0" style={{ height: '220px' }}>
+        <img src="/dispatch-hero.png" alt="Rapid Rider" className="w-full h-full object-cover" />
       </div>
 
       {/* CTA */}
