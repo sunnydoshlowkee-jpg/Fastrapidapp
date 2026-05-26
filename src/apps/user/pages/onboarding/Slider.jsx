@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Logo from '../../../../components/brand/Logo'
 
 const slides = [
   {
@@ -70,61 +71,93 @@ export default function Slider() {
   const slide = slides[currentSlide]
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F9FA] md:bg-gray-50/50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F9FA] md:bg-white">
       
-      {/* Top action */}
-      <div className="w-full flex justify-end p-6 pt-14 md:p-8 md:max-w-md md:mx-auto">
-        <Link to="/onboarding/welcome" className="text-[#4F46E5] font-semibold text-[15px]">
-          Skip
-        </Link>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center px-6 max-w-md mx-auto w-full pb-10">
+      {/* Left Panel (Desktop Only) */}
+      <div className="hidden md:flex md:w-1/2 bg-[#4342FF] relative flex-col items-center justify-center p-12 overflow-hidden">
+        {/* Brand Logo */}
+        <div className="absolute top-10 left-12">
+          <Logo variant="white" height={36} />
+        </div>
         
-        {/* Card or Image */}
-        {slide.img ? (
-          <div className="w-full flex justify-center mb-10">
-            <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain" />
-          </div>
-        ) : (
-          <div className="w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 pt-10 flex flex-col items-center justify-center min-h-[360px] mb-10 relative overflow-hidden">
-            <h1 className="text-[22px] md:text-2xl font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
-              {slide.title}
-            </h1>
-            <div className="relative inline-block" key={currentSlide}>
-              <span className="text-9xl animate-[bounce_3s_ease-in-out_infinite] block">
+        {/* Decorative elements */}
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-white opacity-5 blur-[100px]"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-900 opacity-20 blur-[80px]"></div>
+
+        {/* Hero Image */}
+        <div className="relative z-10 w-full max-w-lg flex justify-center">
+          {slide.img ? (
+            <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
+          ) : (
+            <div className="relative inline-block">
+              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl">
                 {slide.emoji}
               </span>
-              {slide.decorations}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      </div>
 
-        {/* Description */}
-        <p className="text-[#4A5568] text-center text-[15px] leading-relaxed px-4 mb-10 min-h-[44px]">
-          {slide.description}
-        </p>
-
-        {/* Dots */}
-        <div className="flex gap-2 justify-center mb-10">
-          {slides.map((_, idx) => (
-            <span
-              key={idx}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                currentSlide === idx ? 'w-6 bg-[#4F46E5]' : 'w-2 bg-[#E2E8F0]'
-              }`}
-            />
-          ))}
+      {/* Right Panel (Mobile & Desktop) */}
+      <div className="w-full md:w-1/2 flex flex-col items-center px-6 md:px-16 lg:px-24 pb-10 pt-14 md:justify-center">
+        
+        {/* Top action (Skip) */}
+        <div className="w-full flex justify-end mb-8 md:absolute md:top-10 md:right-12 md:w-auto">
+          <Link to="/onboarding/welcome" className="text-[#4342FF] font-semibold text-[15px] hover:text-indigo-800 transition-colors">
+            Skip
+          </Link>
         </div>
 
-        {/* Full-width Button */}
-        <button
-          onClick={handleNext}
-          className="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white py-4 rounded-xl font-medium text-[16px] transition-all shadow-[0_8px_20px_rgba(79,70,229,0.2)] active:scale-[0.98]"
-        >
-          {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
-        </button>
+        {/* Mobile Card or Image (Hidden on Desktop) */}
+        <div className="w-full max-w-md mx-auto md:hidden">
+          {slide.img ? (
+            <div className="w-full flex justify-center mb-10">
+              <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain" />
+            </div>
+          ) : (
+            <div className="w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 pt-10 flex flex-col items-center justify-center min-h-[360px] mb-10 relative overflow-hidden">
+              <h1 className="text-[22px] font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
+                {slide.title}
+              </h1>
+              <div className="relative inline-block" key={currentSlide}>
+                <span className="text-9xl animate-[bounce_3s_ease-in-out_infinite] block">
+                  {slide.emoji}
+                </span>
+                {slide.decorations}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Title (Shown on Mobile if no image card) */}
+        <div className={`w-full max-w-md mx-auto flex flex-col items-center md:items-start ${!slide.img && 'hidden md:flex'}`}>
+          <h1 className="text-[28px] md:text-4xl font-extrabold text-[#111827] mb-4 text-center md:text-left leading-tight tracking-tight">
+            {slide.title}
+          </h1>
+          <p className="text-[#4B5563] text-center md:text-left text-[16px] md:text-[18px] leading-relaxed mb-10 md:mb-14">
+            {slide.description}
+          </p>
+
+          {/* Dots */}
+          <div className="flex gap-2 justify-center md:justify-start mb-10 md:mb-12 w-full md:w-auto">
+            {slides.map((_, idx) => (
+              <span
+                key={idx}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-8 bg-[#4342FF]' : 'w-2.5 bg-[#E5E7EB]'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Full-width Button */}
+          <button
+            onClick={handleNext}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 md:py-4 rounded-xl font-bold text-[16px] md:text-[18px] transition-all shadow-lg shadow-indigo-500/30 active:scale-[0.98]"
+          >
+            {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
+          </button>
+        </div>
         
       </div>
     </div>
