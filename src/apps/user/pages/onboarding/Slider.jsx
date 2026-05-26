@@ -80,23 +80,25 @@ export default function Slider() {
       <div className="flex-1 flex flex-col items-center px-6 max-w-md mx-auto w-full pb-10">
         
         {/* White Card containing Title and Image */}
-        <div className="w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 pt-10 flex flex-col items-center justify-center min-h-[380px] mb-10 relative overflow-hidden">
+        <div className={`w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center min-h-[360px] mb-10 relative overflow-hidden ${slide.img ? 'p-0' : 'p-8 pt-10'}`}>
           
-          <h1 className="text-[22px] md:text-2xl font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
-            {slide.title}
-          </h1>
+          {!slide.img && (
+            <h1 className="text-[22px] md:text-2xl font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
+              {slide.title}
+            </h1>
+          )}
 
           {/* 3D Illustration placeholder / Image */}
-          <div className="relative inline-block" key={currentSlide}>
-            {slide.img ? (
-              <img src={slide.img} alt={slide.title} className="w-[220px] h-[220px] object-contain animate-[bounce_3s_ease-in-out_infinite]" />
-            ) : (
+          {slide.img ? (
+            <img src={slide.img} alt={slide.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="relative inline-block" key={currentSlide}>
               <span className="text-9xl animate-[bounce_3s_ease-in-out_infinite] block">
                 {slide.emoji}
               </span>
-            )}
-            {slide.decorations}
-          </div>
+              {slide.decorations}
+            </div>
+          )}
         </div>
 
         {/* Description */}
