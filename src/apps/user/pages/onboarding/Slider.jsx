@@ -31,6 +31,7 @@ const slides = [
   {
     title: 'Track your delivery live',
     emoji: '🛵',
+    img: '/slide3-hero.png',
     description: 'Stay updated with real-time tracking from the kitchen to your doorstep.',
     decorations: (
       <>
