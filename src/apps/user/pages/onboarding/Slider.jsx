@@ -5,6 +5,7 @@ const slides = [
   {
     title: 'Fast. Fresh. Reliable.',
     emoji: '🛍️',
+    img: '/slide1-hero.png',
     description: 'The best delivery experience in Lagos, tailored just for you.',
     decorations: (
       <>
@@ -94,11 +95,15 @@ export default function Slider() {
                 Let's just put it outside for all slides to keep the layout very clean, or inside the card like the screenshots.
             */}
             
-            {/* 3D Illustration placeholder */}
+            {/* 3D Illustration placeholder / Image */}
             <div className="relative inline-block mt-4 mb-4" key={currentSlide}>
-              <span className="text-9xl animate-[bounce_2s_ease-in-out_infinite] block">
-                {slide.emoji}
-              </span>
+              {slide.img ? (
+                <img src={slide.img} alt={slide.title} className="w-[200px] h-[200px] object-contain animate-[bounce_2s_ease-in-out_infinite]" />
+              ) : (
+                <span className="text-9xl animate-[bounce_2s_ease-in-out_infinite] block">
+                  {slide.emoji}
+                </span>
+              )}
               {slide.decorations}
             </div>
           </div>
