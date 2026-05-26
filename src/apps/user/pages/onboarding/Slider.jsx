@@ -43,6 +43,7 @@ const slides = [
   {
     title: 'Find vendors near you',
     emoji: '🗺️',
+    img: '/slide4-hero.png',
     description: 'Browse the best restaurants and local shops in your neighborhood.',
     decorations: (
       <>
