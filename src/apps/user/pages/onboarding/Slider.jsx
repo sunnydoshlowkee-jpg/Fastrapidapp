@@ -18,6 +18,7 @@ const slides = [
   {
     title: 'Order in seconds',
     emoji: '📱',
+    img: '/slide2-hero.png',
     description: 'Experience fast checkout and secure payments with card or cash.',
     decorations: (
       <>
