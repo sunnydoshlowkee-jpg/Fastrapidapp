@@ -11,7 +11,7 @@ const promotions = [
     desc: 'Enjoy a premium dining experience with a massive discount this weekend only.',
     discount: '40%',
     code: 'TERRA40',
-    img: '/pizza.png'
+    img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop'
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const promotions = [
     desc: 'Get fresh produce and household essentials delivered in minutes.',
     discount: '25%',
     code: 'STOCK25',
-    img: '/grocery-hero.png'
+    img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop'
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const promotions = [
     desc: 'Elevate your home with top-tier kitchenware and appliances.',
     discount: '15%',
     code: 'HOME15',
-    img: '/burger.png'
+    img: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500&h=500&fit=crop'
   },
   {
     id: 4,
@@ -42,7 +42,7 @@ const promotions = [
     desc: "Welcome to RAPID! We're making your first steps completely free.",
     discount: 'FREE DELIV.',
     code: 'RAPIDFREE',
-    img: '/pizza.png'
+    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop'
   }
 ]
 
@@ -226,7 +226,7 @@ export default function Promotions() {
                 <div className="flex gap-6">
                   {/* Partner Card */}
                   <div className="flex-1 h-[280px] rounded-[32px] overflow-hidden relative shadow-sm group cursor-pointer">
-                    <img src="/grocery-hero.png" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale brightness-50 contrast-125" />
+                    <img src="https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=800&h=500&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale brightness-50 contrast-125" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a1c29]/90 via-[#1a1c29]/40 to-transparent p-10 flex flex-col justify-end">
                       <div className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg w-max mb-3 border border-white/10">
                         Partner of the Month

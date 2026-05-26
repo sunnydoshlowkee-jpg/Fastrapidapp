@@ -4,24 +4,26 @@ import { ArrowLeft, ShoppingCart, Search, Navigation, Star, Truck, SlidersHorizo
 
 // Mock Data
 const foodVendors = [
-  { id: 1, name: "Mama's Kitchen Lagos", tags: 'Continental • African fusion', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: '/pizza.png', time: '25-35 min', isOpen: true },
-  { id: 2, name: 'The Burger Project', tags: 'American • Gourmet Burgers', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: '/burger.png', time: '15-25 min', isOpen: true },
-  { id: 3, name: 'Green Leaf Salads', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: '/pizza.png', time: '30-45 min', isOpen: true },
+  { id: 1, name: "Mama's Kitchen Lagos", tags: 'Continental • African fusion', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop', time: '25-35 min', isOpen: true },
+  { id: 2, name: 'The Burger Project', tags: 'American • Gourmet Burgers', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop', time: '15-25 min', isOpen: true },
+  { id: 3, name: 'Green Leaf Salads', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop', time: '30-45 min', isOpen: true },
+  { id: 4, name: 'Late Night Munchies', tags: 'Snacks • Drinks', rating: 4.2, distance: '3.1 km', delivery: '₦700', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop', time: '10-20 min', isOpen: false },
 ]
 
 const groceryVendors = [
-  { id: 1, name: 'Fresh Forte Supermarket', tags: 'Groceries • Household • Drinks', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: '/grocery-hero.png', time: '20-30 min', isOpen: true },
-  { id: 2, name: 'Mile 12 Fresh Vendors', tags: 'Fresh Produce • Spices • Grains', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: '/pizza.png', time: '35-45 min', isOpen: true },
-  { id: 3, name: 'HealthPlus Pharmacy', tags: 'Wellness • Personal Care • Medicine', rating: 4.9, distance: '0.8 km', delivery: '₦300', img: '/burger.png', time: '15-25 min', isOpen: true },
+  { id: 1, name: 'Fresh Forte Supermarket', tags: 'Groceries • Household • Drinks', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500&h=500&fit=crop', time: '20-30 min', isOpen: true },
+  { id: 2, name: 'Mile 12 Fresh Vendors', tags: 'Fresh Produce • Spices • Grains', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop', time: '35-45 min', isOpen: true },
+  { id: 3, name: 'Organic Life Store', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500&h=500&fit=crop', time: '30-45 min', isOpen: true },
+  { id: 4, name: 'Neighborhood Mart', tags: 'Convenience • Snacks', rating: 4.2, distance: '3.1 km', delivery: '₦700', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop', time: '10-20 min', isOpen: false },
 ]
 
 const desktopVendors = [
-  { id: 101, name: 'The Rustic Kitchen', tags: 'Italian • Pizza • ₦₦', rating: 4.8, time: '20–30 min', img: '/pizza.png' },
-  { id: 102, name: 'Lagos Fusion', tags: 'African • Continental • ₦₦₦', rating: 4.9, time: '15–25 min', img: '/burger.png' },
-  { id: 103, name: 'Grill & Chill', tags: 'Steakhouse • BBQ • ₦₦', rating: 4.6, time: '30–45 min', img: '/pizza.png' },
-  { id: 104, name: 'Burger Empire', tags: 'Fast Food • American • ₦', rating: 4.7, time: '10–20 min', img: '/burger.png' },
-  { id: 105, name: 'Green Garden', tags: 'Healthy • Salads • Vegan • ₦₦', rating: 4.8, time: '25–35 min', img: '/pizza.png' },
-  { id: 106, name: 'Zen Sushi', tags: 'Japanese • Sushi • ₦₦₦', rating: 4.9, time: '35–50 min', img: '/burger.png' },
+  { id: 101, name: 'The Rustic Kitchen', tags: 'Italian • Pizza • ₦₦', rating: 4.8, time: '20–30 min', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=500&fit=crop' },
+  { id: 102, name: 'Lagos Fusion', tags: 'African • Continental • ₦₦₦', rating: 4.9, time: '15–25 min', img: 'https://images.unsplash.com/photo-1604329760661-e75dc8398f09?w=800&h=500&fit=crop' },
+  { id: 103, name: 'Grill & Chill', tags: 'Steakhouse • BBQ • ₦₦', rating: 4.6, time: '30–45 min', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=500&fit=crop' },
+  { id: 104, name: 'Burger Empire', tags: 'Fast Food • American • ₦', rating: 4.7, time: '10–20 min', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=500&fit=crop' },
+  { id: 105, name: 'Green Garden', tags: 'Healthy • Salads • Vegan • ₦₦', rating: 4.8, time: '25–35 min', img: 'https://images.unsplash.com/photo-1540420773420-3365887f394e?w=800&h=500&fit=crop' },
+  { id: 106, name: 'Zen Sushi', tags: 'Japanese • Sushi • ₦₦₦', rating: 4.9, time: '35–50 min', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&h=500&fit=crop' },
 ]
 
 export default function Vendors() {

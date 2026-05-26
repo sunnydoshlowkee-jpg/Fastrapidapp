@@ -16,7 +16,7 @@ export default function ItemDetail() {
       
       {/* Header Image */}
       <div className="relative h-64 md:h-80 w-full">
-        <img src="/pizza.png" alt="Item Cover" className="w-full h-full object-cover" />
+        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" alt="Item Cover" className="w-full h-full object-cover" />
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />

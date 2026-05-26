@@ -26,31 +26,31 @@ const ongoingOrders = [
 
 const completedOrders = [
   {
-    id: '#RP-8829',
-    vendor: "Artisan Kitchen",
-    date: "Oct 24, 2023",
-    time: "12:45 PM",
-    items: "3 items",
-    total: "₦54.20",
-    img: "/driver.png"
+    id: "ORD-88234",
+    store: "Burger Shop Deluxe",
+    date: "Today, 2:45 PM",
+    items: "2x Cheeseburger, 1x Large Fries, 2x Coke",
+    total: "₦8,500",
+    status: "delivered",
+    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop"
   },
   {
-    id: '#RP-8112',
-    vendor: "Sakura Sushi",
-    date: "Oct 20, 2023",
-    time: "07:12 PM",
-    items: "12 items",
-    total: "₦112.50",
-    img: "/burger.png"
+    id: "ORD-88231",
+    store: "The Salad Bar",
+    date: "May 10, 12:30 PM",
+    items: "1x Greek Salad, 1x Fresh Juice",
+    total: "₦3,800",
+    status: "cancelled",
+    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop"
   },
   {
-    id: '#RP-7901',
-    vendor: "Urban Grill",
-    date: "Oct 15, 2023",
-    time: "01:05 PM",
-    items: "2 items",
-    total: "₦28.90",
-    img: "/grocery-hero.png"
+    id: "ORD-88230",
+    store: "Fresh Market Reserve",
+    date: "May 5, 4:00 PM",
+    items: "Grocery Bundle (10 items)",
+    total: "₦15,400",
+    status: "delivered",
+    img: "https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500&h=500&fit=crop"
   }
 ]
 

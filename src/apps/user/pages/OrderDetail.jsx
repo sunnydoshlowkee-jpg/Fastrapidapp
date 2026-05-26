@@ -57,7 +57,7 @@ export default function OrderDetail() {
           {/* Vendor Header */}
           <div className="flex flex-col items-center mb-2">
             <div className="w-24 h-24 rounded-3xl overflow-hidden mb-4 shadow-sm border border-gray-100">
-              <img src="/pizza.png" alt="Vendor" className="w-full h-full object-cover" />
+              <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop" alt="Vendor" className="w-full h-full object-cover" />
             </div>
             <h2 className="text-lg font-bold text-gray-900 mb-1">Kitchen Culture Lagos</h2>
             <p className="text-[11px] text-gray-500 font-medium">Delivered on Oct 24, 2023 • 2:45 PM</p>
@@ -337,7 +337,7 @@ export default function OrderDetail() {
                   
                   <div className="flex items-center gap-4 mb-8">
                     <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                      <img src="/pizza.png" className="w-full h-full object-cover" />
+                      <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-[16px] mb-1">Kitchen Culture Lagos</h3>

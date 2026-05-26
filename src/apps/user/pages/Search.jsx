@@ -19,14 +19,14 @@ const productsResults = [
     name: 'Jollof Rice Special',
     description: 'Smoky party jollof served with 2 pieces of grilled chicken and...',
     price: '₦4,500',
-    img: '/pizza.png'
+    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop'
   },
   {
     id: 2,
     name: 'Beef Suya Platter',
     description: 'Authentic Hausa-style spicy beef skewers with cabbage and...',
     price: '₦3,500',
-    img: '/burger.png'
+    img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop'
   }
 ]
 
@@ -38,7 +38,7 @@ const vendorsResults = [
     time: '15-25 min',
     rating: '4.8 ★',
     isOpen: true,
-    img: '/burger.png'
+    img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&h=500&fit=crop'
   },
   {
     id: 2,
@@ -47,7 +47,7 @@ const vendorsResults = [
     time: '15-25 min',
     rating: '4.8 ★',
     isOpen: false,
-    img: '/pizza.png'
+    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&h=500&fit=crop'
   }
 ]
 

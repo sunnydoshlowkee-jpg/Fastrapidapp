@@ -5,25 +5,25 @@ import { ArrowLeft, Heart, ShoppingCart, Star, Plus, Search, MapPin, Minus, Arro
 // Mobile Mock Data
 const menuCategories = ['Popular', 'Main Course', 'Sides', 'Drinks']
 const menuItems = [
-  { id: 1, name: 'Jollof Rice Special', description: 'Smoky party jollof served with 2 pieces of grilled chicken and...', price: '₦4,500', img: '/pizza.png' },
-  { id: 2, name: 'Grilled Croaker Fish', description: 'Whole grilled croaker spiced with local herbs, served with yam...', price: '₦8,200', img: '/burger.png' },
-  { id: 3, name: 'Beef Suya Platter', description: 'Authentic Hausa style suya meat served with sliced onions, cabbage...', price: '₦3,500', img: '/pizza.png' }
+  { id: 1, name: 'Jollof Rice Special', description: 'Smoky party jollof served with 2 pieces of grilled chicken and...', price: '₦4,500', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Grilled Croaker Fish', description: 'Whole grilled croaker spiced with local herbs, served with yam...', price: '₦8,200', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Beef Suya Platter', description: 'Authentic Hausa style suya meat served with sliced onions, cabbage...', price: '₦3,500', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' }
 ]
 
 // Desktop Mock Data
 const desktopTabs = ['Popular', 'Main Course', 'Sides', 'Drinks', 'Platters']
 const desktopMenuItems = [
-  { id: 201, name: 'Smoky Party Jollof', price: '₦4,500', desc: 'Authentic smoky firewood flavor, served with grilled...', tag: 'LAGOS FAVORITE', tagColor: 'text-red-500', icon: '🔥', img: '/pizza.png' },
-  { id: 202, name: 'Special Egusi Soup', price: '₦5,200', desc: 'Rich melon seed soup cooked with spinach, stockfish, and...', tag: '35 - 45 MINS', tagColor: 'text-gray-400', icon: null, img: '/burger.png' },
-  { id: 203, name: 'Spicy Beef Suya', price: '₦3,800', desc: 'Thinly sliced beef marinated in traditional Yaji spice, flame-...', tag: 'TRENDING', tagColor: 'text-orange-500', icon: '📈', img: '/pizza.png' },
-  { id: 204, name: 'Seafood Fried Rice', price: '₦6,000', desc: 'Loaded with prawns, calamari, and seasonal vegetables. A...', tag: '40 - 50 MINS', tagColor: 'text-gray-400', icon: null, img: '/burger.png' },
-  { id: 205, name: 'Oven-Baked Moi Moi', price: '₦1,200', desc: 'Savory steamed bean pudding with fish, egg, and extra crayfis...', tag: 'HEALTHY CHOICE', tagColor: 'text-green-500', icon: null, img: '/pizza.png' },
-  { id: 206, name: 'Signature Zobo', price: '₦800', desc: 'Infused with ginger, pineapple, and cloves. Chilled perfectly f...', tag: '500ML BOTTLE', tagColor: 'text-gray-400', icon: null, img: '/burger.png' }
+  { id: 201, name: 'Smoky Party Jollof', price: '₦4,500', desc: 'Authentic smoky firewood flavor, served with grilled...', tag: 'LAGOS FAVORITE', tagColor: 'text-red-500', icon: '🔥', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
+  { id: 202, name: 'Special Egusi Soup', price: '₦5,200', desc: 'Rich melon seed soup cooked with spinach, stockfish, and...', tag: '35 - 45 MINS', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
+  { id: 203, name: 'Spicy Beef Suya', price: '₦3,800', desc: 'Thinly sliced beef marinated in traditional Yaji spice, flame-...', tag: 'TRENDING', tagColor: 'text-orange-500', icon: '📈', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop' },
+  { id: 204, name: 'Seafood Fried Rice', price: '₦6,000', desc: 'Loaded with prawns, calamari, and seasonal vegetables. A...', tag: '40 - 50 MINS', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop' },
+  { id: 205, name: 'Oven-Baked Moi Moi', price: '₦1,200', desc: 'Savory steamed bean pudding with fish, egg, and extra crayfis...', tag: 'HEALTHY CHOICE', tagColor: 'text-green-500', icon: null, img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' },
+  { id: 206, name: 'Signature Zobo', price: '₦800', desc: 'Infused with ginger, pineapple, and cloves. Chilled perfectly f...', tag: '500ML BOTTLE', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' }
 ]
 const desktopCartItems = [
-  { id: 301, name: 'Party Jollof Rice', price: '₦4,500', qty: 1, img: '/pizza.png' },
-  { id: 302, name: 'Spicy Beef Suya', price: '₦3,800', qty: 1, img: '/burger.png' },
-  { id: 303, name: 'Signature Zobo', price: '₦800', qty: 1, img: '/pizza.png' },
+  { id: 301, name: 'Party Jollof Rice', price: '₦4,500', qty: 1, img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
+  { id: 302, name: 'Spicy Beef Suya', price: '₦3,800', qty: 1, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
+  { id: 303, name: 'Signature Zobo', price: '₦800', qty: 1, img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' },
 ]
 
 export default function VendorDetail() {
@@ -40,8 +40,8 @@ export default function VendorDetail() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Header Image & Top Nav */}
-      <div className="md:hidden relative h-64 w-full">
-        <img src="/pizza.png" alt="Vendor Cover" className="w-full h-full object-cover" />
+      <div className="relative h-60 w-full rounded-b-3xl md:rounded-3xl overflow-hidden md:h-80 md:mb-6 shadow-sm">
+        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&h=800&fit=crop" alt="Vendor Cover" className="w-full h-full object-cover" />
         
         {/* Top actions */}
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
@@ -206,7 +206,7 @@ export default function VendorDetail() {
         {/* Desktop Banner */}
         <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-10 relative h-[280px] flex items-center shadow-md">
           {/* Mock Character Image on the right */}
-          <img src="/pizza.png" alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
+          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop" alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
           
           <div className="relative z-10 px-12 w-[65%]">
             <div className="flex items-center gap-3 mb-4">
