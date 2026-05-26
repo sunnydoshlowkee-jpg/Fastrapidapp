@@ -14,15 +14,24 @@ export function AdminResetPasswordIcon() {
   )
 }
 
-export default function AdminRecoveryCard({ children }) {
+export default function AdminRecoveryCard({ children, icon, hideIcon = false }) {
+  const renderedIcon =
+    icon !== undefined ? icon : hideIcon ? null : <AdminResetPasswordIcon />
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#F5F6F8] px-6 py-12 font-sans">
-      <article className="w-full max-w-md rounded-2xl bg-white px-6 py-8 shadow-[0px_8px_40px_0px_rgba(25,28,29,0.08)] sm:px-8 sm:py-10">
-        <div className="mb-6 flex justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#FFF4ED]">
-            <AdminResetPasswordIcon />
+      <article className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white px-6 py-8 shadow-[0px_8px_40px_0px_rgba(25,28,29,0.08)] sm:px-8 sm:py-10">
+        <span
+          className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#FF7A3D] via-[#E84A15] to-[#C4590E]"
+          aria-hidden
+        />
+        {renderedIcon ? (
+          <div className="mb-6 flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#FFF4ED]">
+              {renderedIcon}
+            </div>
           </div>
-        </div>
+        ) : null}
         {children}
       </article>
     </div>

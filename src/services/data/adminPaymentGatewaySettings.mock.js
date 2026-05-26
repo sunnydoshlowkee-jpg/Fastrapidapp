@@ -1,4 +1,7 @@
-/** Payment gateway settings [362:284](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=362-284) */
+/**
+ * Payment gateway settings [362:284](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=362-284)
+ * Mobile payment gateway [297:24077](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=297-24077)
+ */
 import { ADMIN_SETTINGS_PAYMENT_PATH, ADMIN_SETTINGS_PATH } from './adminPaths'
 
 export { ADMIN_SETTINGS_PAYMENT_PATH }
@@ -8,57 +11,49 @@ export const ADMIN_PAYMENT_GATEWAY_SETTINGS = {
     { label: 'System', path: ADMIN_SETTINGS_PATH },
     { label: 'Payment Gateway', path: null },
   ],
-  intro:
-    'Configure active gateway providers, manage environment credentials, and monitor transaction telemetry.',
+  pageTitle: 'Gateways',
   testMode: {
     title: 'Test Mode Active',
-    body: 'System is currently operating in sandbox mode. Live transactions are bypassed and simulated. Ensure to switch to live credentials before production deployment.',
-    toggleLabel: 'Sandbox',
-    defaultOn: true,
+    body: 'Transactions will not be processed on real cards. Toggle below to go live.',
   },
   providers: {
-    title: 'Active Gateway Provider',
+    title: 'Active Provider',
+    healthLabel: 'Healthy',
     options: [
       {
         id: 'paystack',
         name: 'Paystack',
-        initials: 'PS',
-        brandClass: 'bg-emerald-600 text-white',
-        routeLabel: 'Primary Route',
-        status: 'operational',
-        statusLabel: 'Operational',
+        initial: 'P',
+        initialColor: '#2563EB',
       },
       {
         id: 'flutterwave',
         name: 'Flutterwave',
-        initials: 'FW',
-        brandClass: 'bg-orange-500 text-white',
-        routeLabel: 'Failover Route',
-        status: null,
-        statusLabel: null,
+        initial: 'F',
+        initialColor: '#EAB308',
       },
     ],
     defaultId: 'paystack',
   },
   credentials: {
-    title: 'Environment Credentials',
+    title: 'API Credentials',
+    testModeLabel: 'Test Mode',
+    testModeDescription: 'Use test keys for sandbox environment',
     publicKey: {
       id: 'publicKey',
-      label: 'Public Key (Test)',
-      value: 'pk_test_••••••••••••••••••••••••',
-      masked: true,
+      label: 'Public Key',
+      value: 'pk_test_a1b2c3d4e5f6g7h8i9j0',
     },
     secretKey: {
       id: 'secretKey',
-      label: 'Secret Key (Test)',
-      value: 'sk_test_••••••••••••••••••••••••',
-      masked: true,
+      label: 'Secret Key',
+      value: 'sk_test_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
     },
-    disclaimer: 'Never share your secret key or commit it to version control.',
+    lastUpdatedLabel: 'Last updated: 2 days ago',
   },
   actions: {
+    saveLabel: 'Save Changes',
     testConnectionLabel: 'Test Connection',
-    saveLabel: 'Save Configuration',
   },
   telemetry: {
     title: 'System Telemetry',

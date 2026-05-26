@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, Download, Filter, MoreVertical, Plus } from 'lucide-react'
+import { AlertTriangle, Download, Filter, MoreVertical, Plus, Search } from 'lucide-react'
 import { ADMIN_ORDERS } from '../../../services/data/adminOrders.mock'
+import AdminOrdersMobileCard from './AdminOrdersMobileCard'
 import AdminOrdersStatusBadge from './AdminOrdersStatusBadge'
 
 export default function AdminOrdersPage() {
@@ -9,11 +10,23 @@ export default function AdminOrdersPage() {
   const [activeTab, setActiveTab] = useState('all')
   const [selected, setSelected] = useState(new Set())
   const [page, setPage] = useState(1)
+  const [mobileSearch, setMobileSearch] = useState('')
 
   const filtered = useMemo(() => {
     if (activeTab === 'all') return data.orders
     return data.orders.filter((order) => order.status === activeTab)
   }, [activeTab, data.orders])
+
+  const mobileFiltered = useMemo(() => {
+    if (!mobileSearch.trim()) return filtered
+    const q = mobileSearch.trim().toLowerCase()
+    return filtered.filter(
+      (o) =>
+        o.id.toLowerCase().includes(q) ||
+        (o.merchant.label ?? o.merchant.name ?? '').toLowerCase().includes(q) ||
+        (o.customer.shortName ?? o.customer.name ?? '').toLowerCase().includes(q),
+    )
+  }, [filtered, mobileSearch])
 
   const allSelected = filtered.length > 0 && selected.size === filtered.length
 
@@ -32,7 +45,73 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <div className="lg:hidden">
+        <div className="sticky top-[57px] z-[5] bg-[#F9F9FA]/90 px-5 py-2 backdrop-blur-md">
+          <div className="relative">
+            <Search
+              size={18}
+              strokeWidth={2}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#584237]/50"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={mobileSearch}
+              onChange={(e) => setMobileSearch(e.target.value)}
+              placeholder={data.mobileSearchPlaceholder ?? data.searchPlaceholder}
+              className="w-full rounded-lg bg-[#F3F3F4] py-3 pl-10 pr-4 text-sm text-gray-900 outline-none placeholder:text-[#584237]/50 focus:ring-2 focus:ring-rapid-orange/30"
+            />
+          </div>
+
+          <nav
+            className="mt-4 flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            aria-label="Order status filters"
+          >
+            {data.tabs.map((tab) => {
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab.id)
+                    setSelected(new Set())
+                  }}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold tracking-[0.025em] transition-colors ${
+                    isActive
+                      ? 'bg-[#F97316] text-[#582200]'
+                      : 'bg-[#F3F3F4] text-[#584237] hover:bg-gray-200'
+                  }`}
+                >
+                  {tab.dot ? (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#842BD2]" aria-hidden />
+                  ) : null}
+                  {tab.mobileLabel ?? tab.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div className="space-y-4 px-5 py-6">
+          {mobileFiltered.length === 0 ? (
+            <p className="rounded-xl bg-white p-6 text-center text-sm text-gray-500 shadow-sm">
+              No orders match this filter.
+            </p>
+          ) : (
+            mobileFiltered.map((order) => (
+              <AdminOrdersMobileCard
+                key={order.id}
+                order={order}
+                trackRiderLabel={data.trackRiderLabel}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      <div className="hidden p-6 lg:block">
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">{data.title}</h1>
@@ -258,6 +337,7 @@ export default function AdminOrdersPage() {
             </button>
           </nav>
         </footer>
+      </div>
       </div>
     </div>
   )

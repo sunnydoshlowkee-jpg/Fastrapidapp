@@ -1,8 +1,12 @@
-/** Dashboard live view [330:97](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=330-97) */
+/**
+ * Dashboard live view [330:97](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=330-97)
+ * Mobile Command Center [297:40315](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=297-40315)
+ */
 export const ADMIN_DASHBOARD = {
+  pageTitle: 'Command Center',
   greeting: {
     title: 'Good morning, Admin 👋',
-    subtitle: "Here's what's happening today.",
+    subtitle: "Here's your live operational overview.",
     systemStatus: 'System Online',
   },
   searchPlaceholder: 'Search orders, riders...',
@@ -39,25 +43,31 @@ export const ADMIN_DASHBOARD = {
   ],
   telemetry: {
     title: 'Live Telemetry',
-    liveLabel: 'LIVE',
+    liveLabel: 'Live',
     events: [
       {
         id: '1',
-        title: 'Rider #4492 Re-routed',
-        body: 'Heavy traffic detected on Admiralty Way. ETA adjusted +5m.',
-        time: 'Just now',
+        orderId: '#ORD-5921',
+        time: '2 mins ago',
+        dotTone: 'violet',
+        statusLabel: 'Picked Up',
+        statusTone: 'violet',
       },
       {
         id: '2',
-        title: 'Batch Delivery Complete',
-        body: 'Order #ORD-8921 and #ORD-8922 delivered successfully by Rider #102.',
-        time: '2m ago',
+        orderId: '#ORD-5920',
+        time: '4 mins ago',
+        dotTone: 'violet',
+        statusLabel: 'En Route',
+        statusTone: 'gray',
       },
       {
         id: '3',
-        title: 'New Vendor Online',
-        body: "'Iya Basira Foods' is now accepting orders in Surulere.",
-        time: '5m ago',
+        orderId: '#ORD-5919',
+        time: '6 mins ago',
+        dotTone: 'amber',
+        statusLabel: 'Pending',
+        statusTone: 'amber',
       },
     ],
   },
@@ -68,16 +78,16 @@ export const ADMIN_DASHBOARD = {
       {
         id: '1',
         severity: 'critical',
-        title: 'Unassigned Order > 15m',
-        location: 'Lekki Phase 1',
-        actionLabel: 'FORCE ASSIGN',
+        title: 'Order #102 delayed > 30 mins',
+        meta: 'Zone: VI / Assigned: Rider 42',
+        actionLabel: 'Resolve',
       },
       {
         id: '2',
         severity: 'warning',
-        title: 'Vendor Offline During Peak',
-        location: "'Chicken Republic - Yaba'",
-        actionLabel: 'CONTACT VENDOR',
+        title: 'Order #441 pending > 15 mins',
+        meta: 'Zone: Ikoyi / Unassigned',
+        actionLabel: 'Resolve',
       },
     ],
   },
@@ -92,11 +102,32 @@ export const ADMIN_DASHBOARD = {
   availability: {
     title: 'Availability',
     zones: [
-      { id: 'island', name: 'Island Zone', level: 'high', percent: 92 },
-      { id: 'mainland', name: 'Mainland Zone', level: 'medium', percent: 58 },
-      { id: 'ikeja', name: 'Ikeja Zone', level: 'critical', percent: 18 },
+      {
+        id: 'island',
+        name: 'Island Zone',
+        level: 'high',
+        levelLabel: 'High',
+        percent: 92,
+        ridersReady: '24 riders ready',
+      },
+      {
+        id: 'mainland',
+        name: 'Mainland Zone',
+        level: 'medium',
+        levelLabel: 'Medium',
+        percent: 58,
+        ridersReady: '12 riders ready',
+      },
+      {
+        id: 'ikeja',
+        name: 'Ikeja Zone',
+        level: 'critical',
+        levelLabel: 'Critical',
+        percent: 18,
+        ridersReady: '2 riders ready',
+      },
     ],
-    manageLabel: 'MANAGE ZONES',
+    manageLabel: 'Manage Zones',
   },
   sidebar: {
     brandLabel: 'Admin',
@@ -104,7 +135,11 @@ export const ADMIN_DASHBOARD = {
       name: 'Admin User',
       role: 'Super Admin',
       initials: 'AU',
+      showRolePill: true,
     },
     logoutLabel: 'Logout',
+    versionLabel: 'Rapid Admin v1.0.2',
+    openLabel: 'Open menu',
+    closeLabel: 'Close menu',
   },
 }

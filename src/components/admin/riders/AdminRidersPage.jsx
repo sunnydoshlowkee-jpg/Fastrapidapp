@@ -4,6 +4,7 @@ import { Plus, Search, Star } from 'lucide-react'
 import { getRiderTrackingPath } from '../../../services/data/adminRiderTracking.mock'
 import { ADMIN_RIDERS, ADMIN_RIDERS_PATH } from '../../../services/data/adminRiders.mock'
 import AdminRiderStatusBadge from './AdminRiderStatusBadge'
+import AdminRidersMobilePage from './AdminRidersMobilePage'
 import AdminRidersStatCards from './AdminRidersStatCards'
 
 export default function AdminRidersPage() {
@@ -26,7 +27,12 @@ export default function AdminRidersPage() {
   }, [activeTab, data.riders, search])
 
   return (
-    <div className="p-6">
+    <>
+      <div className="flex h-full min-h-0 flex-1 lg:hidden">
+        <AdminRidersMobilePage data={data} />
+      </div>
+
+      <div className="hidden p-6 lg:block">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">{data.title}</h1>
         <button
@@ -166,6 +172,7 @@ export default function AdminRidersPage() {
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

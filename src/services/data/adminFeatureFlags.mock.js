@@ -1,4 +1,7 @@
-/** Feature flags [362:1281](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=362-1281) */
+/**
+ * Feature flags [362:1281](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=362-1281)
+ * Mobile feature flags [297:23957](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=297-23957)
+ */
 import { ADMIN_SETTINGS_FEATURE_FLAGS_PATH, ADMIN_SETTINGS_PATH } from './adminPaths'
 
 export { ADMIN_SETTINGS_FEATURE_FLAGS_PATH }
@@ -10,55 +13,49 @@ export const ADMIN_FEATURE_FLAGS = {
   ],
   title: 'Feature Flags',
   description:
-    'Manage system-wide capabilities. Toggling core features may cause immediate service disruptions. Proceed with tactical awareness.',
+    'Manage global availability of platform features. Changes take effect immediately across all client applications.',
+  saveLabel: 'Save Changes',
   flags: [
     {
       id: 'digitalWallet',
       title: 'Digital Wallet',
-      description:
-        'Core financial engine. Disabling this restricts all user balances and internal transfers.',
+      description: 'Enables in-app wallet functionality, top-ups, and peer-to-peer transfers.',
       icon: 'wallet',
-      enabled: true,
+      iconTone: 'orange',
+      highImpact: true,
+      enabled: false,
       lastChanged: 'Last changed: Sysadmin • 2h ago',
       warning:
-        'Disabling active wallets requires secondary authorization.',
-      showWarningWhenEnabled: true,
+        'Disabling this will freeze all current user balances and prevent new transactions. Ensure financial reconciliation is complete before proceeding.',
+      showWarningAlways: true,
     },
     {
       id: 'cryptoPayments',
       title: 'Crypto Payments',
       description:
-        'External integration for cryptocurrency funding and withdrawals via partner API.',
+        'Allow users to pay for services using supported cryptocurrencies.',
       icon: 'crypto',
+      iconTone: 'violet',
       enabled: false,
+      badge: { label: 'Beta Feature', tone: 'violet' },
       lastChanged: 'Last changed: Ops team • 1d ago',
     },
     {
       id: 'selfReg',
-      title: 'Rider/Merchant Self-Reg',
+      title: 'Rider Self-Registration',
       description:
-        'Public portals for automated onboarding. Toggle off during maintenance windows.',
-      icon: 'users',
-      enabled: true,
+        'Open the driver portal for new autonomous sign-ups without admin approval.',
+      icon: 'bike',
+      enabled: false,
       lastChanged: 'Last changed: Auto • 5m ago',
     },
     {
       id: 'pushNotifications',
-      title: 'Push Notifications',
-      description:
-        'Global communication channel. Disabling halts all transactional and marketing alerts.',
+      title: 'Marketing Push Notifications',
+      description: 'Enable automated promotional campaigns via FCM/APNS.',
       icon: 'bell',
-      enabled: true,
-      lastChanged: 'Last changed: Growth • 1w ago',
-    },
-    {
-      id: 'biometricAuth',
-      title: 'Biometric Auth (Beta)',
-      description:
-        'FaceID and TouchID support for mobile clients. Currently in staggered rollout.',
-      icon: 'fingerprint',
       enabled: false,
-      lastChanged: 'Last changed: Security • 2d ago',
+      lastChanged: 'Last changed: Growth • 1w ago',
     },
   ],
   unsavedBar: {

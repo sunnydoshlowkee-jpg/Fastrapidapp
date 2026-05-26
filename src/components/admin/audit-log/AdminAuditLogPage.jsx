@@ -1,12 +1,15 @@
 import { useMemo, useState } from 'react'
 import { Calendar } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { ADMIN_AUDIT_LOG } from '../../../services/data/adminAuditLog.mock'
+import AdminAuditLogMobilePage from './AdminAuditLogMobilePage'
 import AdminAuditLogRow from './AdminAuditLogRow'
 
 export default function AdminAuditLogPage() {
   const data = ADMIN_AUDIT_LOG
   const [activeTab, setActiveTab] = useState('all')
   const [visibleCount, setVisibleCount] = useState(3)
+  const context = useOutletContext() ?? {}
 
   const filtered = useMemo(() => {
     if (activeTab === 'all') return data.entries
@@ -16,7 +19,12 @@ export default function AdminAuditLogPage() {
   const visible = filtered.slice(0, visibleCount)
 
   return (
-    <div className="p-6">
+    <>
+      <div className="flex h-full min-h-0 flex-1 lg:hidden">
+        <AdminAuditLogMobilePage data={data} onOpenDrawer={context.openDrawer} />
+      </div>
+
+      <div className="hidden p-6 lg:block">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">{data.title}</h1>
         <p className="mt-1 text-sm text-gray-500">{data.subtitle}</p>
@@ -98,16 +106,17 @@ export default function AdminAuditLogPage() {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <button
-          type="button"
-          onClick={() => setVisibleCount((c) => Math.min(c + 3, filtered.length))}
-          disabled={visibleCount >= filtered.length}
-          className="rounded-lg bg-rapid-orange px-8 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {data.loadMoreLabel}
-        </button>
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => Math.min(c + 3, filtered.length))}
+            disabled={visibleCount >= filtered.length}
+            className="rounded-lg bg-rapid-orange px-8 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {data.loadMoreLabel}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

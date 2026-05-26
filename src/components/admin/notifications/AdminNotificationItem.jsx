@@ -1,10 +1,22 @@
-import { AlertTriangle, Banknote, Route, Store } from 'lucide-react'
+import { AlertTriangle, Banknote, Truck, UserPlus } from 'lucide-react'
 
 const iconMap = {
-  banknote: { Icon: Banknote, wrap: 'bg-emerald-500 text-white' },
-  route: { Icon: Route, wrap: 'bg-gray-100 text-gray-500' },
-  store: { Icon: Store, wrap: 'bg-gray-100 text-gray-500' },
-  warning: { Icon: AlertTriangle, wrap: 'bg-orange-100 text-rapid-orange' },
+  banknote: {
+    Icon: Banknote,
+    wrap: 'bg-violet-500/10 text-[#842BD2]',
+  },
+  truck: {
+    Icon: Truck,
+    wrap: 'bg-gray-200 text-[#584237]',
+  },
+  userPlus: {
+    Icon: UserPlus,
+    wrap: 'bg-gray-200 text-[#584237]',
+  },
+  warning: {
+    Icon: AlertTriangle,
+    wrap: 'bg-[#FFDAD6] text-[#BA1A1A]',
+  },
 }
 
 export default function AdminNotificationItem({ item, onMarkRead }) {
@@ -12,26 +24,37 @@ export default function AdminNotificationItem({ item, onMarkRead }) {
     const { Icon } = iconMap.warning
 
     return (
-      <article className="rounded-xl border border-gray-100 border-l-4 border-l-rapid-orange bg-gray-50 p-5 shadow-sm">
+      <article className="relative overflow-hidden rounded-xl bg-white p-4 pl-6 shadow-[0px_12px_32px_rgba(26,28,29,0.06)]">
+        <span
+          className="absolute inset-y-0 left-0 w-1.5 bg-[#BA1A1A]"
+          aria-hidden
+        />
         <div className="flex gap-4">
           <span
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconMap.warning.wrap}`}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconMap.warning.wrap}`}
           >
             <Icon size={20} strokeWidth={2} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <h3 className="text-sm font-bold text-gray-900">{item.title}</h3>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-rapid-orange">
-                {item.time}
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-base font-bold text-gray-900">{item.title}</h3>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs font-semibold text-[#BA1A1A]">
+                  {item.time}
+                </span>
                 {item.unread ? (
-                  <span className="h-1.5 w-1.5 rounded-full bg-rapid-orange" aria-label="Unread" />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full bg-[#9D4300]"
+                    aria-label="Unread"
+                  />
                 ) : null}
-              </span>
+              </div>
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-gray-600">{item.body}</p>
+            <p className="mt-1 text-sm leading-relaxed text-[#584237]">
+              {item.body}
+            </p>
             {item.actions?.length ? (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {item.actions.map((action) => (
                   <button
                     key={action.id}
@@ -39,8 +62,8 @@ export default function AdminNotificationItem({ item, onMarkRead }) {
                     onClick={() => onMarkRead?.(item.id)}
                     className={
                       action.primary
-                        ? 'rounded-lg bg-rapid-orange px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#E84A15]'
-                        : 'rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-900 transition-colors hover:bg-gray-50'
+                        ? 'rounded-md bg-[#BA1A1A] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#9D0F0F]'
+                        : 'rounded-md bg-[#F3F3F4] px-3 py-1.5 text-xs font-bold text-gray-900 transition-colors hover:bg-gray-200'
                     }
                   >
                     {action.label}
@@ -54,28 +77,44 @@ export default function AdminNotificationItem({ item, onMarkRead }) {
     )
   }
 
-  const iconConfig = iconMap[item.icon] ?? iconMap.route
+  const iconConfig = iconMap[item.icon] ?? iconMap.truck
   const { Icon } = iconConfig
+  const isUnread = item.unread
 
   return (
-    <article className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+    <article
+      className={`rounded-xl border border-[#E0C0B1]/15 bg-white p-4 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] ${
+        isUnread ? '' : 'opacity-75'
+      }`}
+    >
       <div className="flex gap-4">
         <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconConfig.wrap}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconConfig.wrap}`}
         >
           <Icon size={20} strokeWidth={2} aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <h3 className="text-sm font-bold text-gray-900">{item.title}</h3>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-400">
-              {item.time}
-              {item.unread ? (
-                <span className="h-1.5 w-1.5 rounded-full bg-rapid-orange" aria-label="Unread" />
+          <div className="flex items-start justify-between gap-3">
+            <h3
+              className={`text-base text-gray-900 ${
+                isUnread ? 'font-bold' : 'font-semibold'
+              }`}
+            >
+              {item.title}
+            </h3>
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs text-[#584237]">{item.time}</span>
+              {isUnread ? (
+                <span
+                  className="h-2.5 w-2.5 rounded-full bg-[#9D4300]"
+                  aria-label="Unread"
+                />
               ) : null}
-            </span>
+            </div>
           </div>
-          <p className="mt-1 text-sm leading-relaxed text-gray-600">{item.body}</p>
+          <p className="mt-1 text-sm leading-relaxed text-[#584237]">
+            {item.body}
+          </p>
         </div>
       </div>
     </article>

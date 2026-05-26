@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { Copy, Eye, EyeOff, KeyRound, Lock } from 'lucide-react'
-
-const fieldClass =
-  'w-full border-0 border-b-2 border-gray-700 bg-gray-100 py-3 text-sm text-gray-900 outline-none transition-colors focus:border-gray-900 focus:ring-0'
+import { Copy, Eye, EyeOff } from 'lucide-react'
 
 export default function AdminPaymentCredentialField({
   id,
@@ -10,11 +7,10 @@ export default function AdminPaymentCredentialField({
   value,
   onChange,
   variant = 'public',
+  multiline = false,
 }) {
   const [visible, setVisible] = useState(false)
   const isSecret = variant === 'secret'
-  const LeadingIcon = isSecret ? Lock : KeyRound
-  const displayValue = isSecret && !visible ? value : value
 
   const handleCopy = async () => {
     try {
@@ -25,43 +21,55 @@ export default function AdminPaymentCredentialField({
   }
 
   return (
-    <div>
-      <label htmlFor={id} className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+    <div className="space-y-2">
+      <label
+        htmlFor={id}
+        className="block text-xs font-bold uppercase tracking-[0.05em] text-[#584237]"
+      >
         {label}
       </label>
-      <div className="relative mt-2 flex items-center gap-2">
-        <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-gray-400">
-          <LeadingIcon size={18} strokeWidth={1.75} aria-hidden />
-        </span>
-        <input
-          id={id}
-          type={isSecret && !visible ? 'password' : 'text'}
-          value={displayValue}
-          onChange={onChange}
-          className={`${fieldClass} flex-1 pl-8 ${isSecret ? 'pr-20' : 'pr-10'}`}
-        />
-        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1">
+      <div className="relative">
+        {multiline ? (
+          <textarea
+            id={id}
+            value={isSecret && !visible ? '•'.repeat(value.length) : value}
+            onChange={onChange}
+            readOnly
+            rows={2}
+            className="w-full resize-none rounded-sm bg-[#F3F3F4] px-4 py-3 pr-16 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-rapid-orange/20"
+          />
+        ) : (
+          <input
+            id={id}
+            type={isSecret && !visible ? 'password' : 'text'}
+            value={value}
+            onChange={onChange}
+            readOnly
+            className="w-full rounded-sm bg-[#F3F3F4] px-4 py-3 pr-16 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-rapid-orange/20"
+          />
+        )}
+        <div className="absolute right-3 top-3 flex items-center gap-2">
           {isSecret ? (
             <button
               type="button"
               onClick={() => setVisible((v) => !v)}
-              className="p-1 text-gray-400 transition-colors hover:text-gray-600"
+              className="text-[#584237] transition-colors hover:text-gray-900"
               aria-label={visible ? 'Hide key' : 'Show key'}
             >
               {visible ? (
-                <EyeOff size={18} strokeWidth={1.75} />
+                <EyeOff size={16} strokeWidth={1.75} />
               ) : (
-                <Eye size={18} strokeWidth={1.75} />
+                <Eye size={16} strokeWidth={1.75} />
               )}
             </button>
           ) : null}
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1 text-gray-400 transition-colors hover:text-gray-600"
+            className="text-[#584237] transition-colors hover:text-gray-900"
             aria-label="Copy to clipboard"
           >
-            <Copy size={18} strokeWidth={1.75} />
+            <Copy size={14} strokeWidth={1.75} />
           </button>
         </div>
       </div>

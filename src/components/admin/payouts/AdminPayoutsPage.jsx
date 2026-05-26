@@ -4,6 +4,7 @@ import {
   ADMIN_PAYOUTS,
   formatPayoutTotal,
 } from '../../../services/data/adminPayouts.mock'
+import AdminPayoutsMobilePage from './AdminPayoutsMobilePage'
 import AdminPayoutStatusBadge from './AdminPayoutStatusBadge'
 
 export default function AdminPayoutsPage() {
@@ -52,8 +53,13 @@ export default function AdminPayoutsPage() {
   }
 
   return (
-    <div className="p-6">
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <>
+      <div className="flex h-full min-h-0 flex-1 lg:hidden">
+        <AdminPayoutsMobilePage data={data} />
+      </div>
+
+      <div className="hidden p-6 lg:block">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
             {data.eyebrow}
@@ -273,6 +279,7 @@ export default function AdminPayoutsPage() {
           </nav>
         </footer>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

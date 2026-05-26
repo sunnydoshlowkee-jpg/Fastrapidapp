@@ -1,4 +1,5 @@
 /** Finance overview / Operations Control [362:922](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=362-922) */
+import { ADMIN_DISPUTES_PATH } from './adminDisputes.mock'
 import { ADMIN_PAYOUTS_PATH } from './adminPayouts.mock'
 import { ADMIN_SETTINGS_FINANCE_PATH } from './adminPaths'
 import { ADMIN_TRANSACTIONS_PATH } from './adminTransactions.mock'
@@ -87,5 +88,70 @@ export const ADMIN_FINANCE_OVERVIEW = {
         icon: 'download',
       },
     ],
+  },
+  mobile: {
+    topTitle: 'Rapid Admin',
+    subtitle: 'Overview & Key Metrics',
+    pendingAlert: {
+      title: '5 payouts awaiting approval',
+      subtitle: 'Review pending transfers',
+      ctaLabel: 'Review',
+      ctaPath: ADMIN_PAYOUTS_PATH,
+    },
+    grossRevenue: {
+      eyebrow: 'Gross Revenue',
+      amount: '₦4,250,000',
+      trendLabel: '+12.5% this week',
+      trendUp: true,
+    },
+    netRevenue: {
+      label: 'Net Revenue',
+      amount: '₦3,800,000',
+    },
+    commission: {
+      label: 'Commission',
+      amount: '₦450,000',
+    },
+    pendingPayouts: {
+      label: 'Pending Payouts',
+      amount: '₦120,500',
+    },
+    chart: {
+      title: '7-Day Trend',
+      modeLabel: 'Gross',
+      activeLabel: '₦3.1M',
+      bars: [
+        { label: 'Mon', heightPct: 40 },
+        { label: 'Tue', heightPct: 60 },
+        { label: 'Wed', heightPct: 30 },
+        { label: 'Thu', heightPct: 80 },
+        { label: 'Fri', heightPct: 100, active: true },
+        { label: 'Sat', heightPct: 50 },
+        { label: 'Sun', heightPct: 70 },
+      ],
+    },
+    quickActions: {
+      title: 'Quick Actions',
+      primary: {
+        id: 'process-payouts',
+        label: 'Process Payouts',
+        icon: 'wallet',
+        path: ADMIN_PAYOUTS_PATH,
+      },
+      secondary: [
+        {
+          id: 'disputes',
+          label: 'Disputes',
+          icon: 'gavel',
+          path: ADMIN_DISPUTES_PATH,
+        },
+        {
+          id: 'transactions',
+          label: 'Transactions',
+          icon: 'fileText',
+          path: ADMIN_TRANSACTIONS_PATH,
+        },
+      ],
+    },
   },
 }

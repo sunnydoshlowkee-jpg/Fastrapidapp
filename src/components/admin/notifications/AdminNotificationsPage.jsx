@@ -12,6 +12,11 @@ export default function AdminNotificationsPage() {
     return items.filter((item) => item.category === activeTab)
   }, [activeTab, items])
 
+  const unreadCount = useMemo(
+    () => items.filter((item) => item.unread).length,
+    [items],
+  )
+
   const markAllRead = () => {
     setItems((prev) => prev.map((item) => ({ ...item, unread: false })))
   }
@@ -23,20 +28,24 @@ export default function AdminNotificationsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">{data.title}</h1>
+    <div className="px-5 pb-12 pt-4 lg:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <button
           type="button"
           onClick={markAllRead}
-          className="text-xs font-bold uppercase tracking-wide text-rapid-orange transition-colors hover:text-[#E84A15]"
+          className="rounded-md px-1 text-sm font-bold text-[#9D4300] transition-colors hover:text-[#7A3500] disabled:opacity-50"
+          disabled={unreadCount === 0}
         >
           {data.markAllReadLabel}
         </button>
+        <p className="text-sm text-[#454557]">
+          {unreadCount}{' '}
+          <span className="font-medium">{data.unreadSuffix}</span>
+        </p>
       </div>
 
       <nav
-        className="mb-6 flex gap-6 border-b border-gray-200"
+        className="-mx-5 mb-5 flex gap-2 overflow-x-auto px-5 pb-2 lg:mx-0 lg:px-0"
         aria-label="Notification categories"
       >
         {data.tabs.map((tab) => {
@@ -46,19 +55,13 @@ export default function AdminNotificationsPage() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`relative pb-3 text-sm font-semibold transition-colors ${
+              className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors ${
                 isActive
-                  ? 'text-rapid-orange'
-                  : 'text-gray-500 hover:text-gray-800'
+                  ? 'border-2 border-[#9D4300]/20 bg-white font-bold text-[#9D4300] shadow-[0px_12px_32px_rgba(26,28,29,0.06)]'
+                  : 'bg-[#F3F3F4] font-medium text-[#584237] hover:bg-gray-200'
               }`}
             >
               {tab.label}
-              {isActive ? (
-                <span
-                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-rapid-orange"
-                  aria-hidden
-                />
-              ) : null}
             </button>
           )
         })}

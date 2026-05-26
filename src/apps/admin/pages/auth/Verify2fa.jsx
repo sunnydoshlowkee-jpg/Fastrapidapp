@@ -130,21 +130,25 @@ export default function AdminVerify2fa() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F5F6F8] px-4 py-10 font-sans">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-[0px_8px_40px_0px_rgba(25,28,29,0.08)] sm:p-8">
         <div className="flex justify-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
-            <ShieldCheck size={30} className="text-rapid-orange" strokeWidth={2} aria-hidden />
+          <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <ShieldCheck size={24} className="text-[#C4590E]" strokeWidth={2} aria-hidden />
+            <span
+              className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-violet-500 ring-2 ring-white"
+              aria-hidden
+            />
           </span>
         </div>
 
-        <h1 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h1 className="mt-5 text-center text-2xl font-bold tracking-tight text-gray-900">
           Enter your 2FA code
         </h1>
         <p className="mt-2 text-center text-sm text-gray-500">
-          Sent to your authenticator app
+          Sent to your email
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8" noValidate>
+        <form onSubmit={handleSubmit} className="mt-6" noValidate>
           {error ? (
             <div
               role="alert"
@@ -194,7 +198,6 @@ export default function AdminVerify2fa() {
           </button>
 
           <p className="mt-5 text-center text-sm text-gray-600">
-            Didn&apos;t receive code?{' '}
             {canResend ? (
               <button
                 type="button"
@@ -204,14 +207,17 @@ export default function AdminVerify2fa() {
                 Resend now
               </button>
             ) : (
-              <span className="font-semibold text-rapid-orange">
-                Resend in {formatCountdown(secondsLeft)}
-              </span>
+              <>
+                Resend in{' '}
+                <span className="font-bold text-violet-600">
+                  {formatCountdown(secondsLeft)}
+                </span>
+              </>
             )}
           </p>
         </form>
 
-        <div className="mt-10 text-center">
+        <div className="mt-6 text-center">
           <Link
             to="/admin/login"
             className="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
@@ -221,7 +227,7 @@ export default function AdminVerify2fa() {
           </Link>
         </div>
 
-        <p className="mt-10 text-center text-xs text-gray-400">
+        <p className="mt-6 text-center text-xs text-gray-400">
           Demo code: <span className="text-gray-500">{DEMO_CODE}</span>
         </p>
       </div>

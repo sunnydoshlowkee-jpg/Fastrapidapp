@@ -11,6 +11,7 @@ export const ADMIN_VERIFY_2FA_PATH = '/admin/verify-2fa'
 export const ADMIN_FORGOT_PASSWORD_PATH = '/admin/forgot-password'
 export const ADMIN_RESET_PASSWORD_PATH = '/admin/forgot-password/reset'
 export const ADMIN_RESET_SUCCESS_PATH = '/admin/forgot-password/success'
+export const ADMIN_SESSION_EXPIRED_PATH = '/admin/session-expired'
 
 export const ADMIN_2FA_OTP = '123456'
 export const ADMIN_RESET_OTP = '123456'
@@ -85,7 +86,7 @@ export const ADMIN_RESET_PASSWORD_COPY = {
 
 export const ADMIN_2FA_COPY = {
   title: 'Enter your 2FA code',
-  subtitle: 'Sent to your authenticator app',
+  subtitle: 'Sent to your email',
   verifyLabel: 'VERIFY',
   resendPrefix: "Didn't receive code?",
   resendAction: 'Resend',
@@ -93,4 +94,11 @@ export const ADMIN_2FA_COPY = {
   backToLogin: 'Back to Login',
   resendCooldownSeconds: 45,
   invalidCodeMessage: 'Invalid code. Please try again.',
+}
+
+export const ADMIN_SESSION_EXPIRED_COPY = {
+  title: 'Session Expired',
+  subtitle:
+    'Your session expired for security. Please sign back in to continue.',
+  buttonLabel: 'Login Again',
 }

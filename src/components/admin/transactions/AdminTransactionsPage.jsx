@@ -4,6 +4,7 @@ import { Calendar, ChevronLeft, ChevronRight, Download, MoreVertical } from 'luc
 import { ADMIN_TRANSACTIONS, ADMIN_TRANSACTIONS_PATH } from '../../../services/data/adminTransactions.mock'
 import AdminTransactionStatusBadge from './AdminTransactionStatusBadge'
 import AdminTransactionTypeBadge from './AdminTransactionTypeBadge'
+import AdminTransactionsMobilePage from './AdminTransactionsMobilePage'
 import AdminTransactionsReconciliationCard from './AdminTransactionsReconciliationCard'
 import AdminTransactionsVolumeChart from './AdminTransactionsVolumeChart'
 
@@ -37,8 +38,13 @@ export default function AdminTransactionsPage() {
   const totalPages = Math.max(1, Math.ceil(data.pagination.total / filtered.length))
 
   return (
-    <div className="p-6">
-      <header className="mb-6">
+    <>
+      <div className="flex h-full min-h-0 flex-1 lg:hidden">
+        <AdminTransactionsMobilePage data={data} />
+      </div>
+
+      <div className="hidden p-6 lg:block">
+        <header className="mb-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
           {data.breadcrumbs.parent}
           <span className="mx-1.5 text-gray-300" aria-hidden>
@@ -211,10 +217,11 @@ export default function AdminTransactionsPage() {
         </footer>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <AdminTransactionsVolumeChart volumeTrend={data.volumeTrend} />
-        <AdminTransactionsReconciliationCard reconciliation={data.reconciliation} />
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <AdminTransactionsVolumeChart volumeTrend={data.volumeTrend} />
+          <AdminTransactionsReconciliationCard reconciliation={data.reconciliation} />
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -2,13 +2,19 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { ADMIN_ORDERS_PATH } from '../../../services/data/adminOrders.mock'
 import AdminOrderDetailItems from './AdminOrderDetailItems'
+import AdminOrderDetailMobilePage from './AdminOrderDetailMobilePage'
 import AdminOrderDetailSidebar from './AdminOrderDetailSidebar'
 import AdminOrderDetailStakeholders from './AdminOrderDetailStakeholders'
 import AdminOrderDetailStepper from './AdminOrderDetailStepper'
 
 export default function AdminOrderDetailPage({ order }) {
   return (
-    <div className="p-6">
+    <>
+      <div className="lg:hidden">
+        <AdminOrderDetailMobilePage order={order} />
+      </div>
+
+      <div className="hidden p-6 lg:block">
       <Link
         to={ADMIN_ORDERS_PATH}
         className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
@@ -53,6 +59,7 @@ export default function AdminOrderDetailPage({ order }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
