@@ -28,7 +28,7 @@ export default function Splash() {
           
           {phase === 'two' && (
             <span className="text-white text-4xl font-semibold tracking-tight animate-fade-in">
-              Fastrapid
+              RAPID
             </span>
           )}
         </div>
