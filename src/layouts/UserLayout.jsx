@@ -15,7 +15,7 @@ export default function UserLayout() {
   const isHome = location.pathname === '/app';
   
   return (
-    <div className="flex min-h-screen bg-gray-50 max-w-[1440px] mx-auto relative overflow-hidden">
+    <div className="flex min-h-screen bg-gray-50 w-full relative overflow-hidden">
       
       {/* --- DESKTOP SIDEBAR --- */}
       <aside className="hidden md:flex flex-col w-[240px] bg-white border-r border-gray-100 flex-shrink-0 z-10 py-6 h-screen sticky top-0">

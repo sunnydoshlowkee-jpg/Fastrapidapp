@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Logo from '../../../../components/brand/Logo'
 
 const slides = [
   {
     title: 'Fast. Fresh. Reliable.',
     emoji: '🛍️',
+    img: '/slide1-hero.png',
     description: 'The best delivery experience in Lagos, tailored just for you.',
     decorations: (
       <>
@@ -17,6 +19,7 @@ const slides = [
   {
     title: 'Order in seconds',
     emoji: '📱',
+    img: '/slide2-hero.png',
     description: 'Experience fast checkout and secure payments with card or cash.',
     decorations: (
       <>
@@ -29,6 +32,7 @@ const slides = [
   {
     title: 'Track your delivery live',
     emoji: '🛵',
+    img: '/slide3-hero.png',
     description: 'Stay updated with real-time tracking from the kitchen to your doorstep.',
     decorations: (
       <>
@@ -40,6 +44,7 @@ const slides = [
   {
     title: 'Find vendors near you',
     emoji: '🗺️',
+    img: '/slide4-hero.png',
     description: 'Browse the best restaurants and local shops in your neighborhood.',
     decorations: (
       <>
@@ -66,76 +71,94 @@ export default function Slider() {
   const slide = slides[currentSlide]
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F9FA] md:bg-white">
       
-      {/* Top action */}
-      <div className="w-full flex justify-end p-5 pt-12 md:p-8">
-        <Link to="/onboarding/welcome" className="text-[#4F46E5] font-semibold text-sm">
-          Skip
-        </Link>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 max-w-md mx-auto w-full md:max-w-4xl md:flex-row md:gap-12 md:px-12 pb-12">
+      {/* Left Panel (Desktop Only) */}
+      <div className="hidden md:flex md:w-1/2 bg-[#4342FF] relative flex-col items-center justify-center p-12 overflow-hidden">
+        {/* Brand Logo */}
+        <div className="absolute top-10 left-12">
+          <Logo variant="white" height={36} />
+        </div>
         
-        {/* Desktop Left / Mobile Top Image */}
-        <div className="w-full max-w-sm aspect-square bg-[#F8F9FA] rounded-[2rem] flex items-center justify-center p-8 mb-8 md:mb-0 md:flex-1 relative overflow-hidden">
-          <div className="text-center transition-all duration-500 ease-in-out">
-            {/* Title moved inside the card for slide 2,3,4 based on screenshot? 
-                Wait, screenshot shows title inside the card for "Track your delivery live" and "Find vendors near you".
-                Actually, let's keep it consistent, but looking at screenshots, the title is inside the grey box!
-                Let's put the title above the emoji inside the image box if the screenshot has it.
-                Ah, screenshot 1 (Fast.Fresh.Reliable) has the title above the image in the white card.
-                Screenshot 2 (Order in seconds) has title at the bottom of the card.
-                Screenshot 3 (Track your delivery live) has title at the top of the card.
-                Screenshot 4 (Find vendors near you) has title at the top of the card.
-                Let's just use a clean layout: title on top of the emoji, or outside.
-                Actually, the first batch screenshot had it inside the white card box. 
-                Let's just put it outside for all slides to keep the layout very clean, or inside the card like the screenshots.
-            */}
-            
-            {/* 3D Illustration placeholder */}
-            <div className="relative inline-block mt-4 mb-4" key={currentSlide}>
-              <span className="text-9xl animate-[bounce_2s_ease-in-out_infinite] block">
+        {/* Decorative elements */}
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-white opacity-5 blur-[100px]"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-900 opacity-20 blur-[80px]"></div>
+
+        {/* Hero Image */}
+        <div className="relative z-10 w-full max-w-lg flex justify-center">
+          {slide.img ? (
+            <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
+          ) : (
+            <div className="relative inline-block">
+              <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl">
                 {slide.emoji}
               </span>
-              {slide.decorations}
             </div>
-          </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right Panel (Mobile & Desktop) */}
+      <div className="w-full md:w-1/2 flex flex-col items-center px-6 md:px-16 lg:px-24 pb-10 pt-14 md:justify-center">
+        
+        {/* Top action (Skip) */}
+        <div className="w-full flex justify-end mb-8 md:absolute md:top-10 md:right-12 md:w-auto">
+          <Link to="/onboarding/welcome" className="text-[#4342FF] font-semibold text-[15px] hover:text-indigo-800 transition-colors">
+            Skip
+          </Link>
         </div>
 
-        {/* Text and Actions */}
-        <div className="w-full max-w-sm flex flex-col items-center text-center md:flex-1 md:items-start md:text-left">
-          
-          <h1 className="text-2xl font-bold text-[#4F46E5] mb-4 md:mb-6">
+        {/* Mobile Card or Image (Hidden on Desktop) */}
+        <div className="w-full max-w-md mx-auto md:hidden">
+          {slide.img ? (
+            <div className="w-full flex justify-center mb-10">
+              <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain" />
+            </div>
+          ) : (
+            <div className="w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 pt-10 flex flex-col items-center justify-center min-h-[360px] mb-10 relative overflow-hidden">
+              <h1 className="text-[22px] font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
+                {slide.title}
+              </h1>
+              <div className="relative inline-block" key={currentSlide}>
+                <span className="text-9xl animate-[bounce_3s_ease-in-out_infinite] block">
+                  {slide.emoji}
+                </span>
+                {slide.decorations}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Title (Shown on Mobile if no image card) */}
+        <div className={`w-full max-w-md mx-auto flex flex-col items-center md:items-start ${!slide.img && 'hidden md:flex'}`}>
+          <h1 className="text-[28px] md:text-4xl font-extrabold text-[#111827] mb-4 text-center md:text-left leading-tight tracking-tight">
             {slide.title}
           </h1>
-
-          <p className="text-gray-600 text-base leading-relaxed px-4 md:px-0 mb-12">
+          <p className="text-[#4B5563] text-center md:text-left text-[16px] md:text-[18px] leading-relaxed mb-10 md:mb-14">
             {slide.description}
           </p>
 
-          <div className="w-full flex items-center justify-between mt-auto md:mt-8">
-            {/* Dots */}
-            <div className="flex gap-2">
-              {slides.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    currentSlide === idx ? 'w-6 bg-[#4F46E5]' : 'w-2 bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handleNext}
-              className="bg-[#4F46E5] text-white py-3.5 px-8 rounded-xl font-medium text-base shadow-lg shadow-indigo-200 transition-transform active:scale-[0.98] hover:bg-indigo-700"
-            >
-              {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
-            </button>
+          {/* Dots */}
+          <div className="flex gap-2 justify-center md:justify-start mb-10 md:mb-12 w-full md:w-auto">
+            {slides.map((_, idx) => (
+              <span
+                key={idx}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-8 bg-[#4342FF]' : 'w-2.5 bg-[#E5E7EB]'
+                }`}
+              />
+            ))}
           </div>
+
+          {/* Full-width Button */}
+          <button
+            onClick={handleNext}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 md:py-4 rounded-xl font-bold text-[16px] md:text-[18px] transition-all shadow-lg shadow-indigo-500/30 active:scale-[0.98]"
+          >
+            {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
+          </button>
         </div>
+        
       </div>
     </div>
   )

@@ -3,16 +3,16 @@ import { ArrowLeft, X, Minus, Plus, Info, Trash2, ArrowRight, Search, MapPin, Sh
 
 // Mobile Mock Data
 const mobileCartItems = [
-  { id: 1, name: 'Party Jollof Rice & Chicken', price: '₦4,500', quantity: 1, img: '/pizza.png' },
-  { id: 2, name: 'Pounded Yam & Efo Riro', price: '₦5,200', quantity: 1, img: '/burger.png' },
-  { id: 3, name: 'Beef Meat Pie (2pcs)', price: '₦1,800', quantity: 1, img: '/pizza.png' }
+  { id: 1, name: 'Party Jollof Rice & Chicken', price: '₦4,500', quantity: 1, img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Pounded Yam & Efo Riro', price: '₦5,200', quantity: 1, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Beef Meat Pie (2pcs)', price: '₦1,800', quantity: 1, img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' }
 ]
 
 // Desktop Mock Data
 const desktopCartItems = [
-  { id: 101, name: 'Elite Runner 300', specs: 'Size: 42 • Color: Electric Red', price: '₦120.00', qty: 1, img: '/pizza.png' },
-  { id: 102, name: 'Studio Beats Pro', specs: 'Connectivity: Wireless • Color: Matte Black', price: '₦299.00', qty: 1, img: '/burger.png' },
-  { id: 103, name: 'Nomad Classic Watch', specs: 'Strap: Genuine Leather • Movement: Quartz', price: '₦185.00', qty: 1, img: '/pizza.png' },
+  { id: 101, name: 'Elite Runner 300', specs: 'Size: 42 • Color: Electric Red', price: '₦120.00', qty: 1, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop' },
+  { id: 102, name: 'Studio Beats Pro', specs: 'Connectivity: Wireless • Color: Matte Black', price: '₦299.00', qty: 1, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop' },
+  { id: 103, name: 'Nomad Classic Watch', specs: 'Strap: Genuine Leather • Movement: Quartz', price: '₦185.00', qty: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop' },
 ]
 
 export default function CartDetail() {

@@ -9,7 +9,7 @@ export default function Logo({ variant = 'full', className = '', height = 32 }) 
     return (
       <img
         src="/logo-icon.png"
-        alt="Fastrapid"
+        alt="Fast Rapid"
         style={{ height }}
         className={className}
       />
@@ -20,12 +20,12 @@ export default function Logo({ variant = 'full', className = '', height = 32 }) 
     // Full lockup inverted — use the icon (white) + white wordmark text
     return (
       <div className={`flex items-center gap-2.5 ${className}`}>
-        <img src="/logo-icon.png" alt="Fastrapid" style={{ height }} />
+        <img src="/logo-icon.png" alt="Fast Rapid" style={{ height }} />
         <span
           className="text-white font-bold tracking-tight"
           style={{ fontSize: height * 0.85, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
         >
-          Fastrapid
+          Fast Rapid
         </span>
       </div>
     )
@@ -35,7 +35,7 @@ export default function Logo({ variant = 'full', className = '', height = 32 }) 
   return (
     <img
       src="/logo-full.png"
-      alt="Fastrapid"
+      alt="Fast Rapid"
       style={{ height }}
       className={className}
     />

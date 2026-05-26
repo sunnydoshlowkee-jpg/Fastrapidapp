@@ -4,34 +4,34 @@ import { MapPin, ChevronDown, Heart, Plus, Star, ChevronRight, Search, ShoppingC
 
 // Mock Data (Shared/Mobile)
 const mobileQuickReorder = [
-  { id: 1, name: 'Burger King', img: '/burger.png' },
-  { id: 2, name: 'Pizza Hut', img: '/pizza.png' },
-  { id: 3, name: 'Bowl Hub', img: '/burger.png' },
-  { id: 4, name: 'The Salad Bar', img: '/pizza.png' },
+  { id: 1, name: 'Burger King', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Pizza Hut', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Bowl Hub', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop' },
+  { id: 4, name: 'The Salad Bar', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop' },
 ]
 
 const restaurants = [
-  { id: 1, name: 'Burger Shop Deluxe', tags: 'Burgers • American • Fast Food', rating: 4.8, distance: '900m', delivery: '₦500', img: '/burger.png', time: '15-25 min' },
-  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: '/pizza.png', time: '20-30 min' },
+  { id: 1, name: 'Burger Shop Deluxe', tags: 'Burgers • American • Fast Food', rating: 4.8, distance: '900m', delivery: '₦500', img: 'https://images.unsplash.com/photo-1586816001966-79b736744398?w=500&h=500&fit=crop', time: '15-25 min' },
+  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop', time: '20-30 min' },
 ]
 
 const groceryStores = [
-  { id: 1, name: 'Fresh Market Reserve', tags: 'Organic • Fresh • Market', rating: 4.8, distance: '900m', delivery: '₦500', img: '/burger.png', time: '15-25 min' },
-  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: '/pizza.png', time: '20-30 min' },
+  { id: 1, name: 'Fresh Market Reserve', tags: 'Organic • Fresh • Market', rating: 4.8, distance: '900m', delivery: '₦500', img: 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500&h=500&fit=crop', time: '15-25 min' },
+  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop', time: '20-30 min' },
 ]
 
 const trendingFood = [
-  { id: 1, name: 'KFC Mega Bucket', store: 'KFC - Sabo', price: '₦8,500', img: '/burger.png' },
-  { id: 2, name: 'Large Fries & Dip', store: 'Burger King', price: '₦2,200', img: '/pizza.png' },
-  { id: 3, name: 'Classic Pepperoni', store: "Domino's Pizza", price: '₦6,800', img: '/pizza.png' },
-  { id: 4, name: 'Chocolate Sundae', store: 'Cold Stone', price: '₦3,500', img: '/burger.png' },
+  { id: 1, name: 'KFC Mega Bucket', store: 'KFC - Sabo', price: '₦8,500', img: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Large Fries & Dip', store: 'Burger King', price: '₦2,200', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Classic Pepperoni', store: "Domino's Pizza", price: '₦6,800', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&h=500&fit=crop' },
+  { id: 4, name: 'Chocolate Sundae', store: 'Cold Stone', price: '₦3,500', img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' },
 ]
 
 const trendingGrocery = [
-  { id: 1, name: 'Avocados large', store: 'Produce', price: '₦8,500', img: '/pizza.png' },
-  { id: 2, name: 'Organic milk', store: 'Dairy', price: '₦2,200', img: '/burger.png' },
-  { id: 3, name: 'Sourdough Loaf', store: 'Bakery', price: '₦6,800', img: '/pizza.png' },
-  { id: 4, name: 'Brown Eggs', store: 'Dairy & Eggs', price: '₦3,500', img: '/burger.png' },
+  { id: 1, name: 'Avocados large', store: 'Produce', price: '₦8,500', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Organic milk', store: 'Dairy', price: '₦2,200', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Sourdough Loaf', store: 'Bakery', price: '₦6,800', img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&h=500&fit=crop' },
+  { id: 4, name: 'Brown Eggs', store: 'Dairy & Eggs', price: '₦3,500', img: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?w=500&h=500&fit=crop' },
 ]
 
 // Mock Data (Desktop Only)
@@ -44,18 +44,18 @@ const desktopServices = [
 ]
 
 const desktopQuickReorder = [
-  { id: 1, name: 'Margherita\nPizza', img: '/pizza.png', color: 'ring-blue-500' },
-  { id: 2, name: 'Cheeseburger\nMeal', img: '/burger.png', color: 'ring-yellow-500' },
-  { id: 3, name: 'Greek\nBowl', img: '/pizza.png', color: 'ring-green-500' },
-  { id: 4, name: 'Salmon\nSushi', img: '/pizza.png', color: 'ring-orange-500' },
-  { id: 5, name: 'Grill\nMix', img: '/burger.png', color: 'ring-red-500' },
+  { id: 1, name: 'Margherita\nPizza', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=500&fit=crop', color: 'ring-blue-500' },
+  { id: 2, name: 'Cheeseburger\nMeal', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop', color: 'ring-yellow-500' },
+  { id: 3, name: 'Greek\nBowl', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop', color: 'ring-green-500' },
+  { id: 4, name: 'Salmon\nSushi', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop', color: 'ring-orange-500' },
+  { id: 5, name: 'Grill\nMix', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop', color: 'ring-red-500' },
 ]
 
 const desktopPopular = [
-  { id: 1, name: 'The Lagos Bistro', tags: 'Continental • 20–30 mins', rating: 4.8, badge: 'TOP RATED', badgeColor: 'bg-blue-600', fee: 'Free Delivery', img: '/burger.png' },
-  { id: 2, name: 'Pepper & Spice', tags: 'African Fusion • 15–25 mins', rating: 4.5, badge: null, fee: '₦1,200 del.', img: '/pizza.png' },
-  { id: 3, name: 'Pizza Express', tags: 'Italian • 10–15 mins', rating: 4.2, badge: 'FASTEST', badgeColor: 'bg-red-600', fee: 'Free Delivery', img: '/pizza.png' },
-  { id: 4, name: "Wok n' Roll", tags: 'Asian • 25–40 mins', rating: 4.7, badge: null, fee: '₦800 del.', img: '/burger.png' },
+  { id: 1, name: 'The Lagos Bistro', tags: 'Continental • 20–30 mins', rating: 4.8, badge: 'TOP RATED', badgeColor: 'bg-blue-600', fee: 'Free Delivery', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
+  { id: 2, name: 'Pepper & Spice', tags: 'African Fusion • 15–25 mins', rating: 4.5, badge: null, fee: '₦1,200 del.', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
+  { id: 3, name: 'Pizza Express', tags: 'Italian • 10–15 mins', rating: 4.2, badge: 'FASTEST', badgeColor: 'bg-red-600', fee: 'Free Delivery', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&h=500&fit=crop' },
+  { id: 4, name: "Wok n' Roll", tags: 'Asian • 25–40 mins', rating: 4.7, badge: null, fee: '₦800 del.', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=500&h=500&fit=crop' },
 ]
 
 export default function Home() {
@@ -105,7 +105,7 @@ export default function Home() {
             </button>
           </div>
           <img 
-            src={activeTab === 'Food' ? "/burger.png" : "/pizza.png"} 
+            src={activeTab === 'Food' ? "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" : "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop"} 
             alt="Promo" 
             className="absolute -right-4 -bottom-4 w-36 h-36 object-cover opacity-80 drop-shadow-2xl" 
           />
@@ -283,7 +283,7 @@ export default function Home() {
         
         {/* Desktop Banner */}
         <div className="w-full bg-[#463F3A] rounded-[24px] overflow-hidden mb-12 relative h-[320px] flex items-center">
-          <img src="/pizza.png" alt="Groceries background" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
+          <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=800&fit=crop" alt="Groceries background" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#463F3A] via-[#463F3A]/90 to-transparent" />
           
           <div className="relative z-10 px-14 py-10 w-[60%]">
