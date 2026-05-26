@@ -67,80 +67,63 @@ export default function Slider() {
   const slide = slides[currentSlide]
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-[#F8F9FA] md:bg-gray-50/50">
       
       {/* Top action */}
-      <div className="w-full flex justify-end p-5 pt-12 md:p-8">
-        <Link to="/onboarding/welcome" className="text-[#4F46E5] font-semibold text-sm">
+      <div className="w-full flex justify-end p-6 pt-14 md:p-8 md:max-w-md md:mx-auto">
+        <Link to="/onboarding/welcome" className="text-[#4F46E5] font-semibold text-[15px]">
           Skip
         </Link>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 max-w-md mx-auto w-full md:max-w-4xl md:flex-row md:gap-12 md:px-12 pb-12">
+      <div className="flex-1 flex flex-col items-center px-6 max-w-md mx-auto w-full pb-10">
         
-        {/* Desktop Left / Mobile Top Image */}
-        <div className="w-full max-w-sm aspect-square bg-[#F8F9FA] rounded-[2rem] flex items-center justify-center p-8 mb-8 md:mb-0 md:flex-1 relative overflow-hidden">
-          <div className="text-center transition-all duration-500 ease-in-out">
-            {/* Title moved inside the card for slide 2,3,4 based on screenshot? 
-                Wait, screenshot shows title inside the card for "Track your delivery live" and "Find vendors near you".
-                Actually, let's keep it consistent, but looking at screenshots, the title is inside the grey box!
-                Let's put the title above the emoji inside the image box if the screenshot has it.
-                Ah, screenshot 1 (Fast.Fresh.Reliable) has the title above the image in the white card.
-                Screenshot 2 (Order in seconds) has title at the bottom of the card.
-                Screenshot 3 (Track your delivery live) has title at the top of the card.
-                Screenshot 4 (Find vendors near you) has title at the top of the card.
-                Let's just use a clean layout: title on top of the emoji, or outside.
-                Actually, the first batch screenshot had it inside the white card box. 
-                Let's just put it outside for all slides to keep the layout very clean, or inside the card like the screenshots.
-            */}
-            
-            {/* 3D Illustration placeholder / Image */}
-            <div className="relative inline-block mt-4 mb-4" key={currentSlide}>
-              {slide.img ? (
-                <img src={slide.img} alt={slide.title} className="w-[200px] h-[200px] object-contain animate-[bounce_2s_ease-in-out_infinite]" />
-              ) : (
-                <span className="text-9xl animate-[bounce_2s_ease-in-out_infinite] block">
-                  {slide.emoji}
-                </span>
-              )}
-              {slide.decorations}
-            </div>
-          </div>
-        </div>
-
-        {/* Text and Actions */}
-        <div className="w-full max-w-sm flex flex-col items-center text-center md:flex-1 md:items-start md:text-left">
+        {/* White Card containing Title and Image */}
+        <div className="w-full bg-white rounded-[32px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 pt-10 flex flex-col items-center justify-center min-h-[380px] mb-10 relative overflow-hidden">
           
-          <h1 className="text-2xl font-bold text-[#4F46E5] mb-4 md:mb-6">
+          <h1 className="text-[22px] md:text-2xl font-bold text-[#2D2AEE] mb-8 text-center px-2 leading-tight">
             {slide.title}
           </h1>
 
-          <p className="text-gray-600 text-base leading-relaxed px-4 md:px-0 mb-12">
-            {slide.description}
-          </p>
-
-          <div className="w-full flex items-center justify-between mt-auto md:mt-8">
-            {/* Dots */}
-            <div className="flex gap-2">
-              {slides.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    currentSlide === idx ? 'w-6 bg-[#4F46E5]' : 'w-2 bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handleNext}
-              className="bg-[#4F46E5] text-white py-3.5 px-8 rounded-xl font-medium text-base shadow-lg shadow-indigo-200 transition-transform active:scale-[0.98] hover:bg-indigo-700"
-            >
-              {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
-            </button>
+          {/* 3D Illustration placeholder / Image */}
+          <div className="relative inline-block" key={currentSlide}>
+            {slide.img ? (
+              <img src={slide.img} alt={slide.title} className="w-[220px] h-[220px] object-contain animate-[bounce_3s_ease-in-out_infinite]" />
+            ) : (
+              <span className="text-9xl animate-[bounce_3s_ease-in-out_infinite] block">
+                {slide.emoji}
+              </span>
+            )}
+            {slide.decorations}
           </div>
         </div>
+
+        {/* Description */}
+        <p className="text-[#4A5568] text-center text-[15px] leading-relaxed px-4 mb-10 min-h-[44px]">
+          {slide.description}
+        </p>
+
+        {/* Dots */}
+        <div className="flex gap-2 justify-center mb-10">
+          {slides.map((_, idx) => (
+            <span
+              key={idx}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentSlide === idx ? 'w-6 bg-[#4F46E5]' : 'w-2 bg-[#E2E8F0]'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Full-width Button */}
+        <button
+          onClick={handleNext}
+          className="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white py-4 rounded-xl font-medium text-[16px] transition-all shadow-[0_8px_20px_rgba(79,70,229,0.2)] active:scale-[0.98]"
+        >
+          {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
+        </button>
+        
       </div>
     </div>
   )
