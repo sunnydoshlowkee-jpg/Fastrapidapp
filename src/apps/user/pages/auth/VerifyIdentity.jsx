@@ -1,11 +1,51 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import Logo from '../../../../components/brand/Logo'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { verifyPhoneOtp } from '../../../../services/authService'
+
+const OTP_LENGTH = 4
+
+function getApiFieldError(err, field) {
+  const errors = err.response?.data?.errors
+  if (errors?.[field]?.[0]) return errors[field][0]
+  return err.response?.data?.message || 'Unable to verify. Please try again.'
+}
+
+function formatPhoneDisplay(phoneE164, nationalPhone) {
+  if (phoneE164) {
+    const digits = phoneE164.replace(/\D/g, '')
+    if (digits.length >= 13 && digits.startsWith('234')) {
+      const local = digits.slice(3)
+      return `+234 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`
+    }
+    return phoneE164
+  }
+  if (nationalPhone) {
+    const local = nationalPhone.replace(/\D/g, '')
+    if (local.length === 10) {
+      return `+234 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`
+    }
+    return `+234 ${nationalPhone}`
+  }
+  return ''
+}
 
 export default function VerifyIdentity() {
   const navigate = useNavigate()
-  const [code, setCode] = useState(['4', '8', '', ''])
+  const location = useLocation()
+  const phoneE164 = location.state?.phoneE164
+  const nationalPhone = location.state?.phone
+  const flow = location.state?.flow ?? 'login'
+
+  const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
+  const [codeError, setCodeError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [timer, setTimer] = useState(45)
+
+  useEffect(() => {
+    if (!phoneE164) {
+      navigate('/auth/login', { replace: true })
+    }
+  }, [phoneE164, navigate])
 
   useEffect(() => {
     if (timer > 0) {
@@ -15,17 +55,70 @@ export default function VerifyIdentity() {
   }, [timer])
 
   const handleInput = (index, value) => {
-    if (value.length > 1) return // only 1 char
+    const digit = value.replace(/\D/g, '').slice(-1)
     const newCode = [...code]
-    newCode[index] = value
+    newCode[index] = digit
     setCode(newCode)
-    
-    // auto focus next
-    if (value && index < 3) {
+    if (codeError) setCodeError('')
+
+    if (digit && index < OTP_LENGTH - 1) {
       const nextInput = document.getElementById(`verify-otp-${index + 1}`)
       if (nextInput) nextInput.focus()
     }
   }
+
+  const handleKeyDown = (index, event) => {
+    if (event.key === 'Backspace' && !code[index] && index > 0) {
+      const prevInput = document.getElementById(`verify-otp-${index - 1}`)
+      if (prevInput) prevInput.focus()
+    }
+  }
+
+  const handleVerify = async () => {
+    setCodeError('')
+
+    const otp = code.join('')
+    if (otp.length === 0) {
+      setCodeError('Enter the verification code.')
+      return
+    }
+    if (otp.length < OTP_LENGTH) {
+      setCodeError(`Enter the ${OTP_LENGTH}-digit verification code.`)
+      return
+    }
+
+    if (!phoneE164) {
+      navigate('/auth/login', { replace: true })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data } = await verifyPhoneOtp({
+        phone_e164: phoneE164,
+        code: otp,
+        flow,
+      })
+      const token = data?.data?.token
+      const user = data?.data?.user
+      if (token) {
+        localStorage.setItem('rapid_token', token)
+      }
+
+      if (user?.status === 'pending_profile') {
+        navigate('/onboarding/profile', { state: { phoneE164, phone: nationalPhone } })
+        return
+      }
+
+      navigate('/app')
+    } catch (err) {
+      setCodeError(getApiFieldError(err, 'code') || getApiFieldError(err, 'phone'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const displayPhone = formatPhoneDisplay(phoneE164, nationalPhone)
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -34,32 +127,45 @@ export default function VerifyIdentity() {
         
         <h1 className="text-3xl font-bold text-gray-900 mb-3 text-center w-full">Verify Your Identity</h1>
         <p className="text-gray-600 text-base text-center mb-10 px-4">
-          We've sent a 4-digit code to <br className="hidden md:block"/> +234 089 7373 093. <button onClick={() => navigate(-1)} className="text-[#4F46E5] font-semibold">Edit</button>
+          We&apos;ve sent a 4-digit code to{' '}
+          <span className="font-semibold text-gray-900">{displayPhone || 'your number'}</span>.{' '}
+          <button type="button" onClick={() => navigate('/auth/login')} className="text-[#4F46E5] font-semibold">Edit</button>
         </p>
 
-        {/* OTP Inputs */}
-        <div className="flex gap-4 justify-center mb-6 w-full">
+        <div className="flex gap-4 justify-center mb-2 w-full">
           {code.map((digit, idx) => (
             <input
               key={idx}
               id={`verify-otp-${idx}`}
               type="text"
               inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={1}
               value={digit}
               onChange={(e) => handleInput(idx, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(idx, e)}
+              aria-label={`Digit ${idx + 1} of ${OTP_LENGTH}`}
               className={`w-16 h-16 text-center text-2xl font-bold rounded-2xl outline-none transition-colors ${
-                digit 
-                  ? 'border border-[#4F46E5] bg-indigo-50/30 text-gray-900' 
-                  : 'bg-[#F4F5F7] border border-transparent focus:border-[#4F46E5]'
+                codeError
+                  ? 'border-2 border-red-500 bg-red-50/30'
+                  : digit
+                    ? 'border border-[#4F46E5] bg-indigo-50/30 text-gray-900'
+                    : 'bg-[#F4F5F7] border border-transparent focus:border-[#4F46E5]'
               }`}
             />
           ))}
         </div>
+        {codeError ? (
+          <p className="text-center text-sm font-medium text-red-600 mb-6" role="alert">
+            {codeError}
+          </p>
+        ) : (
+          <div className="mb-6" />
+        )}
 
-        {/* Resend actions */}
         <div className="text-center mb-12">
           <p className="text-sm text-gray-500 mb-2">
-            Didn't get a code? <button className="text-[#4F46E5]">Resend link</button>
+            Didn&apos;t get a code? <button type="button" className="text-[#4F46E5]">Resend link</button>
           </p>
           <p className="text-xs text-gray-400">
             Resend code in 0:{timer.toString().padStart(2, '0')}
@@ -68,10 +174,12 @@ export default function VerifyIdentity() {
 
         <div className="mt-auto w-full pb-8">
           <button 
-            onClick={() => navigate('/app')} 
-            className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-semibold text-base uppercase tracking-wider shadow-lg shadow-indigo-200 transition-transform active:scale-[0.98] hover:bg-indigo-700"
+            type="button"
+            onClick={handleVerify}
+            disabled={loading}
+            className="w-full bg-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-semibold text-base uppercase tracking-wider shadow-lg shadow-indigo-200 transition-transform active:scale-[0.98] hover:bg-indigo-700"
           >
-            Verify
+            {loading ? 'Verifying…' : 'Verify'}
           </button>
         </div>
       </div>

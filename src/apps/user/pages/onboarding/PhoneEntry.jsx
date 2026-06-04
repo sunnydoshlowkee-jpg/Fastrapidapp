@@ -1,10 +1,46 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
+import { requestPhoneOtp } from '../../../../services/authService'
+
+const COUNTRY = 'NG'
+
+function getApiFieldError(err, field) {
+  const errors = err.response?.data?.errors
+  if (errors?.[field]?.[0]) return errors[field][0]
+  return err.response?.data?.message || 'Unable to continue. Please try again.'
+}
 
 export default function PhoneEntry() {
   const navigate = useNavigate()
   const [phone, setPhone] = useState('')
+  const [phoneError, setPhoneError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleContinue = async () => {
+    setPhoneError('')
+
+    if (!phone.trim()) {
+      setPhoneError('Phone number is required.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data } = await requestPhoneOtp({ country: COUNTRY, phone, flow: 'register' })
+      const payload = data?.data ?? data
+      navigate('/onboarding/otp', {
+        state: {
+          phone: payload?.phone ?? phone,
+          phoneE164: payload?.phone_e164,
+        },
+      })
+    } catch (err) {
+      setPhoneError(getApiFieldError(err, 'phone'))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <CenteredLayout 
@@ -34,26 +70,44 @@ export default function PhoneEntry() {
             <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] md:text-[#111827] uppercase tracking-wider mb-2">
               Phone Number <span className="text-red-500">*</span>
             </label>
-            <div className="flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 border-transparent focus-within:border-[#4342FF] focus-within:bg-white transition-all shadow-sm">
+            <div
+              className={`flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 transition-all shadow-sm ${
+                phoneError
+                  ? 'border-red-500 bg-red-50/30'
+                  : 'border-transparent focus-within:border-[#4342FF] focus-within:bg-white'
+              }`}
+            >
               <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-3">+234</span>
               <div className="w-px h-6 bg-[#D1D5DB] mr-4" />
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value)
+                  if (phoneError) setPhoneError('')
+                }}
                 placeholder="0000000000"
+                aria-invalid={phoneError ? 'true' : 'false'}
+                aria-describedby={phoneError ? 'phone-error' : undefined}
                 className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
               />
             </div>
+            {phoneError ? (
+              <p id="phone-error" className="mt-2 text-sm font-medium text-red-600" role="alert">
+                {phoneError}
+              </p>
+            ) : null}
           </div>
         </div>
 
         <div className="w-full mt-auto md:mt-0">
           <button 
-            onClick={() => navigate('/onboarding/otp')} 
-            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 mt-8 md:mt-2 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6"
+            type="button"
+            onClick={handleContinue}
+            disabled={loading}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 mt-8 md:mt-2 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6"
           >
-            Continue
+            {loading ? 'Please wait…' : 'Continue'}
           </button>
 
           <p className="text-center text-[15px] md:text-[16px] text-[#4B5563] mb-8 md:mb-0">

@@ -1,12 +1,52 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Mail } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Mail } from 'lucide-react'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
+import { verifyPhoneOtp } from '../../../../services/authService'
+
+const OTP_LENGTH = 4
+
+function getApiFieldError(err, field) {
+  const errors = err.response?.data?.errors
+  if (errors?.[field]?.[0]) return errors[field][0]
+  return err.response?.data?.message || 'Unable to verify. Please try again.'
+}
+
+function formatPhoneDisplay(phoneE164, nationalPhone) {
+  if (phoneE164) {
+    const digits = phoneE164.replace(/\D/g, '')
+    if (digits.length >= 13 && digits.startsWith('234')) {
+      const local = digits.slice(3)
+      return `+234 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`
+    }
+    return phoneE164
+  }
+  if (nationalPhone) {
+    const local = nationalPhone.replace(/\D/g, '')
+    if (local.length === 10) {
+      return `+234 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`
+    }
+    return `+234 ${nationalPhone}`
+  }
+  return ''
+}
 
 export default function OtpVerify() {
   const navigate = useNavigate()
-  const [code, setCode] = useState(['4', '8', '', ''])
+  const location = useLocation()
+  const phoneE164 = location.state?.phoneE164
+  const nationalPhone = location.state?.phone
+
+  const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
+  const [codeError, setCodeError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [timer, setTimer] = useState(45)
+
+  useEffect(() => {
+    if (!phoneE164) {
+      navigate('/onboarding/phone', { replace: true })
+    }
+  }, [phoneE164, navigate])
 
   useEffect(() => {
     if (timer > 0) {
@@ -16,17 +56,59 @@ export default function OtpVerify() {
   }, [timer])
 
   const handleInput = (index, value) => {
-    if (value.length > 1) return // only 1 char
+    const digit = value.replace(/\D/g, '').slice(-1)
     const newCode = [...code]
-    newCode[index] = value
+    newCode[index] = digit
     setCode(newCode)
-    
-    // auto focus next
-    if (value && index < 3) {
+    if (codeError) setCodeError('')
+
+    if (digit && index < OTP_LENGTH - 1) {
       const nextInput = document.getElementById(`otp-${index + 1}`)
       if (nextInput) nextInput.focus()
     }
   }
+
+  const handleKeyDown = (index, event) => {
+    if (event.key === 'Backspace' && !code[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      if (prevInput) prevInput.focus()
+    }
+  }
+
+  const handleVerify = async () => {
+    setCodeError('')
+
+    const otp = code.join('')
+    if (otp.length === 0) {
+      setCodeError('Enter the verification code.')
+      return
+    }
+    if (otp.length < OTP_LENGTH) {
+      setCodeError(`Enter the ${OTP_LENGTH}-digit verification code.`)
+      return
+    }
+
+    if (!phoneE164) {
+      navigate('/onboarding/phone', { replace: true })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data } = await verifyPhoneOtp({ phone_e164: phoneE164, code: otp, flow: 'register' })
+      const token = data?.data?.token
+      if (token) {
+        localStorage.setItem('rapid_token', token)
+      }
+      navigate('/onboarding/profile', { state: { phoneE164, phone: nationalPhone } })
+    } catch (err) {
+      setCodeError(getApiFieldError(err, 'code'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const displayPhone = formatPhoneDisplay(phoneE164, nationalPhone)
 
   return (
     <CenteredLayout 
@@ -40,7 +122,6 @@ export default function OtpVerify() {
           <div className="w-28 h-28 md:w-32 md:h-32 bg-[#4342FF] rounded-[2rem] flex items-center justify-center shadow-lg shadow-indigo-200">
             <Mail size={40} className="text-white md:w-12 md:h-12" strokeWidth={1.5} />
           </div>
-          {/* Small floating icon */}
           <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl shadow-sm border border-gray-50 flex items-center justify-center">
             <Mail size={16} className="text-[#4342FF] md:w-5 md:h-5" strokeWidth={2} />
           </div>
@@ -49,33 +130,46 @@ export default function OtpVerify() {
         <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-3 md:mb-4 tracking-tight md:text-center">Check your phone</h1>
         <p className="text-[#6B7280] text-[16px] md:text-[18px] text-center mb-10 md:mb-12 px-4">
           We've sent a 4-digit code to<br className="md:hidden" />
-          <span className="text-[#111827] font-semibold md:ml-1">+234 803 123 4567</span>{' '}
-          <button onClick={() => navigate(-1)} className="text-[#4342FF] font-bold hover:underline md:ml-2">Edit</button>
+          <span className="text-[#111827] font-semibold md:ml-1">{displayPhone || 'your number'}</span>{' '}
+          <button type="button" onClick={() => navigate('/onboarding/phone')} className="text-[#4342FF] font-bold hover:underline md:ml-2">Edit</button>
         </p>
 
         {/* OTP Inputs */}
-        <div className="flex gap-4 justify-center mb-6 md:mb-10 w-full">
+        <div className="flex gap-4 justify-center mb-2 md:mb-4 w-full">
           {code.map((digit, idx) => (
             <input
               key={idx}
               id={`otp-${idx}`}
               type="text"
               inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={1}
               value={digit}
               onChange={(e) => handleInput(idx, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(idx, e)}
+              aria-label={`Digit ${idx + 1} of ${OTP_LENGTH}`}
               className={`w-16 h-16 md:w-20 md:h-20 text-center text-2xl md:text-3xl font-bold rounded-2xl outline-none transition-all shadow-sm ${
-                digit 
-                  ? 'border-2 border-[#4342FF] bg-indigo-50/50 text-[#111827]' 
-                  : 'bg-[#F3F4F6] border-2 border-transparent focus:border-[#4342FF] focus:bg-white'
+                codeError
+                  ? 'border-2 border-red-500 bg-red-50/30'
+                  : digit
+                    ? 'border-2 border-[#4342FF] bg-indigo-50/50 text-[#111827]'
+                    : 'bg-[#F3F4F6] border-2 border-transparent focus:border-[#4342FF] focus:bg-white'
               }`}
             />
           ))}
         </div>
+        {codeError ? (
+          <p className="text-center text-sm font-medium text-red-600 mb-8 md:mb-10" role="alert">
+            {codeError}
+          </p>
+        ) : (
+          <div className="mb-6 md:mb-10" />
+        )}
 
         {/* Resend actions */}
         <div className="text-center mb-12 md:mb-14">
           <p className="text-[14px] md:text-[16px] text-[#6B7280] mb-2">
-            Didn't get a code? <button className="text-[#4342FF] font-bold hover:underline">Resend link</button>
+            Didn't get a code? <button type="button" className="text-[#4342FF] font-bold hover:underline">Resend link</button>
           </p>
           <p className="text-[13px] md:text-[15px] text-[#9CA3AF] font-medium">
             Resend code in 0:{timer.toString().padStart(2, '0')}
@@ -84,10 +178,12 @@ export default function OtpVerify() {
 
         <div className="w-full mt-auto md:mt-0">
           <button 
-            onClick={() => navigate('/onboarding/profile')} 
-            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6 md:mb-0"
+            type="button"
+            onClick={handleVerify}
+            disabled={loading}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6 md:mb-0"
           >
-            Verify
+            {loading ? 'Verifying…' : 'Verify'}
           </button>
         </div>
       </div>
