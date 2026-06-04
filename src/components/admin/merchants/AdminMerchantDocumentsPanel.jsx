@@ -66,7 +66,11 @@ function DocumentRow({ doc, onOpen }) {
   )
 }
 
-export default function AdminMerchantDocumentsPanel({ documents }) {
+export default function AdminMerchantDocumentsPanel({
+  documents,
+  merchantId,
+  onDocumentUpdated,
+}) {
   const [openId, setOpenId] = useState(null)
 
   if (!documents || documents.items.length === 0) {
@@ -99,7 +103,11 @@ export default function AdminMerchantDocumentsPanel({ documents }) {
       {openDoc ? (
         <AdminMerchantDocumentViewerModal
           document={openDoc}
+          merchantId={merchantId}
           onClose={() => setOpenId(null)}
+          onDocumentUpdated={(updated) => {
+            onDocumentUpdated?.(updated)
+          }}
         />
       ) : null}
     </section>

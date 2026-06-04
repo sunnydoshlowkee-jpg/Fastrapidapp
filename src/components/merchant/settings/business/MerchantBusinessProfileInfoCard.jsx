@@ -1,4 +1,22 @@
 import { Check, Mail, MapPin, Phone, Store } from 'lucide-react'
+
+function BusinessLogo({ businessInfo }) {
+  if (businessInfo.logoUrl) {
+    return (
+      <img
+        src={businessInfo.logoUrl}
+        alt=""
+        className="h-[72px] w-[72px] rounded-xl object-cover lg:h-20 lg:w-20"
+      />
+    )
+  }
+
+  return (
+    <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-[#1A1A1A] text-white/80 lg:h-20 lg:w-20">
+      <Store size={28} strokeWidth={1.5} aria-hidden />
+    </div>
+  )
+}
 import { merchantBusinessProfileCardClass } from './merchantBusinessProfileCardStyles'
 
 function ContactItem({ icon: Icon, children }) {
@@ -15,9 +33,7 @@ export default function MerchantBusinessProfileInfoCard({ businessInfo }) {
     <section className={`${merchantBusinessProfileCardClass} h-full`}>
       <div className="flex gap-4 lg:gap-5">
         <div className="relative shrink-0">
-          <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-[#1A1A1A] text-white/80 lg:h-20 lg:w-20">
-            <Store size={28} strokeWidth={1.5} aria-hidden />
-          </div>
+          <BusinessLogo businessInfo={businessInfo} />
           {businessInfo.verified && (
             <span
               className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-merchant-primary text-white ring-2 ring-merchant-surface"

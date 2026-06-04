@@ -2,22 +2,24 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Cloud, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Logo from '../../../../components/brand/Logo'
-
-const DUMMY_CREDENTIALS = {
-  email: 'admin@kaabo.system',
-  password: 'admin123',
-}
+import { adminLogin } from '../../../../services/adminAuthService'
+import {
+  ADMIN_DUMMY_CREDENTIALS,
+  ADMIN_LOGIN_COPY,
+  ADMIN_VERIFY_2FA_PATH,
+} from '../../../../services/data/adminAuth.mock'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(DUMMY_CREDENTIALS.email)
-  const [password, setPassword] = useState(DUMMY_CREDENTIALS.password)
+  const copy = ADMIN_LOGIN_COPY
+  const [email, setEmail] = useState(ADMIN_DUMMY_CREDENTIALS.email)
+  const [password, setPassword] = useState(ADMIN_DUMMY_CREDENTIALS.password)
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
 
@@ -27,17 +29,18 @@ export default function AdminLogin() {
     }
 
     setLoading(true)
-    setTimeout(() => {
-      if (
-        email.trim().toLowerCase() === DUMMY_CREDENTIALS.email &&
-        password === DUMMY_CREDENTIALS.password
-      ) {
-        navigate('/admin/verify-2fa', { replace: true })
-      } else {
-        setError('Incorrect email or password. Try again.')
-        setLoading(false)
-      }
-    }, 400)
+    try {
+      await adminLogin({ email, password, rememberMe })
+      navigate(ADMIN_VERIFY_2FA_PATH, { replace: true })
+    } catch (err) {
+      setError(
+        err.code === 'INVALID_CREDENTIALS'
+          ? copy.form.authErrorMessage
+          : err.message || copy.form.authErrorMessage,
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -98,10 +101,10 @@ export default function AdminLogin() {
           </div>
 
           <h2 className="hidden text-3xl font-bold tracking-tight text-gray-900 lg:block">
-            Welcome Back
+            {copy.form.title}
           </h2>
           <p className="mt-2 hidden text-sm text-gray-500 lg:block">
-            Sign in to access the administrative dashboard.
+            {copy.form.subtitle}
           </p>
 
           <form
@@ -123,7 +126,7 @@ export default function AdminLogin() {
                 htmlFor="admin-email"
                 className="block text-sm font-semibold text-gray-900"
               >
-                Email Address
+                {copy.form.emailLabel}
               </label>
               <div className="mt-1.5 flex items-center gap-2 rounded-lg bg-gray-100 px-3 focus-within:bg-gray-50 focus-within:ring-2 focus-within:ring-rapid-orange/30">
                 <Mail size={16} className="text-gray-500" aria-hidden />
@@ -145,7 +148,7 @@ export default function AdminLogin() {
                   htmlFor="admin-password"
                   className="block text-sm font-semibold text-gray-900"
                 >
-                  Password
+                  {copy.form.passwordLabel}
                 </label>
                 <Link
                   to="/admin/forgot-password"
@@ -184,13 +187,13 @@ export default function AdminLogin() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 rounded border-gray-300 text-rapid-orange focus:ring-rapid-orange/30"
                 />
-                Remember me
+                {copy.form.rememberMe}
               </label>
               <Link
                 to="/admin/forgot-password"
                 className="text-sm font-semibold text-rapid-orange hover:text-[#E84A15]"
               >
-                Forgot Password?
+                {copy.form.forgotPassword}
               </Link>
             </div>
 
@@ -209,10 +212,7 @@ export default function AdminLogin() {
         </div>
 
         <p className="relative mt-8 text-center text-xs text-gray-400">
-          Secure login for Rapid administrators.
-          <br className="lg:hidden" />
-          <span className="hidden lg:inline"> — </span>
-          Powered by Systems.
+          {copy.form.footer}
         </p>
       </main>
     </div>

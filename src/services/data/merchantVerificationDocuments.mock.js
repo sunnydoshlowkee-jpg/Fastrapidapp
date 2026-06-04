@@ -47,11 +47,7 @@ export const MERCHANT_VERIFICATION_DOCUMENTS = {
         icon: 'file',
       },
       variant: 'dropzone',
-      status: 'uploaded',
-      file: {
-        name: 'TIN_DOCUMENT_2023.pdf',
-        meta: 'Uploaded 2 mins ago • 1.2MB',
-      },
+      status: 'empty',
       dropzone: {
         prompt: 'Drop file here or',
         browseLabel: 'browse',
@@ -72,4 +68,10 @@ export const MERCHANT_VERIFICATION_DOCUMENTS = {
       },
     },
   ],
+  whyWeNeedThis: {
+    title: 'Why we need this',
+    body: 'To ensure the security of the Rapid ecosystem, we verify all merchants through official channels. Your data is encrypted and stored in compliance with local privacy regulations.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=640&h=320&fit=crop',
+  },
 }

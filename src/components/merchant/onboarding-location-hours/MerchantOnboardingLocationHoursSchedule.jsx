@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import MerchantOperatingHoursDayRow from '../settings/operating-hours/MerchantOperatingHoursDayRow'
 import MerchantOnboardingLocationHoursSection from './MerchantOnboardingLocationHoursSection'
 
@@ -10,20 +9,16 @@ export default function MerchantOnboardingLocationHoursSchedule({
   descriptionOverride,
   dayRowVariant = 'default',
 }) {
-  const [internalDays, setInternalDays] = useState(() => hours.days.map((d) => ({ ...d })))
-  const controlled = externalDays != null && onExternalDaysChange != null
-  const days = controlled ? externalDays : internalDays
+  const days = externalDays ?? hours.days
 
   const handleToggle = (id, open) => {
     const next = days.map((day) => (day.id === id ? { ...day, open } : day))
-    if (controlled) onExternalDaysChange(next)
-    else setInternalDays(next)
+    onExternalDaysChange?.(next)
   }
 
   const handleTimeChange = (id, field, value) => {
     const next = days.map((day) => (day.id === id ? { ...day, [field]: value } : day))
-    if (controlled) onExternalDaysChange(next)
-    else setInternalDays(next)
+    onExternalDaysChange?.(next)
   }
 
   const sectionDescription = descriptionOverride ?? hours.description

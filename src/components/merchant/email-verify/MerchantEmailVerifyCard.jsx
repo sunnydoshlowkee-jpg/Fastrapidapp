@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import MerchantButton from '../auth/MerchantButton'
 import MerchantOtpInput from '../auth/MerchantOtpInput'
 import { MERCHANT_REGISTRATION_PATH } from '../../../services/data/merchantRegistration.mock'
-import { MERCHANT_VERIFICATION_DOCUMENTS_PATH } from '../../../services/data/merchantVerificationDocuments.mock'
 import { MERCHANT_EMAIL_VERIFICATION } from '../../../services/data/merchantEmailVerification.mock'
+import { merchantRedirectPath } from '../../../services/merchantOnboardingService'
 import {
   merchantResendSignupCode,
   merchantVerifySignupEmail,
@@ -44,8 +44,8 @@ export default function MerchantEmailVerifyCard({ email, copy = MERCHANT_EMAIL_V
 
     setLoading(true)
     try {
-      await merchantVerifySignupEmail({ email, code })
-      navigate(MERCHANT_VERIFICATION_DOCUMENTS_PATH, { replace: true })
+      const result = await merchantVerifySignupEmail({ email, code })
+      navigate(merchantRedirectPath(result.onboarding) || result.redirectPath, { replace: true })
     } catch (err) {
       setError(err.message || 'Unable to verify email. Please try again.')
     } finally {

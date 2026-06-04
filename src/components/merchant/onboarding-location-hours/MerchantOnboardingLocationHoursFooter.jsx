@@ -6,6 +6,7 @@ import { MERCHANT_VERIFICATION_DOCUMENTS_PATH } from '../../../services/data/mer
 export default function MerchantOnboardingLocationHoursFooter({
   page,
   onSaveNext,
+  submitting = false,
 }) {
   const { currentStep, totalSteps, previousLabel, saveNextLabel } = page
 
@@ -37,9 +38,10 @@ export default function MerchantOnboardingLocationHoursFooter({
       <MerchantButton
         type="button"
         onClick={onSaveNext}
+        disabled={submitting}
         className="w-full shadow-[0px_8px_24px_0px_rgba(67,66,255,0.25)] sm:w-auto sm:min-w-[160px]"
       >
-        {saveNextLabel}
+        {submitting ? 'Saving…' : saveNextLabel}
       </MerchantButton>
     </footer>
   )

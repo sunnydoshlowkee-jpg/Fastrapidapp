@@ -1,17 +1,17 @@
-import { useNavigate } from 'react-router-dom'
-import { MERCHANT_ONBOARDING_BANK_DETAILS } from '../../../services/data/merchantOnboardingBankDetails.mock'
-import { MERCHANT_PENDING_APPROVAL_PATH } from '../../../services/data/merchantPendingApproval.mock'
 import { merchantOnboardingShellClass } from '../registration/merchantRegistrationStyles'
 import MerchantRegistrationSidebar from '../registration/MerchantRegistrationSidebar'
 import MerchantOnboardingBankDetailsForm from './MerchantOnboardingBankDetailsForm'
 import MerchantOnboardingBankDetailsPanel from './MerchantOnboardingBankDetailsPanel'
 
-export default function MerchantOnboardingBankDetailsDesktop() {
-  const navigate = useNavigate()
-  const data = MERCHANT_ONBOARDING_BANK_DETAILS
-
-  const goNext = () => navigate(MERCHANT_PENDING_APPROVAL_PATH)
-
+export default function MerchantOnboardingBankDetailsDesktop({
+  data,
+  initialPayout,
+  loadError,
+  formError,
+  submitting,
+  onSaveNext,
+  onSkip,
+}) {
   return (
     <div
       className={`hidden min-h-screen flex-col bg-merchant-canvas lg:flex lg:flex-row ${merchantOnboardingShellClass}`}
@@ -26,8 +26,12 @@ export default function MerchantOnboardingBankDetailsDesktop() {
         <MerchantOnboardingBankDetailsForm
           page={data.page}
           fields={data.fields}
-          onSaveNext={goNext}
-          onSkip={goNext}
+          initialPayout={initialPayout}
+          loadError={loadError}
+          formError={formError}
+          submitting={submitting}
+          onSaveNext={onSaveNext}
+          onSkip={onSkip}
         />
       </main>
 

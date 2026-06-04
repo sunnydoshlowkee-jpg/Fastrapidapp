@@ -13,12 +13,15 @@ export default function AdminRejectMerchantModal({
   const [reasonId, setReasonId] = useState('')
   const [message, setMessage] = useState('')
   const [allowReapply, setAllowReapply] = useState(data.reapply.defaultOn)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!isOpen) return undefined
     setReasonId('')
     setMessage('')
     setAllowReapply(data.reapply.defaultOn)
+    setError('')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -30,15 +33,28 @@ export default function AdminRejectMerchantModal({
 
   const canConfirm = reasonId !== '' && message.trim().length > 0
 
-  const handleConfirm = () => {
-    if (!canConfirm) return
-    onConfirm?.({
-      merchantId: merchant.id,
-      reasonId,
-      message: message.trim(),
-      allowReapply,
-    })
-    onClose()
+  const handleConfirm = async () => {
+    if (!canConfirm || !merchant.numericId || submitting) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await onConfirm?.({
+        merchantId: merchant.numericId,
+        reasonId,
+        message: message.trim(),
+        allowReapply,
+      })
+      onClose()
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Unable to reject merchant. Please try again.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return createPortal(
@@ -146,22 +162,32 @@ export default function AdminRejectMerchantModal({
           </section>
         </div>
 
+        {error ? (
+          <p
+            role="alert"
+            className="border-t border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        ) : null}
+
         <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
+            disabled={submitting}
+            className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200 disabled:opacity-60"
           >
             {data.cancelLabel}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!canConfirm}
-            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700 disabled:opacity-50"
+            disabled={!canConfirm || submitting}
+            className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Gavel size={16} strokeWidth={2.5} aria-hidden />
-            {data.confirmLabel}
+            {submitting ? 'Rejecting…' : data.confirmLabel}
           </button>
         </div>
       </div>

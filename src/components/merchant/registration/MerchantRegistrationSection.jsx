@@ -9,23 +9,38 @@ const iconMap = {
   location: MapPin,
 }
 
-export default function MerchantRegistrationSection({ section, children }) {
+export default function MerchantRegistrationSection({ section, children, variant = 'default' }) {
   const Icon = iconMap[section.icon] ?? Store
+  const isSecurity = variant === 'security'
+  const isRepresentative = variant === 'representative'
+
+  if (isSecurity) {
+    return (
+      <section className="space-y-8 border-t border-[rgba(198,196,218,0.2)] pt-8">
+        <div className="flex items-center gap-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-merchant-primary/10">
+            <Icon size={16} className="text-merchant-link" strokeWidth={1.75} aria-hidden />
+          </span>
+          <h2 className="text-xl font-semibold leading-7 text-[#191C1D]">{section.title}</h2>
+        </div>
+        {children}
+      </section>
+    )
+  }
 
   return (
-    <section className="space-y-5">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-merchant-nav-active text-merchant-primary">
-          <Icon size={18} strokeWidth={1.75} aria-hidden />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-base font-bold text-merchant-ink">{section.title}</h2>
-          {section.subtitle ? (
-            <p className="mt-0.5 text-sm leading-relaxed text-merchant-muted">{section.subtitle}</p>
-          ) : null}
-        </div>
+    <section className={`space-y-7 ${isRepresentative ? 'pt-5' : ''}`}>
+      <div className="flex items-center gap-3">
+        <Icon size={20} className="shrink-0 text-merchant-primary" strokeWidth={1.75} aria-hidden />
+        <h2
+          className={`text-xl leading-7 tracking-[-0.5px] text-merchant-ink ${
+            isRepresentative ? 'font-bold' : 'font-normal'
+          }`}
+        >
+          {section.title}
+        </h2>
       </div>
-      {children}
+      <div className="space-y-5">{children}</div>
     </section>
   )
 }

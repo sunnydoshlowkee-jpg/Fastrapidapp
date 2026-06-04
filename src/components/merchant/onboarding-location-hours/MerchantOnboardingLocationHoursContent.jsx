@@ -6,15 +6,35 @@ export default function MerchantOnboardingLocationHoursContent({
   page,
   location,
   hours,
+  locationValues,
+  onLocationChange,
+  hourDays,
+  onHourDaysChange,
+  mapConfirmed,
+  onMapConfirm,
+  fieldErrors,
+  formError,
   onSaveNext,
+  submitting = false,
   variant = 'desktop',
   mobileSection = 'all',
-  externalHourDays,
-  onExternalHourDaysChange,
 }) {
   const isMobile = variant === 'mobile'
   const showLocation = !isMobile || mobileSection === 'all' || mobileSection === 'location'
   const showHours = !isMobile || mobileSection === 'all' || mobileSection === 'hours'
+
+  const hoursConfig = { ...hours, days: hourDays }
+
+  const handleSubmit = async (e) => {
+    if (e?.preventDefault) {
+      e.preventDefault()
+    }
+    try {
+      await onSaveNext?.()
+    } catch {
+      // Errors surfaced via formError / fieldErrors on page
+    }
+  }
 
   return (
     <article
@@ -31,27 +51,45 @@ export default function MerchantOnboardingLocationHoursContent({
         </header>
       ) : null}
 
-      <div className={isMobile ? 'mt-0 space-y-8' : 'mt-8 space-y-10'}>
+      {formError ? (
+        <p className={`rounded-lg bg-red-50 px-4 py-3 text-sm text-merchant-error ${isMobile ? 'mt-4' : 'mt-6'}`}>
+          {formError}
+        </p>
+      ) : null}
+
+      <form className={isMobile ? 'mt-0 space-y-8' : 'mt-8 space-y-10'} onSubmit={handleSubmit}>
         {showLocation ? (
           <MerchantOnboardingLocationHoursBusinessLocation
             location={location}
+            values={locationValues}
+            onChange={onLocationChange}
+            mapConfirmed={mapConfirmed}
+            onMapConfirm={onMapConfirm}
+            fieldErrors={fieldErrors}
             bareInputs={isMobile}
             hideSectionNumber={isMobile}
           />
         ) : null}
         {showHours ? (
-          <MerchantOnboardingLocationHoursSchedule
-            hours={hours}
-            hideSectionNumber={isMobile}
-            externalDays={isMobile && mobileSection === 'hours' ? externalHourDays : undefined}
-            onExternalDaysChange={isMobile && mobileSection === 'hours' ? onExternalHourDaysChange : undefined}
-            descriptionOverride={isMobile && mobileSection === 'hours' ? hours.mobileCardDescription : undefined}
-            dayRowVariant={isMobile && mobileSection === 'hours' ? 'onboardingMobile' : 'default'}
-          />
+          <div>
+            <MerchantOnboardingLocationHoursSchedule
+              hours={hoursConfig}
+              hideSectionNumber={isMobile}
+              externalDays={hourDays}
+              onExternalDaysChange={onHourDaysChange}
+              descriptionOverride={isMobile && mobileSection === 'hours' ? hours.mobileCardDescription : undefined}
+              dayRowVariant={isMobile && mobileSection === 'hours' ? 'onboardingMobile' : 'default'}
+            />
+            {fieldErrors.hours ? (
+              <p className="mt-2 text-sm text-merchant-error">{fieldErrors.hours}</p>
+            ) : null}
+          </div>
         ) : null}
-      </div>
 
-      {!isMobile ? <MerchantOnboardingLocationHoursFooter page={page} onSaveNext={onSaveNext} /> : null}
+        {!isMobile ? (
+          <MerchantOnboardingLocationHoursFooter page={page} onSaveNext={handleSubmit} submitting={submitting} />
+        ) : null}
+      </form>
     </article>
   )
 }

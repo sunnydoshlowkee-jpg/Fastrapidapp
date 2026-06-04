@@ -14,6 +14,18 @@ const statusBadge = {
 }
 
 export default function MerchantBusinessProfileMobileDocumentRow({ document }) {
+  if (!document.status) {
+    return (
+      <li className="flex items-center justify-between gap-3 rounded-lg bg-merchant-input px-3.5 py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <FileText size={18} className="shrink-0 text-merchant-muted" strokeWidth={1.75} aria-hidden />
+          <p className="text-sm font-semibold text-merchant-ink">{document.name}</p>
+        </div>
+        <span className="shrink-0 text-[10px] font-semibold text-merchant-muted">Not uploaded</span>
+      </li>
+    )
+  }
+
   if (document.status === 'rejected') {
     return (
       <li className="flex items-center justify-between gap-3 rounded-lg bg-red-50 px-3.5 py-3">
@@ -36,7 +48,7 @@ export default function MerchantBusinessProfileMobileDocumentRow({ document }) {
     )
   }
 
-  const badge = statusBadge[document.status]
+  const badge = statusBadge[document.status] ?? statusBadge.pending
   const BadgeIcon = badge.icon
 
   return (

@@ -37,15 +37,7 @@ export const MERCHANT_ONBOARDING_BANK_DETAILS = {
     bank: {
       label: 'Select Bank',
       placeholder: 'Choose a bank...',
-      options: [
-        'Access Bank',
-        'GTBank',
-        'First Bank',
-        'Zenith Bank',
-        'UBA',
-        'Kuda Bank',
-        'Opay',
-      ],
+      options: [],
     },
     accountNumber: {
       label: 'Account Number',
@@ -54,7 +46,6 @@ export const MERCHANT_ONBOARDING_BANK_DETAILS = {
     accountName: {
       label: 'Account Name',
       verifiedBannerLabel: 'Account Name Verified',
-      resolvedName: 'CHUKWUDI EMMANUEL OKAFOR',
     },
   },
   panel: {

@@ -3,7 +3,7 @@ import { Clock } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { clearMerchantSession } from '../../../services/merchantAuthService'
 import { MERCHANT_HELP_SUPPORT_PATH } from '../../../services/data/merchantHelpSupport.mock'
-import { MERCHANT_ONBOARDING_LOCATION_HOURS_PATH } from '../../../services/data/merchantOnboardingLocationHours.mock'
+import { getMerchantOnboardingState } from '../../../services/merchantOnboardingService'
 
 export default function MerchantPendingApprovalStatus({ status }) {
   const navigate = useNavigate()
@@ -11,9 +11,15 @@ export default function MerchantPendingApprovalStatus({ status }) {
 
   const handleRefresh = async () => {
     setRefreshing(true)
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    setRefreshing(false)
-    navigate(MERCHANT_ONBOARDING_LOCATION_HOURS_PATH)
+    try {
+      const onboarding = await getMerchantOnboardingState()
+      if (onboarding?.can_access_dashboard) {
+        navigate('/merchant', { replace: true })
+        return
+      }
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   const handleSignOut = () => {

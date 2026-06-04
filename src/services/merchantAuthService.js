@@ -1,13 +1,12 @@
-import {
-  MERCHANT_DUMMY_CREDENTIALS,
-  MERCHANT_DUMMY_USER,
-  MERCHANT_RESET_OTP,
-} from './data/merchantAuth.mock'
+import api from './api'
+import { MERCHANT_RESET_OTP } from './data/merchantAuth.mock'
+import { setMerchantSignupEmail } from './merchantRegistrationService'
+import { getApiFieldError } from '../utils/apiErrors'
 
 const MERCHANT_RESET_EMAIL_KEY = 'rapid_merchant_reset_email'
 
-const MERCHANT_TOKEN_KEY = 'rapid_merchant_token'
-const MERCHANT_USER_KEY = 'rapid_merchant_user'
+export const MERCHANT_TOKEN_KEY = 'rapid_merchant_token'
+export const MERCHANT_USER_KEY = 'rapid_merchant_user'
 
 const delay = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -27,32 +26,76 @@ export function clearMerchantSession() {
   localStorage.removeItem(MERCHANT_USER_KEY)
 }
 
+function storeMerchantSession({ token, user }) {
+  localStorage.setItem(MERCHANT_TOKEN_KEY, token)
+  localStorage.setItem(MERCHANT_USER_KEY, JSON.stringify(user))
+}
+
 export async function merchantLogin({ email, password, rememberMe = false }) {
-  await delay()
+  try {
+    const { data } = await api.post('/merchant/login', {
+      email: email.trim(),
+      password,
+    })
 
-  const normalizedEmail = email.trim().toLowerCase()
-  const isValid =
-    normalizedEmail === MERCHANT_DUMMY_CREDENTIALS.email &&
-    password === MERCHANT_DUMMY_CREDENTIALS.password
+    const session = {
+      token: data?.data?.token,
+      user: data?.data?.user,
+      onboarding: data?.data?.onboarding ?? data?.data?.user?.onboarding ?? null,
+      redirectPath: data?.data?.redirect_path ?? data?.data?.onboarding?.redirect_path ?? '/merchant',
+      rememberMe,
+    }
 
-  if (!isValid) {
-    const error = new Error('Invalid email or password.')
+    if (!session.token || !session.user) {
+      throw new Error('Invalid login response from server.')
+    }
+
+    storeMerchantSession(session)
+
+    return session
+  } catch (err) {
+    const payload = err.response?.data?.data
+
+    if (payload?.requires_email_verification) {
+      const email = payload.email || email.trim()
+      setMerchantSignupEmail(email)
+
+      const verificationError = new Error(
+        payload.message || 'Please verify your email to continue.',
+      )
+      verificationError.code = 'EMAIL_VERIFICATION_REQUIRED'
+      verificationError.redirectPath = payload.redirect_path
+      verificationError.debugOtp = payload.debug_otp
+      throw verificationError
+    }
+
+    const apiErrors = err.response?.data?.errors
+    if (apiErrors?.email?.[0]) {
+      const error = new Error(apiErrors.email[0])
+      error.code = 'INVALID_CREDENTIALS'
+      throw error
+    }
+
+    const message = getApiFieldError(err, 'email')
+    const error = new Error(message)
     error.code = 'INVALID_CREDENTIALS'
     throw error
   }
+}
 
-  const session = {
-    token: MERCHANT_DUMMY_USER.token,
-    user: MERCHANT_DUMMY_USER,
-    rememberMe,
+export async function merchantGetMe() {
+  const { data } = await api.get('/merchant/me')
+  return data?.data?.user
+}
+
+export async function merchantLogout() {
+  try {
+    await api.post('/merchant/logout')
+  } catch {
+    // Clear local session even if the API call fails.
+  } finally {
+    clearMerchantSession()
   }
-
-  if (rememberMe) {
-    localStorage.setItem(MERCHANT_TOKEN_KEY, session.token)
-    localStorage.setItem(MERCHANT_USER_KEY, JSON.stringify(session.user))
-  }
-
-  return session
 }
 
 export async function merchantRequestPasswordReset(email) {

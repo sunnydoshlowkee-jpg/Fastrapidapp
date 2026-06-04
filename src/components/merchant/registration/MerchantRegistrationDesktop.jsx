@@ -1,15 +1,37 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MERCHANT_EMAIL_VERIFICATION } from '../../../services/data/merchantEmailVerification.mock'
 import { MERCHANT_EMAIL_VERIFY_PATH, MERCHANT_REGISTRATION } from '../../../services/data/merchantRegistration.mock'
-import { setMerchantSignupEmail } from '../../../services/merchantRegistrationService'
+import {
+  merchantSaveRegistration,
+  resolvePostRegistrationPath,
+} from '../../../services/merchantRegistrationService'
 import { merchantOnboardingShellClass } from './merchantRegistrationStyles'
 import MerchantRegistrationForm from './MerchantRegistrationForm'
 import MerchantRegistrationPanel from './MerchantRegistrationPanel'
 import MerchantRegistrationSidebar from './MerchantRegistrationSidebar'
 
-export default function MerchantRegistrationDesktop() {
+export default function MerchantRegistrationDesktop({ initialValues, initialLogoUrl }) {
   const navigate = useNavigate()
   const data = MERCHANT_REGISTRATION
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleContinue = async (values, logoFile) => {
+    setSubmitting(true)
+    try {
+      const response = await merchantSaveRegistration(values, logoFile)
+      const user = response?.data?.user
+      const path =
+        resolvePostRegistrationPath(user) ||
+        `${MERCHANT_EMAIL_VERIFY_PATH}?email=${encodeURIComponent(
+          response?.data?.email || values.businessEmail?.trim().toLowerCase(),
+        )}`
+      navigate(path)
+    } catch (err) {
+      throw err
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div
@@ -21,14 +43,13 @@ export default function MerchantRegistrationDesktop() {
         help={data.help}
       />
 
-      <main className="flex-1 overflow-y-auto px-10 py-10">
+      <main className="flex flex-1 justify-center overflow-y-auto px-6 py-12 lg:px-6">
         <MerchantRegistrationForm
           form={data.form}
-          onContinue={(email) => {
-            const resolved = email?.trim() || MERCHANT_EMAIL_VERIFICATION.defaultEmail
-            setMerchantSignupEmail(resolved)
-            navigate(`${MERCHANT_EMAIL_VERIFY_PATH}?email=${encodeURIComponent(resolved)}`)
-          }}
+          initialValues={initialValues}
+          initialLogoUrl={initialLogoUrl}
+          onContinue={handleContinue}
+          submitting={submitting}
         />
       </main>
 

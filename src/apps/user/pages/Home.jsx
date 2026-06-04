@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, ChevronDown, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Utensils, ShoppingBasket, Package, Pill } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { MapPin, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Utensils, ShoppingBasket, Package, Pill } from 'lucide-react'
+import AppLocationBar from '../../../components/location/AppLocationBar'
+import { useLocation } from '../../../context/LocationContext'
+import { useDiscovery } from '../../../hooks/useDiscovery'
 
 // Mock Data (Shared/Mobile)
 const mobileQuickReorder = [
@@ -8,30 +11,6 @@ const mobileQuickReorder = [
   { id: 2, name: 'Pizza Hut', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=500&fit=crop' },
   { id: 3, name: 'Bowl Hub', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop' },
   { id: 4, name: 'The Salad Bar', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop' },
-]
-
-const restaurants = [
-  { id: 1, name: 'Burger Shop Deluxe', tags: 'Burgers • American • Fast Food', rating: 4.8, distance: '900m', delivery: '₦500', img: 'https://images.unsplash.com/photo-1586816001966-79b736744398?w=500&h=500&fit=crop', time: '15-25 min' },
-  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop', time: '20-30 min' },
-]
-
-const groceryStores = [
-  { id: 1, name: 'Fresh Market Reserve', tags: 'Organic • Fresh • Market', rating: 4.8, distance: '900m', delivery: '₦500', img: 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500&h=500&fit=crop', time: '15-25 min' },
-  { id: 2, name: "Mama's Kitchen", tags: 'Nigerian • Local • Rice', rating: 4.8, distance: '900m', delivery: '₦800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop', time: '20-30 min' },
-]
-
-const trendingFood = [
-  { id: 1, name: 'KFC Mega Bucket', store: 'KFC - Sabo', price: '₦8,500', img: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Large Fries & Dip', store: 'Burger King', price: '₦2,200', img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Classic Pepperoni', store: "Domino's Pizza", price: '₦6,800', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&h=500&fit=crop' },
-  { id: 4, name: 'Chocolate Sundae', store: 'Cold Stone', price: '₦3,500', img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' },
-]
-
-const trendingGrocery = [
-  { id: 1, name: 'Avocados large', store: 'Produce', price: '₦8,500', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Organic milk', store: 'Dairy', price: '₦2,200', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Sourdough Loaf', store: 'Bakery', price: '₦6,800', img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&h=500&fit=crop' },
-  { id: 4, name: 'Brown Eggs', store: 'Dairy & Eggs', price: '₦3,500', img: 'https://images.unsplash.com/photo-1587486913049-53fc88980cfc?w=500&h=500&fit=crop' },
 ]
 
 // Mock Data (Desktop Only)
@@ -51,20 +30,20 @@ const desktopQuickReorder = [
   { id: 5, name: 'Grill\nMix', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop', color: 'ring-red-500' },
 ]
 
-const desktopPopular = [
-  { id: 1, name: 'The Lagos Bistro', tags: 'Continental • 20–30 mins', rating: 4.8, badge: 'TOP RATED', badgeColor: 'bg-blue-600', fee: 'Free Delivery', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Pepper & Spice', tags: 'African Fusion • 15–25 mins', rating: 4.5, badge: null, fee: '₦1,200 del.', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Pizza Express', tags: 'Italian • 10–15 mins', rating: 4.2, badge: 'FASTEST', badgeColor: 'bg-red-600', fee: 'Free Delivery', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&h=500&fit=crop' },
-  { id: 4, name: "Wok n' Roll", tags: 'Asian • 25–40 mins', rating: 4.7, badge: null, fee: '₦800 del.', img: 'https://images.unsplash.com/photo-1552611052-33e04de081de?w=500&h=500&fit=crop' },
-]
-
 export default function Home() {
   const navigate = useNavigate()
+  const { location } = useLocation()
+  const { data: discovery, loading: discoveryLoading, error: discoveryError } = useDiscovery()
   const [activeTab, setActiveTab] = useState('Food')
   const [bannerIndex, setBannerIndex] = useState(0)
 
-  const trending = activeTab === 'Food' ? trendingFood : trendingGrocery
-  const stores = activeTab === 'Food' ? restaurants : groceryStores
+  const stores = activeTab === 'Food' ? (discovery.food ?? []) : (discovery.grocery ?? [])
+  const trending = activeTab === 'Food'
+    ? (discovery.trending_food ?? [])
+    : (discovery.trending_grocery ?? [])
+  const desktopPopular = discovery.food ?? []
+  const areaLabel = location?.location_label || 'your area'
+  const radiusLabel = discovery.radius_km ? `${discovery.radius_km}km` : '20km'
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
@@ -75,11 +54,7 @@ export default function Home() {
       
       {/* Mobile Top Bar */}
       <div className="md:hidden px-5 pt-12 pb-3 flex items-center justify-between sticky top-0 bg-[#FAFAFA]/95 backdrop-blur-md z-40 border-b border-gray-100">
-        <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-100/50 p-2 rounded-xl transition-colors -ml-2">
-          <MapPin size={18} className="text-[#4F46E5]" strokeWidth={2} />
-          <span className="font-semibold text-gray-900 text-[14px]">Yaba, Lagos</span>
-          <ChevronDown size={14} className="text-gray-400" />
-        </div>
+        <AppLocationBar variant="mobile" />
         <div 
           className="cursor-pointer bg-indigo-50 px-3 py-1.5 rounded-full hover:shadow-sm transition-all"
           onClick={() => navigate('/app/wallet')}
@@ -178,6 +153,21 @@ export default function Home() {
             </h3>
             <span className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
           </div>
+          <p className="text-[11px] text-gray-500 mb-3 -mt-2">
+            Within {radiusLabel} of {areaLabel}
+            {discovery.nearby_count > 0 && ` · ${discovery.nearby_count} nearby`}
+          </p>
+          {discoveryLoading && (
+            <p className="text-sm text-gray-500 mb-4">Loading nearby results…</p>
+          )}
+          {discoveryError && (
+            <p className="text-sm text-red-600 mb-4">{discoveryError}</p>
+          )}
+          {!discoveryLoading && stores.length === 0 && (
+            <p className="text-sm text-gray-500 mb-4 py-6 text-center bg-white rounded-2xl border border-gray-100">
+              No vendors in this area yet. Try changing your location.
+            </p>
+          )}
           <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
             {stores.map((store, i) => (
               <div key={store.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 cursor-pointer group flex-shrink-0 w-[190px] transition-shadow" onClick={() => navigate(`/app/vendor/${store.id}`)}>
@@ -199,7 +189,7 @@ export default function Home() {
                   <div className="flex items-center gap-2 text-[10px] font-semibold text-gray-500">
                     <span className="flex items-center gap-1"><MapPin size={12} /> {store.distance}</span>
                     <span className="w-1 h-1 rounded-full bg-gray-300"></span>
-                    <span>Delivery: {store.delivery}</span>
+                    <span>{store.delivery ? `Delivery: ${store.delivery}` : store.fee || ''}</span>
                   </div>
                 </div>
               </div>
@@ -240,7 +230,7 @@ export default function Home() {
                 <h4 className="font-bold text-gray-900 text-[13px] mb-0.5 truncate group-hover:text-[#4F46E5] transition-colors">{item.name}</h4>
                 <p className="text-[10px] font-medium text-gray-400 mb-3 truncate">{item.store}</p>
                 <div className="flex items-center justify-between mt-auto pt-1 border-t border-gray-50">
-                  <span className="font-bold text-gray-900 text-[14px]">₦{item.price.replace('₦', '')}</span>
+                  <span className="font-bold text-gray-900 text-[14px]">{item.price}</span>
                   <button className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
                     <Plus size={16} />
                   </button>
@@ -268,10 +258,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-6 shrink-0">
-          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
-            <MapPin size={20} className="text-[#4F46E5]" strokeWidth={2} />
-            <span className="font-semibold text-[#4F46E5] text-[15px]">Lagos, NG</span>
-          </div>
+          <AppLocationBar variant="desktop" />
           <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
             <ShoppingCart size={24} className="text-gray-700" />
             <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
@@ -344,10 +331,20 @@ export default function Home() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-[22px] font-bold text-gray-900 mb-1">Popular Near You</h3>
-              <p className="text-gray-500 text-[14px]">Trending restaurants in Victoria Island</p>
+              <p className="text-gray-500 text-[14px]">
+                Sorted by distance · within {radiusLabel} of {areaLabel}
+              </p>
             </div>
             <span className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
           </div>
+          {discoveryLoading && (
+            <p className="text-gray-500 mb-4">Loading nearby restaurants…</p>
+          )}
+          {!discoveryLoading && desktopPopular.length === 0 && (
+            <p className="text-gray-500 mb-4 py-8 text-center bg-gray-50 rounded-2xl">
+              No restaurants near this location. Update your delivery area above.
+            </p>
+          )}
           <div className="grid grid-cols-4 gap-6">
             {desktopPopular.map(item => (
               <div key={item.id} className="flex flex-col cursor-pointer group">

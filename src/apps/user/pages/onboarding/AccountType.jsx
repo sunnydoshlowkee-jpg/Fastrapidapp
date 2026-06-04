@@ -3,9 +3,24 @@ import { Link, useNavigate } from 'react-router-dom'
 import { User, Store } from 'lucide-react'
 import AuthLayout from '../../../../components/layout/AuthLayout'
 
+const MERCHANT_LOGIN_PATH = '/merchant/login'
+const MERCHANT_SIGNUP_PATH = '/merchant/signup'
+const CUSTOMER_PHONE_PATH = '/onboarding/phone'
+const CUSTOMER_LOGIN_PATH = '/auth/login'
+
 export default function AccountType() {
   const navigate = useNavigate()
   const [type, setType] = useState('customer')
+
+  const handleContinue = () => {
+    if (type === 'merchant') {
+      navigate(MERCHANT_LOGIN_PATH)
+      return
+    }
+    navigate(CUSTOMER_PHONE_PATH)
+  }
+
+  const loginPath = type === 'merchant' ? MERCHANT_LOGIN_PATH : CUSTOMER_LOGIN_PATH
 
   return (
     <AuthLayout 
@@ -68,15 +83,29 @@ export default function AccountType() {
         </div>
 
         <button
-          onClick={() => navigate('/onboarding/phone')}
+          type="button"
+          onClick={handleContinue}
           className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white text-[16px] font-bold py-4 rounded-xl transition-all shadow-lg shadow-indigo-500/30 mb-8 active:scale-[0.98]"
         >
           Continue
         </button>
 
         <p className="text-[15px] text-[#4B5563] text-center">
-          Already have an account?{' '}
-          <Link to="/auth/login" className="text-[#4342FF] font-bold hover:underline">Log In</Link>
+          {type === 'merchant' ? (
+            <>
+              New to Fastrapid?{' '}
+              <Link to={MERCHANT_SIGNUP_PATH} className="text-[#4342FF] font-bold hover:underline">
+                Create Account
+              </Link>
+            </>
+          ) : (
+            <>
+              Already have an account?{' '}
+              <Link to={loginPath} className="text-[#4342FF] font-bold hover:underline">
+                Log In
+              </Link>
+            </>
+          )}
         </p>
       </div>
     </AuthLayout>

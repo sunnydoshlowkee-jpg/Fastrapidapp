@@ -4,11 +4,10 @@ import MerchantRegistrationMobileLogoUpload from './MerchantRegistrationMobileLo
 import MerchantRegistrationMobilePromo from './MerchantRegistrationMobilePromo'
 import MerchantRegistrationMobileSection from './MerchantRegistrationMobileSection'
 
-export default function MerchantRegistrationMobileForm({ form, stepLabel, promo, onContinue }) {
-  const { fields, sections, logo } = form
-  const [values, setValues] = useState({
+function buildDefaultValues(fields, initialValues) {
+  return {
     legalName: '',
-    businessType: '',
+    businessType: fields.businessType.options?.[0] || '',
     businessEmail: '',
     phone: '',
     addressStreet: '',
@@ -20,10 +19,63 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
     repPhone: '',
     password: '',
     confirmPassword: '',
-  })
+    ...initialValues,
+  }
+}
+
+export default function MerchantRegistrationMobileForm({
+  form,
+  stepLabel,
+  promo,
+  initialValues,
+  initialLogoUrl,
+  onContinue,
+  submitting = false,
+}) {
+  const { fields, sections, logo } = form
+  const [values, setValues] = useState(() => buildDefaultValues(fields, initialValues))
+  const [logoFile, setLogoFile] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(initialLogoUrl ?? null)
+  const [errors, setErrors] = useState({})
+  const [formError, setFormError] = useState('')
 
   const update = (key) => (e) => {
     setValues((prev) => ({ ...prev, [key]: e.target.value }))
+    if (errors[key]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+    }
+    if (formError) setFormError('')
+  }
+
+  const handleLogoSelect = (file) => {
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+    if (errors.logo) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.logo
+        return next
+      })
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setFormError('')
+    setErrors({})
+
+    try {
+      await onContinue?.(values, logoFile)
+    } catch (err) {
+      if (err.fieldErrors) {
+        setErrors(err.fieldErrors)
+      }
+      setFormError(err.message || 'Unable to complete registration.')
+    }
   }
 
   return (
@@ -37,13 +89,15 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
       <form
         id="merchant-registration-mobile-form"
         className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-          onContinue?.(values.businessEmail)
-        }}
+        onSubmit={handleSubmit}
       >
         <MerchantRegistrationMobileSection section={sections.business}>
-          <MerchantRegistrationMobileLogoUpload logo={logo} />
+          <MerchantRegistrationMobileLogoUpload
+            logo={logo}
+            previewUrl={logoPreview}
+            onFileSelect={handleLogoSelect}
+            error={errors.logo}
+          />
 
           <MerchantRegistrationField
             id="mobile-legalName"
@@ -51,6 +105,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.legalName.placeholder}
             value={values.legalName}
             onChange={update('legalName')}
+            error={errors.legalName}
           />
 
           <MerchantRegistrationField
@@ -61,6 +116,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             options={fields.businessType.options}
             value={values.businessType}
             onChange={update('businessType')}
+            error={errors.businessType}
           />
 
           <MerchantRegistrationField
@@ -70,6 +126,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             type="email"
             value={values.businessEmail}
             onChange={update('businessEmail')}
+            error={errors.businessEmail}
           />
 
           <MerchantRegistrationField
@@ -78,6 +135,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.phone.placeholder}
             value={values.phone}
             onChange={update('phone')}
+            error={errors.phone}
           />
 
           <MerchantRegistrationField
@@ -86,6 +144,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.addressStreet.placeholder}
             value={values.addressStreet}
             onChange={update('addressStreet')}
+            error={errors.addressStreet || errors.address}
           />
 
           <div className="grid grid-cols-2 gap-3">
@@ -122,6 +181,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.repName.placeholder}
             value={values.repName}
             onChange={update('repName')}
+            error={errors.repName}
           />
           <MerchantRegistrationField
             id="mobile-repRole"
@@ -129,6 +189,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.repRole.placeholder}
             value={values.repRole}
             onChange={update('repRole')}
+            error={errors.repRole}
           />
           <MerchantRegistrationField
             id="mobile-repPhone"
@@ -136,6 +197,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             placeholder={fields.repPhone.placeholder}
             value={values.repPhone}
             onChange={update('repPhone')}
+            error={errors.repPhone}
           />
         </MerchantRegistrationMobileSection>
 
@@ -147,6 +209,7 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             type="password"
             value={values.password}
             onChange={update('password')}
+            error={errors.password}
           />
           <MerchantRegistrationField
             id="mobile-confirmPassword"
@@ -155,8 +218,13 @@ export default function MerchantRegistrationMobileForm({ form, stepLabel, promo,
             type="password"
             value={values.confirmPassword}
             onChange={update('confirmPassword')}
+            error={errors.confirmPassword}
           />
         </MerchantRegistrationMobileSection>
+
+        {formError ? (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-merchant-error">{formError}</p>
+        ) : null}
 
         <MerchantRegistrationMobilePromo promo={promo} />
       </form>

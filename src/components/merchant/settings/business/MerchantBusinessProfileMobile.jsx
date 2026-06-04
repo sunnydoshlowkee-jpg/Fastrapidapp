@@ -1,17 +1,18 @@
-import { MERCHANT_BUSINESS_PROFILE } from '../../../../services/data/merchantBusinessProfile.mock'
 import MerchantBusinessProfileMobileDocuments from './mobile/MerchantBusinessProfileMobileDocuments'
 import MerchantBusinessProfileMobileHeader from './mobile/MerchantBusinessProfileMobileHeader'
 import MerchantBusinessProfileMobileInfoCard from './mobile/MerchantBusinessProfileMobileInfoCard'
 import MerchantBusinessProfileMobileLocation from './mobile/MerchantBusinessProfileMobileLocation'
 import MerchantBusinessProfileMobileStoreStatus from './mobile/MerchantBusinessProfileMobileStoreStatus'
 
-export default function MerchantBusinessProfileMobile() {
-  const data = MERCHANT_BUSINESS_PROFILE
-  const mobile = data.mobile
+export default function MerchantBusinessProfileMobile({ profile }) {
+  const mobile = profile.mobile
 
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 pb-8 pt-5 lg:hidden">
-      <MerchantBusinessProfileMobileHeader title={data.pageTitle} merchantId={mobile.merchantId} />
+      <MerchantBusinessProfileMobileHeader
+        title={profile.pageTitle}
+        merchantId={mobile.merchantId}
+      />
 
       <p className="-mt-2 text-sm text-merchant-muted">{mobile.subtitle}</p>
 

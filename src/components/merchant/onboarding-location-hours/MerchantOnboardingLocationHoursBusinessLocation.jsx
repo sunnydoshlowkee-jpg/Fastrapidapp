@@ -1,22 +1,21 @@
-import { useState } from 'react'
 import MerchantRegistrationField from '../registration/MerchantRegistrationField'
 import MerchantOnboardingLocationHoursMap from './MerchantOnboardingLocationHoursMap'
 import MerchantOnboardingLocationHoursSection from './MerchantOnboardingLocationHoursSection'
 
 export default function MerchantOnboardingLocationHoursBusinessLocation({
   location,
+  values,
+  onChange,
+  mapConfirmed,
+  onMapConfirm,
+  fieldErrors = {},
   bareInputs = false,
   hideSectionNumber = false,
 }) {
   const { fields } = location
-  const [values, setValues] = useState({
-    street: fields.street.defaultValue,
-    city: fields.city.defaultValue,
-    postalCode: fields.postalCode.defaultValue,
-  })
 
   const update = (key) => (e) => {
-    setValues((prev) => ({ ...prev, [key]: e.target.value }))
+    onChange((prev) => ({ ...prev, [key]: e.target.value }))
   }
 
   return (
@@ -32,6 +31,7 @@ export default function MerchantOnboardingLocationHoursBusinessLocation({
         placeholder={fields.street.placeholder}
         value={values.street}
         onChange={update('street')}
+        error={fieldErrors.street}
         bare={bareInputs}
         labelClassName={bareInputs ? 'text-sm font-semibold text-merchant-ink' : undefined}
       />
@@ -43,6 +43,7 @@ export default function MerchantOnboardingLocationHoursBusinessLocation({
           placeholder={fields.city.placeholder}
           value={values.city}
           onChange={update('city')}
+          error={fieldErrors.city}
           bare={bareInputs}
           labelClassName={bareInputs ? 'text-sm font-semibold text-merchant-ink' : undefined}
         />
@@ -52,12 +53,18 @@ export default function MerchantOnboardingLocationHoursBusinessLocation({
           placeholder={fields.postalCode.placeholder}
           value={values.postalCode}
           onChange={update('postalCode')}
+          error={fieldErrors.postalCode}
           bare={bareInputs}
           labelClassName={bareInputs ? 'text-sm font-semibold text-merchant-ink' : undefined}
         />
       </div>
 
-      <MerchantOnboardingLocationHoursMap map={location.map} />
+      <MerchantOnboardingLocationHoursMap
+        map={location.map}
+        confirmed={mapConfirmed}
+        onConfirm={onMapConfirm}
+        error={fieldErrors.map}
+      />
     </MerchantOnboardingLocationHoursSection>
   )
 }

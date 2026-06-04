@@ -10,6 +10,14 @@ import {
   PenTool,
   X,
 } from 'lucide-react'
+import AdminConfirmDialog from '../AdminConfirmDialog'
+import { ADMIN_MERCHANT_DETAIL_UI } from '../../../services/data/adminMerchantDetail.ui'
+import {
+  openAdminDocumentFile,
+  updateAdminMerchantDocument,
+} from '../../../services/adminMerchantsService'
+
+const STATUS_CONFIRM_COPY = ADMIN_MERCHANT_DETAIL_UI.documents.statusConfirm
 
 const STATUS_BADGE = {
   verified: 'bg-emerald-50 text-emerald-600',
@@ -34,9 +42,31 @@ function renderInlineBold(text) {
 
 export default function AdminMerchantDocumentViewerModal({
   document: doc,
+  merchantId,
   onClose,
+  onDocumentUpdated,
 }) {
   const [zoom, setZoom] = useState(100)
+  const [openingFile, setOpeningFile] = useState(false)
+  const [fileError, setFileError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [updatingStatus, setUpdatingStatus] = useState(null)
+  const [pendingStatus, setPendingStatus] = useState(null)
+
+  const handleOpenFile = async () => {
+    const fileUrl = doc.preview?.fileUrl || doc.fileUrl
+    if (!fileUrl) return
+
+    setOpeningFile(true)
+    setFileError('')
+    try {
+      await openAdminDocumentFile(fileUrl)
+    } catch (err) {
+      setFileError(err.message || 'Unable to open file.')
+    } finally {
+      setOpeningFile(false)
+    }
+  }
 
   useEffect(() => {
     const original = document.body.style.overflow
@@ -53,6 +83,41 @@ export default function AdminMerchantDocumentViewerModal({
 
   const decZoom = () => setZoom((z) => Math.max(50, z - 10))
   const incZoom = () => setZoom((z) => Math.min(200, z + 10))
+
+  const documentType =
+    doc.documentType ?? String(doc.id ?? '').replace(/^doc-/, '')
+
+  const handleConfirmStatusUpdate = async () => {
+    if (!merchantId || !documentType || !pendingStatus) return
+
+    setUpdatingStatus(pendingStatus)
+    setActionError('')
+    try {
+      const updated = await updateAdminMerchantDocument(
+        merchantId,
+        documentType,
+        pendingStatus,
+      )
+      onDocumentUpdated?.(updated)
+      setPendingStatus(null)
+    } catch (err) {
+      setActionError(
+        err.response?.data?.message ||
+          err.message ||
+          'Unable to update document status.',
+      )
+    } finally {
+      setUpdatingStatus(null)
+    }
+  }
+
+  const isBusy = updatingStatus !== null
+  const confirmCopy =
+    pendingStatus === 'approved'
+      ? STATUS_CONFIRM_COPY.verify
+      : pendingStatus === 'rejected'
+        ? STATUS_CONFIRM_COPY.flag
+        : null
 
   return createPortal(
     <div
@@ -175,23 +240,62 @@ export default function AdminMerchantDocumentViewerModal({
           </div>
         </div>
 
+        {fileError || actionError ? (
+          <p
+            role="alert"
+            className="border-t border-red-100 bg-red-50 px-6 py-2 text-center text-sm text-red-700"
+          >
+            {fileError || actionError}
+          </p>
+        ) : null}
+
         <footer className="flex flex-wrap items-center justify-center gap-3 border-t border-gray-100 px-6 py-4">
+          {doc.preview?.fileUrl || doc.fileUrl ? (
+            <button
+              type="button"
+              onClick={handleOpenFile}
+              disabled={openingFile}
+              className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-60"
+            >
+              {openingFile ? 'Opening…' : 'Open original file'}
+            </button>
+          ) : null}
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-red-600 transition-colors hover:bg-red-50"
+            disabled={isBusy || doc.status === 'rejected'}
+            onClick={() => setPendingStatus('rejected')}
+            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Flag size={16} strokeWidth={2} aria-hidden />
-            Flag Issue
+            {updatingStatus === 'rejected' ? 'Saving…' : 'Flag Issue'}
           </button>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-rapid-orange/90"
+            disabled={isBusy || doc.status === 'verified'}
+            onClick={() => setPendingStatus('approved')}
+            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-colors hover:bg-rapid-orange/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <CheckCircle2 size={16} strokeWidth={2} aria-hidden />
-            Mark Verified
+            {updatingStatus === 'approved' ? 'Saving…' : 'Mark Verified'}
           </button>
         </footer>
       </div>
+
+      <AdminConfirmDialog
+        isOpen={pendingStatus !== null}
+        onClose={() => {
+          if (!isBusy) setPendingStatus(null)
+        }}
+        onConfirm={handleConfirmStatusUpdate}
+        title={confirmCopy?.title ?? ''}
+        description={confirmCopy?.description}
+        subtitle={doc.title}
+        cancelLabel={confirmCopy?.cancelLabel}
+        confirmLabel={confirmCopy?.confirmLabel}
+        tone={pendingStatus === 'rejected' ? 'danger' : 'primary'}
+        loading={isBusy}
+        icon={pendingStatus === 'rejected' ? Flag : CheckCircle2}
+      />
     </div>,
     document.body,
   )

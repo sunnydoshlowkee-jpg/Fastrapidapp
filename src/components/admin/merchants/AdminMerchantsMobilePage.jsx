@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   BarChart3,
@@ -196,26 +195,18 @@ function BottomNav({ items }) {
   )
 }
 
-export default function AdminMerchantsMobilePage({ data, onOpenDrawer }) {
+export default function AdminMerchantsMobilePage({
+  data,
+  onOpenDrawer,
+  loading = false,
+  error = '',
+  activeFilter = 'all',
+  search = '',
+  onFilterChange,
+  onSearchChange,
+}) {
   const mobile = data.mobile
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [search, setSearch] = useState('')
-
-  const filtered = useMemo(() => {
-    if (!mobile) return []
-    let list = mobile.merchants
-    if (activeFilter !== 'all') {
-      list = list.filter((m) => m.status === activeFilter)
-    }
-    const q = search.trim().toLowerCase()
-    if (!q) return list
-    return list.filter(
-      (m) =>
-        m.name.toLowerCase().includes(q) ||
-        m.id.toLowerCase().includes(q) ||
-        (m.location ?? '').toLowerCase().includes(q),
-    )
-  }, [activeFilter, mobile, search])
+  const merchants = mobile?.merchants ?? []
 
   if (!mobile) return null
 
@@ -264,7 +255,7 @@ export default function AdminMerchantsMobilePage({ data, onOpenDrawer }) {
               <button
                 key={filter.id}
                 type="button"
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => onFilterChange?.(filter.id)}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-1.5 text-sm transition-colors ${chipClass}`}
               >
                 {filter.label}
@@ -291,7 +282,7 @@ export default function AdminMerchantsMobilePage({ data, onOpenDrawer }) {
           <input
             type="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder={mobile.searchPlaceholder}
             className="w-full rounded bg-white py-3 pl-10 pr-4 text-sm text-[#191C1D] shadow-[0px_4px_12px_rgba(0,0,0,0.02)] outline-none placeholder:text-[#767588] focus:ring-2 focus:ring-rapid-orange/15"
           />
@@ -299,13 +290,26 @@ export default function AdminMerchantsMobilePage({ data, onOpenDrawer }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pb-[120px] pt-4">
-        {filtered.length === 0 ? (
+        {error ? (
+          <p
+            role="alert"
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        {loading ? (
+          <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
+            Loading merchants…
+          </p>
+        ) : merchants.length === 0 ? (
           <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
             No merchants match this filter.
           </p>
         ) : (
           <div className="space-y-4">
-            {filtered.map((merchant) => (
+            {merchants.map((merchant) => (
               <MerchantCard
                 key={merchant.id}
                 merchant={merchant}

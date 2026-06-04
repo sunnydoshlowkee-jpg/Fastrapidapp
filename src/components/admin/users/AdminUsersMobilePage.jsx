@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Bell,
@@ -102,26 +101,18 @@ function UserCard({ user }) {
   )
 }
 
-export default function AdminUsersMobilePage({ data, onOpenDrawer }) {
+export default function AdminUsersMobilePage({
+  data,
+  onOpenDrawer,
+  loading = false,
+  error = '',
+  activeFilter = 'all',
+  search = '',
+  onFilterChange,
+  onSearchChange,
+}) {
   const mobile = data.mobile
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [search, setSearch] = useState('')
-
-  const filtered = useMemo(() => {
-    if (!mobile) return []
-    let list = mobile.users
-    if (activeFilter !== 'all') {
-      list = list.filter((u) => u.status === activeFilter)
-    }
-    const q = search.trim().toLowerCase()
-    if (!q) return list
-    return list.filter(
-      (u) =>
-        u.name.toLowerCase().includes(q) ||
-        u.id.toLowerCase().includes(q) ||
-        u.phone.toLowerCase().includes(q),
-    )
-  }, [activeFilter, mobile, search])
+  const users = mobile?.users ?? []
 
   if (!mobile) return null
 
@@ -157,7 +148,7 @@ export default function AdminUsersMobilePage({ data, onOpenDrawer }) {
               <button
                 key={filter.id}
                 type="button"
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => onFilterChange?.(filter.id)}
                 className={`shrink-0 rounded-xl px-4 py-1.5 text-xs transition-colors ${
                   isActive
                     ? 'border border-[#FED7AA] bg-[#F97316] font-bold text-white'
@@ -191,23 +182,36 @@ export default function AdminUsersMobilePage({ data, onOpenDrawer }) {
           <input
             type="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder={mobile.searchPlaceholder}
             className="w-full rounded bg-white py-3 pl-10 pr-4 text-sm text-[#191C1D] shadow-[0px_4px_12px_rgba(0,0,0,0.02)] outline-none placeholder:text-[#767588] focus:ring-2 focus:ring-rapid-orange/15"
           />
         </label>
 
+        {error ? (
+          <p
+            role="alert"
+            className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700"
+          >
+            {error}
+          </p>
+        ) : null}
+
         <div className="mt-6 space-y-4">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
+              Loading users…
+            </p>
+          ) : users.length === 0 ? (
             <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
               No users match this filter.
             </p>
           ) : (
-            filtered.map((user) => <UserCard key={user.id} user={user} />)
+            users.map((user) => <UserCard key={user.id} user={user} />)
           )}
         </div>
 
-        {filtered.length > 0 ? (
+        {users.length > 0 && !loading ? (
           <div className="mt-2 flex justify-center pt-4">
             <Loader2
               size={16}

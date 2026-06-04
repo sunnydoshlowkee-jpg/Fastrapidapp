@@ -1,11 +1,9 @@
-import {
-  ADMIN_2FA_OTP,
-  ADMIN_DUMMY_CREDENTIALS,
-  ADMIN_DUMMY_USER,
-  ADMIN_RESET_OTP,
-} from './data/adminAuth.mock'
+import api from './api'
+import { getApiFieldError } from '../utils/apiErrors'
+import { ADMIN_2FA_OTP, ADMIN_RESET_OTP } from './data/adminAuth.mock'
 
 const ADMIN_TOKEN_KEY = 'rapid_admin_token'
+const ADMIN_SESSION_TOKEN_KEY = 'rapid_admin_session_token'
 const ADMIN_USER_KEY = 'rapid_admin_user'
 const ADMIN_PENDING_KEY = 'rapid_admin_pending_session'
 
@@ -39,10 +37,21 @@ export function clearAdminPendingSession() {
 export function clearAdminSession() {
   localStorage.removeItem(ADMIN_TOKEN_KEY)
   localStorage.removeItem(ADMIN_USER_KEY)
+  sessionStorage.removeItem(ADMIN_SESSION_TOKEN_KEY)
   clearAdminPendingSession()
 }
 
+export function getAdminAuthToken() {
+  return (
+    localStorage.getItem(ADMIN_TOKEN_KEY) ||
+    sessionStorage.getItem(ADMIN_SESSION_TOKEN_KEY) ||
+    getAdminPendingSession()?.token ||
+    null
+  )
+}
+
 function persistAdminSession(session) {
+  sessionStorage.setItem(ADMIN_SESSION_TOKEN_KEY, session.token)
   if (session.rememberMe) {
     localStorage.setItem(ADMIN_TOKEN_KEY, session.token)
     localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(session.user))
@@ -50,27 +59,27 @@ function persistAdminSession(session) {
 }
 
 export async function adminLogin({ email, password, rememberMe = false }) {
-  await delay()
+  try {
+    const { data } = await api.post('/admin/login', {
+      email: email.trim(),
+      password,
+    })
 
-  const normalizedEmail = email.trim().toLowerCase()
-  const isValid =
-    normalizedEmail === ADMIN_DUMMY_CREDENTIALS.email &&
-    password === ADMIN_DUMMY_CREDENTIALS.password
+    const session = {
+      token: data.data.token,
+      user: data.data.user,
+      rememberMe,
+    }
 
-  if (!isValid) {
-    const error = new Error('Invalid email or password.')
-    error.code = 'INVALID_CREDENTIALS'
+    sessionStorage.setItem(ADMIN_PENDING_KEY, JSON.stringify(session))
+    return session
+  } catch (err) {
+    const message = getApiFieldError(err, 'email') || err.response?.data?.message
+    const error = new Error(message || 'Invalid email or password.')
+    error.code =
+      err.response?.status === 422 ? 'INVALID_CREDENTIALS' : 'LOGIN_FAILED'
     throw error
   }
-
-  const session = {
-    token: ADMIN_DUMMY_USER.token,
-    user: ADMIN_DUMMY_USER,
-    rememberMe,
-  }
-
-  sessionStorage.setItem(ADMIN_PENDING_KEY, JSON.stringify(session))
-  return session
 }
 
 export async function adminVerify2fa({ code }) {

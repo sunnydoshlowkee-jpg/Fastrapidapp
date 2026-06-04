@@ -6,15 +6,15 @@ import MerchantAuthField from '../../../../components/merchant/auth/MerchantAuth
 import MerchantCheckbox from '../../../../components/merchant/auth/MerchantCheckbox'
 import MerchantButton from '../../../../components/merchant/auth/MerchantButton'
 import { merchantLogin } from '../../../../services/merchantAuthService'
-import { MERCHANT_DUMMY_CREDENTIALS } from '../../../../services/data/merchantAuth.mock'
+import { getApiFieldError } from '../../../../utils/apiErrors'
 
 const linkClass =
   'text-xs font-medium leading-[18px] text-merchant-link hover:text-merchant-primary md:text-merchant-primary md:hover:text-[#3837e6]'
 
 export default function MerchantLogin() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(MERCHANT_DUMMY_CREDENTIALS.email)
-  const [password, setPassword] = useState(MERCHANT_DUMMY_CREDENTIALS.password)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [formError, setFormError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
@@ -36,12 +36,19 @@ export default function MerchantLogin() {
 
     setLoading(true)
     try {
-      await merchantLogin({ email, password, rememberMe })
-      navigate('/merchant', { replace: true })
+      const session = await merchantLogin({ email, password, rememberMe })
+      navigate(session.redirectPath || '/merchant', { replace: true })
     } catch (err) {
-      const message = err.message || 'Incorrect email or password. Try again.'
+      if (err.code === 'EMAIL_VERIFICATION_REQUIRED') {
+        navigate(err.redirectPath || `/merchant/signup/verify?email=${encodeURIComponent(email.trim())}`, {
+          replace: true,
+        })
+        return
+      }
+
+      const message = err.message || getApiFieldError(err, 'email')
       setFormError(message)
-      setFieldErrors({ password: message })
+      setFieldErrors({ email: message, password: message })
     } finally {
       setLoading(false)
     }

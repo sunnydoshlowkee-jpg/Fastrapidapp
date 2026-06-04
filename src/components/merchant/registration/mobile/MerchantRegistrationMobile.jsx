@@ -1,24 +1,37 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MERCHANT_EMAIL_VERIFICATION } from '../../../../services/data/merchantEmailVerification.mock'
+import { MERCHANT_EMAIL_VERIFY_PATH, MERCHANT_REGISTRATION } from '../../../../services/data/merchantRegistration.mock'
 import {
-  MERCHANT_EMAIL_VERIFY_PATH,
-  MERCHANT_REGISTRATION,
-} from '../../../../services/data/merchantRegistration.mock'
-import { setMerchantSignupEmail } from '../../../../services/merchantRegistrationService'
+  merchantSaveRegistration,
+  resolvePostRegistrationPath,
+} from '../../../../services/merchantRegistrationService'
 import { merchantOnboardingShellClass } from '../merchantRegistrationStyles'
 import MerchantRegistrationMobileFooter from './MerchantRegistrationMobileFooter'
 import MerchantRegistrationMobileForm from './MerchantRegistrationMobileForm'
 import MerchantRegistrationMobileHeader from './MerchantRegistrationMobileHeader'
 
-export default function MerchantRegistrationMobile() {
+export default function MerchantRegistrationMobile({ initialValues, initialLogoUrl }) {
   const navigate = useNavigate()
   const { mobile } = MERCHANT_REGISTRATION
   const { form, promo, stepLabel } = mobile
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleContinue = (email) => {
-    const resolved = email?.trim() || MERCHANT_EMAIL_VERIFICATION.defaultEmail
-    setMerchantSignupEmail(resolved)
-    navigate(`${MERCHANT_EMAIL_VERIFY_PATH}?email=${encodeURIComponent(resolved)}`)
+  const handleContinue = async (values, logoFile) => {
+    setSubmitting(true)
+    try {
+      const response = await merchantSaveRegistration(values, logoFile)
+      const user = response?.data?.user
+      const path =
+        resolvePostRegistrationPath(user) ||
+        `${MERCHANT_EMAIL_VERIFY_PATH}?email=${encodeURIComponent(
+          response?.data?.email || values.businessEmail?.trim().toLowerCase(),
+        )}`
+      navigate(path)
+    } catch (err) {
+      throw err
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -32,13 +45,17 @@ export default function MerchantRegistrationMobile() {
           form={form}
           stepLabel={stepLabel}
           promo={promo}
+          initialValues={initialValues}
+          initialLogoUrl={initialLogoUrl}
           onContinue={handleContinue}
+          submitting={submitting}
         />
       </main>
 
       <MerchantRegistrationMobileFooter
         saveDraftLabel={form.saveDraftLabel}
-        continueLabel={form.continueLabel}
+        continueLabel={submitting ? 'Saving…' : form.continueLabel}
+        submitting={submitting}
       />
     </div>
   )

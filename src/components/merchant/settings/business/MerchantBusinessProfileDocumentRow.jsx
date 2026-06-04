@@ -30,8 +30,8 @@ const statusConfig = {
 }
 
 export default function MerchantBusinessProfileDocumentRow({ document }) {
-  const status = statusConfig[document.status]
-  const StatusIcon = status.icon
+  const status = document.status ? statusConfig[document.status] : null
+  const StatusIcon = status?.icon
   const DocIcon = documentIcons[document.icon] ?? FileText
 
   return (
@@ -55,10 +55,12 @@ export default function MerchantBusinessProfileDocumentRow({ document }) {
       </div>
 
       <div className="flex shrink-0 items-center gap-3 sm:justify-end">
-        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${status.className}`}>
-          <StatusIcon size={14} strokeWidth={2} aria-hidden />
-          {status.label}
-        </span>
+        {status ? (
+          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${status.className}`}>
+            <StatusIcon size={14} strokeWidth={2} aria-hidden />
+            {status.label}
+          </span>
+        ) : null}
         {document.reuploadLabel && (
           <button
             type="button"

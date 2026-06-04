@@ -11,10 +11,13 @@ export default function AdminApproveMerchantModal({
 }) {
   const data = ADMIN_APPROVE_MERCHANT_MODAL
   const [notify, setNotify] = useState(data.notify.defaultOn)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!isOpen) return undefined
     setNotify(data.notify.defaultOn)
+    setError('')
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -24,9 +27,23 @@ export default function AdminApproveMerchantModal({
 
   if (!isOpen || !merchant) return null
 
-  const handleConfirm = () => {
-    onConfirm?.({ merchantId: merchant.id, notify })
-    onClose()
+  const handleConfirm = async () => {
+    if (!merchant.numericId || submitting) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await onConfirm?.({ merchantId: merchant.numericId, notify })
+      onClose()
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Unable to approve merchant. Please try again.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return createPortal(
@@ -140,21 +157,32 @@ export default function AdminApproveMerchantModal({
           </section>
         </div>
 
+        {error ? (
+          <p
+            role="alert"
+            className="border-t border-red-100 bg-red-50 px-6 py-3 text-sm text-red-700"
+          >
+            {error}
+          </p>
+        ) : null}
+
         <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
+            disabled={submitting}
+            className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200 disabled:opacity-60"
           >
             {data.cancelLabel}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-600"
+            disabled={submitting}
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <CheckCircle2 size={16} strokeWidth={2.5} aria-hidden />
-            {data.confirmLabel}
+            {submitting ? 'Approving…' : data.confirmLabel}
           </button>
         </div>
       </div>

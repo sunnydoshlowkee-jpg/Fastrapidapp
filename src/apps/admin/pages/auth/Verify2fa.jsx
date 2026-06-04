@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import {
+  adminResend2fa,
+  adminVerify2fa,
+  getAdminPendingSession,
+} from '../../../../services/adminAuthService'
+import {
+  ADMIN_2FA_COPY,
+  ADMIN_2FA_OTP,
+  ADMIN_LOGIN_PATH,
+} from '../../../../services/data/adminAuth.mock'
 
 const CODE_LENGTH = 6
-const DEMO_CODE = '123456'
-const RESEND_SECONDS = 45
+const RESEND_SECONDS = ADMIN_2FA_COPY.resendCooldownSeconds
 
 function formatCountdown(seconds) {
   const mins = Math.floor(seconds / 60)
@@ -14,11 +23,18 @@ function formatCountdown(seconds) {
 
 export default function AdminVerify2fa() {
   const navigate = useNavigate()
+  const copy = ADMIN_2FA_COPY
   const [digits, setDigits] = useState(() => Array(CODE_LENGTH).fill(''))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS)
   const inputsRef = useRef([])
+
+  useEffect(() => {
+    if (!getAdminPendingSession()) {
+      navigate(ADMIN_LOGIN_PATH, { replace: true })
+    }
+  }, [navigate])
 
   useEffect(() => {
     if (secondsLeft <= 0) return undefined
@@ -98,7 +114,7 @@ export default function AdminVerify2fa() {
     focusInput(Math.min(chars.length, CODE_LENGTH - 1))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
 
@@ -108,24 +124,35 @@ export default function AdminVerify2fa() {
     }
 
     setLoading(true)
-    setTimeout(() => {
-      if (code === DEMO_CODE) {
-        navigate('/admin', { replace: true })
-      } else {
-        setError('Invalid code. Try again.')
-        setLoading(false)
-        setDigits(Array(CODE_LENGTH).fill(''))
-        focusInput(0)
+    try {
+      await adminVerify2fa({ code })
+      navigate('/admin', { replace: true })
+    } catch (err) {
+      if (err.code === 'SESSION_EXPIRED') {
+        navigate('/admin/session-expired', { replace: true })
+        return
       }
-    }, 400)
+      setError(copy.invalidCodeMessage)
+      setDigits(Array(CODE_LENGTH).fill(''))
+      focusInput(0)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (!canResend) return
-    setDigits(Array(CODE_LENGTH).fill(''))
-    setError('')
-    setSecondsLeft(RESEND_SECONDS)
-    focusInput(0)
+    try {
+      await adminResend2fa()
+      setDigits(Array(CODE_LENGTH).fill(''))
+      setError('')
+      setSecondsLeft(RESEND_SECONDS)
+      focusInput(0)
+    } catch (err) {
+      if (err.message?.includes('Session expired')) {
+        navigate('/admin/session-expired', { replace: true })
+      }
+    }
   }
 
   return (
@@ -142,11 +169,9 @@ export default function AdminVerify2fa() {
         </div>
 
         <h1 className="mt-5 text-center text-2xl font-bold tracking-tight text-gray-900">
-          Enter your 2FA code
+          {copy.title}
         </h1>
-        <p className="mt-2 text-center text-sm text-gray-500">
-          Sent to your email
-        </p>
+        <p className="mt-2 text-center text-sm text-gray-500">{copy.subtitle}</p>
 
         <form onSubmit={handleSubmit} className="mt-6" noValidate>
           {error ? (
@@ -219,16 +244,16 @@ export default function AdminVerify2fa() {
 
         <div className="mt-6 text-center">
           <Link
-            to="/admin/login"
+            to={ADMIN_LOGIN_PATH}
             className="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
           >
             <ArrowLeft size={16} strokeWidth={2} aria-hidden />
-            Back to Login
+            {copy.backToLogin}
           </Link>
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          Demo code: <span className="text-gray-500">{DEMO_CODE}</span>
+          Demo code: <span className="text-gray-500">{ADMIN_2FA_OTP}</span>
         </p>
       </div>
     </div>

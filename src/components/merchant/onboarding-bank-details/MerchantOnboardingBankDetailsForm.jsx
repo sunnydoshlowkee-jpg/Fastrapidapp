@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, Check, Lock, RefreshCw, Shield, User } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import MerchantButton from '../auth/MerchantButton'
@@ -9,6 +9,19 @@ import {
   merchantRegistrationLabelClass,
 } from '../registration/merchantRegistrationStyles'
 import { MERCHANT_HELP_SUPPORT_PATH } from '../../../services/data/merchantHelpSupport.mock'
+import { resolveMerchantBankAccount } from '../../../services/merchantPayoutService'
+
+function payoutMatchesSaved(saved, code, number, name) {
+  if (!saved?.verified) {
+    return false
+  }
+
+  return (
+    saved.bank_code === code &&
+    saved.account_number === number &&
+    saved.account_name === name
+  )
+}
 import MerchantOnboardingBankDetailsEnterpriseCard from './MerchantOnboardingBankDetailsEnterpriseCard'
 
 const ACCOUNT_NUMBER_LENGTH = 10
@@ -20,42 +33,111 @@ export default function MerchantOnboardingBankDetailsForm({
   page,
   fields,
   panel,
+  initialPayout,
+  loadError,
+  formError,
+  submitting = false,
   onSaveNext,
   onSkip,
   variant = 'desktop',
 }) {
   const isMobile = variant === 'mobile'
-  const [bank, setBank] = useState('')
+  const [bankCode, setBankCode] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [resolving, setResolving] = useState(false)
+  const [resolveError, setResolveError] = useState('')
+  const [savedToDatabase, setSavedToDatabase] = useState(false)
+  const resolveRequestId = useRef(0)
 
-  const resolveAccountName = async (number) => {
-    if (number.length !== ACCOUNT_NUMBER_LENGTH) {
-      setAccountName('')
+  useEffect(() => {
+    if (!initialPayout) {
       return
     }
+
+    setBankCode(initialPayout.bank_code ?? '')
+    setAccountNumber(initialPayout.account_number ?? '')
+    setAccountName(initialPayout.account_name ?? '')
+    setSavedToDatabase(Boolean(initialPayout.verified))
+  }, [initialPayout])
+
+  const resolveAccountName = async (number, code) => {
+    if (!code || number.length !== ACCOUNT_NUMBER_LENGTH) {
+      setAccountName('')
+      setResolveError('')
+      return
+    }
+
+    const requestId = ++resolveRequestId.current
     setResolving(true)
-    await new Promise((resolve) => setTimeout(resolve, 600))
-    setAccountName(fields.accountName.resolvedName)
-    setResolving(false)
+    setResolveError('')
+
+    try {
+      const result = await resolveMerchantBankAccount({
+        bankCode: code,
+        accountNumber: number,
+      })
+
+      if (requestId !== resolveRequestId.current) {
+        return
+      }
+
+      const resolvedName = result?.account_name ?? ''
+      setAccountName(resolvedName)
+      setSavedToDatabase(
+        payoutMatchesSaved(result, code, number, resolvedName) || Boolean(result?.verified),
+      )
+    } catch (err) {
+      if (requestId !== resolveRequestId.current) {
+        return
+      }
+
+      setAccountName('')
+      setSavedToDatabase(false)
+      setResolveError(err.message || 'Could not verify this bank account.')
+    } finally {
+      if (requestId === resolveRequestId.current) {
+        setResolving(false)
+      }
+    }
+  }
+
+  const handleBankChange = (e) => {
+    const nextCode = e.target.value
+    setBankCode(nextCode)
+    setAccountName('')
+    setSavedToDatabase(false)
+    setResolveError('')
+
+    if (accountNumber.length === ACCOUNT_NUMBER_LENGTH) {
+      resolveAccountName(accountNumber, nextCode)
+    }
   }
 
   const handleAccountNumberChange = (e) => {
     const next = e.target.value.replace(/\D/g, '').slice(0, ACCOUNT_NUMBER_LENGTH)
     setAccountNumber(next)
-    if (next.length === ACCOUNT_NUMBER_LENGTH) {
-      resolveAccountName(next)
+    setResolveError('')
+    setSavedToDatabase(false)
+
+    if (next.length === ACCOUNT_NUMBER_LENGTH && bankCode) {
+      resolveAccountName(next, bankCode)
     } else {
       setAccountName('')
     }
   }
 
   const handleRefresh = () => {
-    if (accountNumber.length === ACCOUNT_NUMBER_LENGTH) {
-      resolveAccountName(accountNumber)
+    if (accountNumber.length === ACCOUNT_NUMBER_LENGTH && bankCode) {
+      resolveAccountName(accountNumber, bankCode)
     }
   }
+
+  const canSubmit =
+    bankCode &&
+    accountNumber.length === ACCOUNT_NUMBER_LENGTH &&
+    accountName &&
+    !resolving
 
   const finishLabel = page.mobileFinishLabel ?? page.saveNextLabel
   const verifiedBannerLabel = fields.accountName.verifiedBannerLabel ?? fields.accountName.label
@@ -109,12 +191,33 @@ export default function MerchantOnboardingBankDetailsForm({
         </div>
       )}
 
+      {loadError ? (
+        <p className="mt-4 rounded-lg border border-merchant-error/30 bg-merchant-error/5 px-4 py-3 text-sm text-merchant-error">
+          {loadError}
+        </p>
+      ) : null}
+
       <form
         id={isMobile ? 'merchant-onboarding-bank-mobile-form' : undefined}
         className={isMobile ? 'mt-5' : 'mt-8'}
         onSubmit={(e) => {
           e.preventDefault()
-          onSaveNext?.()
+          if (!canSubmit) {
+            if (!bankCode) {
+              setResolveError('Please select your bank.')
+            } else if (accountNumber.length !== ACCOUNT_NUMBER_LENGTH) {
+              setResolveError('Enter a valid 10-digit account number.')
+            } else if (!accountName) {
+              setResolveError('Verify your account name before continuing.')
+            }
+            return
+          }
+
+          onSaveNext?.({
+            bankCode,
+            accountNumber,
+            accountName,
+          })
         }}
       >
         <article
@@ -129,8 +232,8 @@ export default function MerchantOnboardingBankDetailsForm({
               as="select"
               placeholderOption={fields.bank.placeholder}
               options={fields.bank.options}
-              value={bank}
-              onChange={(e) => setBank(e.target.value)}
+              value={bankCode}
+              onChange={handleBankChange}
               bare={isMobile}
               labelClassName={isMobile ? MOBILE_BANK_LABEL_CLASS : undefined}
             />
@@ -150,14 +253,15 @@ export default function MerchantOnboardingBankDetailsForm({
                   value={accountNumber}
                   onChange={handleAccountNumberChange}
                   placeholder={fields.accountNumber.placeholder}
+                  disabled={!bankCode}
                   className={`${merchantRegistrationFieldClass} pr-12 ${
                     isMobile ? 'border-transparent bg-merchant-input focus:border-merchant-primary/25' : ''
-                  }`}
+                  } ${!bankCode ? 'opacity-60' : ''}`}
                 />
                 <button
                   type="button"
                   onClick={handleRefresh}
-                  disabled={resolving}
+                  disabled={resolving || !bankCode || accountNumber.length !== ACCOUNT_NUMBER_LENGTH}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-merchant-primary transition-colors hover:text-merchant-link disabled:opacity-50"
                   aria-label="Refresh account name"
                 >
@@ -169,22 +273,48 @@ export default function MerchantOnboardingBankDetailsForm({
                   />
                 </button>
               </div>
+              {!bankCode ? (
+                <p className="text-xs text-merchant-muted">Select a bank first, then enter your account number.</p>
+              ) : null}
             </div>
 
+            {resolving ? (
+              <p className="text-sm text-merchant-body">Verifying account name…</p>
+            ) : null}
+
+            {resolveError ? (
+              <p className="rounded-lg border border-merchant-error/30 bg-merchant-error/5 px-4 py-3 text-sm text-merchant-error">
+                {resolveError}
+              </p>
+            ) : null}
+
             {accountVerifiedBanner}
+
+            {savedToDatabase && accountName ? (
+              <p className="text-xs font-medium text-merchant-primary">
+                Bank details saved to your merchant profile.
+              </p>
+            ) : null}
           </div>
+
+          {formError ? (
+            <p className="mt-4 rounded-lg border border-merchant-error/30 bg-merchant-error/5 px-4 py-3 text-sm text-merchant-error">
+              {formError}
+            </p>
+          ) : null}
 
           {!isMobile ? (
             <>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <MerchantButton type="submit" className="gap-2 sm:flex-1">
+                <MerchantButton type="submit" className="gap-2 sm:flex-1" disabled={submitting || !canSubmit}>
                   {page.saveNextLabel}
                   <ArrowRight size={18} strokeWidth={2} aria-hidden />
                 </MerchantButton>
                 <button
                   type="button"
                   onClick={onSkip}
-                  className="py-3 text-center text-sm font-semibold text-merchant-body transition-colors hover:text-merchant-ink sm:px-4"
+                  disabled={submitting}
+                  className="py-3 text-center text-sm font-semibold text-merchant-body transition-colors hover:text-merchant-ink disabled:opacity-50 sm:px-4"
                 >
                   {page.skipLabel}
                 </button>

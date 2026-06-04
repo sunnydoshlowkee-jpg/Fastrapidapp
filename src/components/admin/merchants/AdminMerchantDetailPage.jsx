@@ -1,9 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BadgeCheck } from 'lucide-react'
+import AdminApproveMerchantModal from './AdminApproveMerchantModal'
+import AdminRejectMerchantModal from './AdminRejectMerchantModal'
 import AdminMerchantDocumentsPanel from './AdminMerchantDocumentsPanel'
 import AdminMerchantInfoPanel from './AdminMerchantInfoPanel'
 import AdminMerchantKpiCard from './AdminMerchantKpiCard'
 import AdminMerchantLogoTile from './AdminMerchantLogoTile'
+import {
+  approveAdminMerchant,
+  mapAdminMerchantDetailFromApi,
+  rejectAdminMerchant,
+} from '../../../services/adminMerchantsService'
 
 function EmptyTab({ label }) {
   return (
@@ -15,8 +22,46 @@ function EmptyTab({ label }) {
   )
 }
 
-export default function AdminMerchantDetailPage({ merchant }) {
+export default function AdminMerchantDetailPage({
+  merchant: merchantProp,
+  onMerchantUpdated,
+}) {
+  const [merchant, setMerchant] = useState(merchantProp)
   const [activeTab, setActiveTab] = useState('info')
+  const [approveTarget, setApproveTarget] = useState(null)
+  const [rejectTarget, setRejectTarget] = useState(null)
+
+  useEffect(() => {
+    setMerchant(merchantProp)
+  }, [merchantProp])
+
+  const handleApproveMerchant = async ({ merchantId, notify }) => {
+    const payload = await approveAdminMerchant(merchantId, { notify })
+    const updated = mapAdminMerchantDetailFromApi(payload)
+    setMerchant(updated)
+    onMerchantUpdated?.(updated)
+    setApproveTarget(null)
+  }
+
+  const handleRejectMerchant = async (rejectPayload) => {
+    const payload = await rejectAdminMerchant(rejectPayload.merchantId, rejectPayload)
+    const updated = mapAdminMerchantDetailFromApi(payload)
+    setMerchant(updated)
+    onMerchantUpdated?.(updated)
+    setRejectTarget(null)
+  }
+
+  const handleDocumentUpdated = (updatedDoc) => {
+    setMerchant((prev) => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        items: prev.documents.items.map((item) =>
+          item.id === updatedDoc.id ? updatedDoc : item,
+        ),
+      },
+    }))
+  }
 
   return (
     <div className="p-6">
@@ -61,12 +106,32 @@ export default function AdminMerchantDetailPage({ merchant }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="rounded-lg bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
-        >
-          {merchant.suspendLabel}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {merchant.reviewable ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setRejectTarget(merchant.rejectContext)}
+                className="rounded-lg border border-red-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-red-600 transition-colors hover:bg-red-50"
+              >
+                Reject
+              </button>
+              <button
+                type="button"
+                onClick={() => setApproveTarget(merchant.approveContext)}
+                className="rounded-lg bg-emerald-500 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-emerald-600"
+              >
+                Review
+              </button>
+            </>
+          ) : null}
+          <button
+            type="button"
+            className="rounded-lg bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
+          >
+            {merchant.suspendLabel}
+          </button>
+        </div>
       </header>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -102,11 +167,28 @@ export default function AdminMerchantDetailPage({ merchant }) {
         {activeTab === 'info' ? (
           <AdminMerchantInfoPanel merchant={merchant} />
         ) : activeTab === 'documents' ? (
-          <AdminMerchantDocumentsPanel documents={merchant.documents} />
+          <AdminMerchantDocumentsPanel
+            documents={merchant.documents}
+            merchantId={merchant.numericId}
+            onDocumentUpdated={handleDocumentUpdated}
+          />
         ) : (
           <EmptyTab label={merchant.tabs.find((t) => t.id === activeTab)?.label ?? ''} />
         )}
       </div>
+
+      <AdminApproveMerchantModal
+        isOpen={approveTarget !== null}
+        onClose={() => setApproveTarget(null)}
+        merchant={approveTarget}
+        onConfirm={handleApproveMerchant}
+      />
+      <AdminRejectMerchantModal
+        isOpen={rejectTarget !== null}
+        onClose={() => setRejectTarget(null)}
+        merchant={rejectTarget}
+        onConfirm={handleRejectMerchant}
+      />
     </div>
   )
 }

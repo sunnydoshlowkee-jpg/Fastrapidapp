@@ -2,10 +2,42 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pencil, LocateFixed } from 'lucide-react'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
+import { useLocation } from '../../../../context/LocationContext'
+import { LOCATION_AREAS } from '../../../../utils/geo'
 
 export default function Location() {
+  const { setUserLocation, detectCurrentLocation, detecting, display } = useLocation()
   const [address, setAddress] = useState('12 Victoria Island, Lagos')
+  const [saving, setSaving] = useState(false)
   const navigate = useNavigate()
+
+  const handleContinue = async () => {
+    setSaving(true)
+    const match = LOCATION_AREAS.find((a) =>
+      address.toLowerCase().includes(a.location_label.toLowerCase()),
+    )
+
+    if (match) {
+      await setUserLocation({ ...match, state: 'Lagos', country_code: 'NG' })
+    } else {
+      await setUserLocation({
+        ...LOCATION_AREAS[1],
+        location_label: address.split(',')[0]?.trim() || address,
+        state: 'Lagos',
+        country_code: 'NG',
+      })
+    }
+
+    setSaving(false)
+    navigate('/onboarding/phone')
+  }
+
+  const handleUseCurrent = async () => {
+    const result = await detectCurrentLocation()
+    if (result?.location_label) {
+      setAddress(result.display || address)
+    }
+  }
 
   return (
     <CenteredLayout 
@@ -42,9 +74,18 @@ export default function Location() {
           <Pencil size={18} className="text-[#4342FF] flex-shrink-0 ml-2 cursor-pointer md:w-5 md:h-5" />
         </div>
 
-        <button className="flex items-center gap-2 text-[#4342FF] font-bold md:text-[16px] mb-8 md:mb-10 hover:underline w-fit">
-          <LocateFixed size={18} className="md:w-5 md:h-5" /> Use my current location
+        <button
+          type="button"
+          onClick={handleUseCurrent}
+          disabled={detecting}
+          className="flex items-center gap-2 text-[#4342FF] font-bold md:text-[16px] mb-2 hover:underline w-fit disabled:opacity-60"
+        >
+          <LocateFixed size={18} className="md:w-5 md:h-5" />
+          {detecting ? 'Detecting…' : 'Use my current location'}
         </button>
+        {display && (
+          <p className="text-sm text-gray-500 mb-6 md:mb-8">Selected: <span className="font-semibold text-gray-800">{display}</span></p>
+        )}
 
         {/* Map Preview Area */}
         <div className="flex-1 w-full bg-[#E5E7EB] rounded-3xl overflow-hidden relative mb-8 md:mb-10 min-h-[220px] md:min-h-[280px] shadow-inner">
@@ -65,10 +106,11 @@ export default function Location() {
 
         <div className="w-full mt-auto md:mt-0">
           <button 
-            onClick={() => navigate('/onboarding/phone')} 
-            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6 md:mb-6 mt-auto md:mt-0"
+            onClick={handleContinue}
+            disabled={saving}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6 md:mb-6 mt-auto md:mt-0 disabled:opacity-60"
           >
-            Continue
+            {saving ? 'Saving…' : 'Continue'}
           </button>
 
           <p className="text-center text-[12px] md:text-[13px] text-[#9CA3AF] px-4 md:px-0">

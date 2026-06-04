@@ -9,7 +9,7 @@ export default function MerchantButton({
     <button
       type={type}
       disabled={disabled}
-      className={`flex w-full items-center justify-center rounded-lg bg-[linear-gradient(178deg,#2419E9_0%,#4342FF_100%)] px-4 py-[17px] font-sans text-sm font-semibold leading-[21px] tracking-[0.025em] text-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] transition-colors disabled:cursor-not-allowed disabled:opacity-60 md:bg-merchant-primary md:py-4 md:text-base md:leading-6 md:tracking-normal md:shadow-merchant-btn md:hover:bg-[#3837e6] ${className}`}
+      className={`flex w-full items-center justify-center rounded bg-[linear-gradient(106.84deg,#3E3CFB_0%,#2F29F0_100%)] px-4 py-3.5 font-sans text-sm font-bold leading-5 text-[#FAF6FF] shadow-merchant-cta transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       {...rest}
     >
       {children}
