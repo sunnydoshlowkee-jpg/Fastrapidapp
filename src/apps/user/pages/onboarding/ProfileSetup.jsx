@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { ChevronDown, Calendar, User } from 'lucide-react'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
 import { completeProfile } from '../../../../services/authService'
+import { getApiFieldError } from '../../../../utils/apiErrors'
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Select Gender' },
@@ -11,12 +12,6 @@ const GENDER_OPTIONS = [
   { value: 'other', label: 'Other' },
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
-
-function getApiFieldError(err, field) {
-  const errors = err.response?.data?.errors
-  if (errors?.[field]?.[0]) return errors[field][0]
-  return err.response?.data?.message || 'Unable to save profile. Please try again.'
-}
 
 function parseDateOfBirth(value) {
   const trimmed = value.trim()

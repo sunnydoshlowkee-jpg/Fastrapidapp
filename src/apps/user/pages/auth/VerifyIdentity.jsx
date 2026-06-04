@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { verifyPhoneOtp } from '../../../../services/authService'
+import { getApiFieldError } from '../../../../utils/apiErrors'
 
 const OTP_LENGTH = 4
-
-function getApiFieldError(err, field) {
-  const errors = err.response?.data?.errors
-  if (errors?.[field]?.[0]) return errors[field][0]
-  return err.response?.data?.message || 'Unable to verify. Please try again.'
-}
 
 function formatPhoneDisplay(phoneE164, nationalPhone) {
   if (phoneE164) {

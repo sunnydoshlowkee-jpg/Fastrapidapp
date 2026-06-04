@@ -2,14 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from '../../../../components/brand/Logo'
 import { requestPhoneOtp } from '../../../../services/authService'
+import { getApiFieldError } from '../../../../utils/apiErrors'
 
 const COUNTRY = 'NG'
-
-function getApiFieldError(err, field) {
-  const errors = err.response?.data?.errors
-  if (errors?.[field]?.[0]) return errors[field][0]
-  return err.response?.data?.message || 'Unable to log in. Please try again.'
-}
 
 export default function Login() {
   const navigate = useNavigate()

@@ -3,13 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Camera, CheckCircle2, User } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { updateProfile } from '../../../services/authService'
+import { getApiFieldError } from '../../../utils/apiErrors'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
-
-function getApiFieldError(err, field) {
-  const errors = err.response?.data?.errors
-  if (errors?.[field]?.[0]) return errors[field][0]
-  return err.response?.data?.message || 'Unable to save changes. Please try again.'
-}
 
 const fieldClass = (hasError) =>
   `w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] md:text-[15px] text-gray-900 font-medium outline-none transition-all ${

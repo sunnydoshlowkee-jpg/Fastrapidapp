@@ -2,14 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
 import { requestPhoneOtp } from '../../../../services/authService'
+import { getApiFieldError } from '../../../../utils/apiErrors'
 
 const COUNTRY = 'NG'
-
-function getApiFieldError(err, field) {
-  const errors = err.response?.data?.errors
-  if (errors?.[field]?.[0]) return errors[field][0]
-  return err.response?.data?.message || 'Unable to continue. Please try again.'
-}
 
 export default function PhoneEntry() {
   const navigate = useNavigate()
