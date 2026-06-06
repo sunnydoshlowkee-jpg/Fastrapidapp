@@ -1,5 +1,5 @@
-/** Switch to `'empty'` to preview the empty-state dashboard */
-export const MERCHANT_DASHBOARD_MODE = 'active'
+/** Switch to `'active'` to preview the live-orders dashboard */
+export const MERCHANT_DASHBOARD_MODE = 'empty'
 
 export const MERCHANT_DASHBOARD_OVERVIEW = {
   merchantId: '44092',
@@ -112,7 +112,8 @@ export const MERCHANT_DASHBOARD_MOBILE = {
     title: 'No live orders yet.',
     description:
       'Your store is open and waiting! Orders will appear here as soon as customers start browsing your menu.',
-    action: 'View Customer Link',
+    primaryAction: 'Promote My Store',
+    secondaryAction: 'View Customer Link',
     customerLink: 'https://rapid.app/store/demo',
   },
   gettingStarted: {

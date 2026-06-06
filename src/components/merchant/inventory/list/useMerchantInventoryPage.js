@@ -1,41 +1,91 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
-  MERCHANT_INVENTORY_PRODUCTS,
-  MERCHANT_INVENTORY_TOTAL_COUNT,
-} from '../../../../services/data/merchantInventory.mock'
+  fetchMerchantInventory,
+  updateMerchantProductAvailability,
+} from '../../../../services/merchantProductsService'
 
 const PAGE_SIZE = 4
 
+const EMPTY_SUMMARY = [
+  { id: 'total', label: 'Total Products', value: '0' },
+  { id: 'active', label: 'Active Items', value: '0' },
+  { id: 'low-stock', label: 'Low Stock', value: '0' },
+  { id: 'value', label: 'Inventory Value', value: '₦0' },
+]
+
 export default function useMerchantInventoryPage() {
-  const [products, setProducts] = useState(MERCHANT_INVENTORY_PRODUCTS)
+  const [products, setProducts] = useState([])
+  const [summary, setSummary] = useState(EMPTY_SUMMARY)
+  const [insights, setInsights] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const filteredProducts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
-    if (!q) return products
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q),
-    )
-  }, [products, searchQuery])
+  const loadInventory = useCallback(async () => {
+    setLoading(true)
+    setError(null)
 
-  const total = MERCHANT_INVENTORY_TOTAL_COUNT
-  const displayTotal = searchQuery.trim() ? filteredProducts.length : total
+    try {
+      const result = await fetchMerchantInventory({
+        search: searchQuery,
+        page,
+        perPage: PAGE_SIZE,
+      })
 
-  const paginatedProducts = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
-    return filteredProducts.slice(start, start + PAGE_SIZE)
-  }, [filteredProducts, page])
+      setProducts(result.products)
+      setSummary(result.summary.length ? result.summary : EMPTY_SUMMARY)
+      setInsights(result.insights)
+      setPagination(result.pagination)
+    } catch (err) {
+      setError(err?.message || 'Could not load inventory.')
+      setProducts([])
+      setSummary(EMPTY_SUMMARY)
+      setInsights([])
+      setPagination({
+        page: 1,
+        pageSize: PAGE_SIZE,
+        total: 0,
+        totalPages: 1,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [page, searchQuery])
 
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE))
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadInventory()
+    }, searchQuery ? 250 : 0)
 
-  const toggleAvailability = (id) => {
+    return () => window.clearTimeout(timer)
+  }, [loadInventory, searchQuery])
+
+  const toggleAvailability = async (id) => {
+    const product = products.find((item) => item.id === id)
+    if (!product) return
+
+    const nextAvailable = !product.available
+
     setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, available: !p.available } : p)),
+      prev.map((item) => (item.id === id ? { ...item, available: nextAvailable } : item)),
     )
+
+    try {
+      await updateMerchantProductAvailability(id, nextAvailable)
+      await loadInventory()
+    } catch (err) {
+      setProducts((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, available: product.available } : item)),
+      )
+      setError(err?.message || 'Could not update availability.')
+    }
   }
 
   const handleSearchChange = (value) => {
@@ -44,16 +94,16 @@ export default function useMerchantInventoryPage() {
   }
 
   return {
-    products: paginatedProducts,
+    products,
+    summary,
+    insights,
     searchQuery,
     handleSearchChange,
     toggleAvailability,
-    pagination: {
-      page,
-      pageSize: PAGE_SIZE,
-      total: displayTotal,
-      totalPages,
-    },
+    pagination,
     setPage,
+    loading,
+    error,
+    refresh: loadInventory,
   }
 }

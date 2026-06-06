@@ -8,39 +8,50 @@ export default function MerchantEmptyState({
   onSecondaryClick,
 }) {
   return (
-    <section className="overflow-hidden rounded-merchant-panel bg-merchant-empty-panel px-6 py-12 shadow-merchant-panel md:px-12 md:py-16">
-      <div className="mx-auto flex max-w-lg flex-col items-center text-center">
-        <div className="relative mb-6">
-          <img
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=face"
-            alt=""
-            className="h-28 w-28 rounded-2xl object-cover shadow-[0px_4px_16px_0px_rgba(25,28,29,0.08)] md:h-32 md:w-32"
-          />
-          <span className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-merchant-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden />
-            {storeStatus}
+    <section className="relative isolate overflow-hidden rounded-[32px] border border-merchant-field-border bg-merchant-surface px-8 py-12 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] md:px-12">
+      <span
+        className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-xl bg-[rgba(225,224,255,0.3)] blur-[32px]"
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-xl bg-[rgba(255,219,202,0.2)] blur-[32px]"
+        aria-hidden
+      />
+
+      <div className="relative z-[1] mx-auto flex max-w-md flex-col items-center text-center">
+        <div className="relative mb-3">
+          <div className="flex h-48 w-48 items-center justify-center rounded-xl bg-merchant-input">
+            <img
+              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=256&h=256&fit=crop&crop=face"
+              alt=""
+              className="h-32 w-32 rounded-lg object-cover opacity-80 mix-blend-multiply"
+            />
+          </div>
+          <span className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-xl border border-merchant-field-border bg-merchant-surface px-3 py-1.5 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]">
+            <span className="h-2 w-2 rounded-full bg-merchant-primary" aria-hidden />
+            <span className="text-[10px] font-bold uppercase tracking-[0.25px] text-merchant-link">
+              {storeStatus}
+            </span>
           </span>
         </div>
 
-        <h2 className="text-xl font-semibold tracking-[-0.02em] text-merchant-ink md:text-2xl">
+        <h2 className="pt-5 text-[30px] font-bold leading-9 tracking-[-0.75px] text-merchant-ink">
           {title}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-merchant-muted md:text-base">
-          {description}
-        </p>
+        <p className="mt-3 max-w-md text-lg leading-[29px] text-merchant-muted">{description}</p>
 
-        <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
+        <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <button
             type="button"
             onClick={onPrimaryClick}
-            className="rounded-lg bg-merchant-primary px-6 py-3.5 text-sm font-semibold text-white shadow-merchant-cta transition-colors hover:bg-[#3837e6]"
+            className="rounded-lg bg-merchant-primary px-8 py-3.5 text-sm font-bold text-white shadow-merchant-cta transition-colors hover:bg-merchant-primary-dark"
           >
             {primaryAction}
           </button>
           <button
             type="button"
             onClick={onSecondaryClick}
-            className="rounded-lg bg-merchant-icon-tile px-6 py-3.5 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-input"
+            className="rounded-lg bg-merchant-icon-tile px-8 py-3.5 text-sm font-bold text-merchant-ink transition-colors hover:bg-merchant-input"
           >
             {secondaryAction}
           </button>

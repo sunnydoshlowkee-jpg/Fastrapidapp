@@ -26,34 +26,39 @@ export default function MerchantMenuUploadDesktop() {
   }
 
   return (
-    <div className="hidden flex-1 flex-col gap-8 p-6 lg:flex lg:gap-10 lg:p-8">
+    <div className="hidden flex-1 flex-col bg-merchant-canvas lg:flex">
       <MerchantMenuUploadHeader
         title={data.title}
+        variant="bar"
         showMenuButton
         onMenuClick={openMobileNav}
       />
 
-      <MerchantMenuUploadIntro
-        heading={data.intro.heading}
-        subheading={data.intro.subheading}
-      />
+      <div className="flex flex-1 flex-col items-center px-12 pb-20 pt-24">
+        <div className="flex w-full max-w-[944px] flex-col items-center gap-16">
+          <MerchantMenuUploadIntro
+            heading={data.intro.heading}
+            subheading={data.intro.subheading}
+          />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-        <MerchantMenuUploadManualCard
-          manualEntry={data.manualEntry}
-          onStartEntry={handleStartEntry}
-        />
-        <MerchantMenuUploadCsvCard
-          csvUpload={data.csvUpload}
-          onUpload={handleUpload}
-          onDownloadTemplate={handleDownloadTemplate}
-        />
+          <div className="grid w-full grid-cols-2 gap-8">
+            <MerchantMenuUploadManualCard
+              manualEntry={data.manualEntry}
+              onStartEntry={handleStartEntry}
+            />
+            <MerchantMenuUploadCsvCard
+              csvUpload={data.csvUpload}
+              onUpload={handleUpload}
+              onDownloadTemplate={handleDownloadTemplate}
+            />
+          </div>
+
+          <MerchantMenuUploadHelp
+            help={data.help}
+            documentationUrl={data.csvUpload.documentationUrl}
+          />
+        </div>
       </div>
-
-      <MerchantMenuUploadHelp
-        help={data.help}
-        documentationUrl={data.csvUpload.documentationUrl}
-      />
     </div>
   )
 }

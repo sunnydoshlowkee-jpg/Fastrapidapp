@@ -35,6 +35,7 @@ export default function MerchantMenuItemCreateForm({
   categories,
   onCancel,
   onSubmit,
+  submitting = false,
   variant = 'desktop',
 }) {
   const isMobile = variant === 'mobile'
@@ -59,6 +60,7 @@ export default function MerchantMenuItemCreateForm({
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (submitting) return
     onSubmit?.({ ...form, mediaFile })
   }
 
@@ -75,7 +77,8 @@ export default function MerchantMenuItemCreateForm({
       <button
         type="button"
         onClick={onCancel}
-        className={`rounded-lg bg-merchant-icon-tile py-3.5 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-input ${
+        disabled={submitting}
+        className={`rounded-lg bg-merchant-icon-tile py-3.5 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-input disabled:opacity-60 ${
           isMobile ? 'px-4' : 'px-6 sm:min-w-[120px]'
         }`}
       >
@@ -83,11 +86,14 @@ export default function MerchantMenuItemCreateForm({
       </button>
       <button
         type="submit"
-        className={`flex items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] ${
+        disabled={submitting}
+        className={`flex items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] disabled:opacity-60 ${
           isMobile ? 'px-4' : 'px-6 sm:min-w-[200px]'
         }`}
       >
-        <span className={isMobile ? 'truncate' : ''}>{actions.submit}</span>
+        <span className={isMobile ? 'truncate' : ''}>
+          {submitting ? 'Saving…' : actions.submit}
+        </span>
         <ArrowRight size={18} strokeWidth={2} className="shrink-0" aria-hidden />
       </button>
     </div>
@@ -114,6 +120,7 @@ export default function MerchantMenuItemCreateForm({
           value={form.productName}
           onChange={updateField('productName')}
           placeholder={fields.productName.placeholder}
+          required
           className={inputClassName}
         />
       </MerchantMenuItemCreateField>
@@ -125,6 +132,7 @@ export default function MerchantMenuItemCreateForm({
               id="category"
               value={form.category}
               onChange={updateField('category')}
+              required
               className={`${inputClassName} appearance-none pr-10`}
             >
               {categories.map((option) => (
@@ -167,6 +175,7 @@ export default function MerchantMenuItemCreateForm({
             value={form.price}
             onChange={updateField('price')}
             placeholder={fields.price.placeholder}
+            required
             className={`${inputClassName} pl-9`}
           />
         </div>

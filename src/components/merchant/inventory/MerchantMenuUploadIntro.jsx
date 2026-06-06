@@ -1,10 +1,10 @@
 export default function MerchantMenuUploadIntro({ heading, subheading }) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
-      <h2 className="text-2xl font-bold tracking-[-0.02em] text-merchant-ink md:text-[28px] md:leading-tight">
+    <div className="mx-auto max-w-lg text-center">
+      <h2 className="text-[30px] font-bold leading-9 tracking-[-0.75px] text-merchant-ink">
         {heading}
       </h2>
-      <p className="mt-3 text-sm leading-relaxed text-merchant-muted md:text-base">{subheading}</p>
+      <p className="mx-auto mt-3 max-w-md text-base leading-6 text-merchant-body">{subheading}</p>
     </div>
   )
 }

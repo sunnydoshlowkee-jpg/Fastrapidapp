@@ -132,7 +132,11 @@ export default function AdminVerify2fa() {
         navigate('/admin/session-expired', { replace: true })
         return
       }
-      setError(copy.invalidCodeMessage)
+      setError(
+        err.code === 'INVALID_OTP'
+          ? copy.invalidCodeMessage
+          : err.message || copy.invalidCodeMessage,
+      )
       setDigits(Array(CODE_LENGTH).fill(''))
       focusInput(0)
     } finally {
@@ -253,7 +257,14 @@ export default function AdminVerify2fa() {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          Demo code: <span className="text-gray-500">{ADMIN_2FA_OTP}</span>
+          {import.meta.env.VITE_ADMIN_2FA_STRICT === 'true' ? (
+            <>
+              Enter the code sent to your email, or demo code{' '}
+              <span className="text-gray-500">{ADMIN_2FA_OTP}</span>
+            </>
+          ) : (
+            <>Demo mode: enter any 6-digit code (e.g. {ADMIN_2FA_OTP})</>
+          )}
         </p>
       </div>
     </div>

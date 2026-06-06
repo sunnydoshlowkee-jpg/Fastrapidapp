@@ -25,24 +25,30 @@ export default function MerchantMenuUploadMobile() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 pb-8 pt-5 lg:hidden">
+    <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas shadow-[0px_1px_2px_rgba(198,196,218,0.15)] lg:hidden">
       <MerchantMenuUploadMobileHeader title={data.title} />
 
-      <p className="text-sm leading-relaxed text-merchant-muted">{mobile.intro.subheading}</p>
+      <div className="flex flex-col gap-6 px-4 py-6">
+        <p className="max-w-[349px] text-[13px] leading-5 text-merchant-mobile-muted">
+          {mobile.intro.subheading}
+        </p>
 
-      <MerchantMenuUploadMobileManualCard
-        manualEntry={data.manualEntry}
-        onStartEntry={handleStartEntry}
-      />
+        <div className="flex flex-col gap-4">
+          <MerchantMenuUploadMobileManualCard
+            manualEntry={data.manualEntry}
+            onStartEntry={handleStartEntry}
+          />
 
-      <MerchantMenuUploadMobileCsvCard
-        csvUpload={data.csvUpload}
-        mobileCsv={mobile.csvUpload}
-        onUpload={handleUpload}
-        onDownloadTemplate={handleDownloadTemplate}
-      />
+          <MerchantMenuUploadMobileCsvCard
+            csvUpload={data.csvUpload}
+            mobileCsv={mobile.csvUpload}
+            onUpload={handleUpload}
+            onDownloadTemplate={handleDownloadTemplate}
+          />
+        </div>
 
-      <MerchantMenuUploadMobileHelp help={mobile.help} />
+        <MerchantMenuUploadMobileHelp help={mobile.help} />
+      </div>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Bell } from 'lucide-react'
-import { MERCHANT_MENU_NEW_PATH } from '../../../../services/data/merchantMenuItemCreate.mock'
+import { MERCHANT_MENU_UPLOAD_PATH } from '../../../../services/data/merchantMenuUpload.mock'
 import { MERCHANT_INVENTORY } from '../../../../services/data/merchantInventory.mock'
 import MerchantInventoryMobileInsights from './mobile/MerchantInventoryMobileInsights'
 import MerchantInventoryMobilePagination from './mobile/MerchantInventoryMobilePagination'
@@ -15,10 +15,14 @@ export default function MerchantInventoryMobile() {
   const mobile = data.mobile
   const {
     products,
+    summary,
+    insights,
     searchQuery,
     handleSearchChange,
     pagination,
     setPage,
+    loading,
+    error,
   } = useMerchantInventoryPage()
 
   return (
@@ -44,12 +48,20 @@ export default function MerchantInventoryMobile() {
         onSearchChange={handleSearchChange}
         bulkUpdateLabel={data.bulkUpdateLabel}
         addItemLabel={mobile.addItemLabel}
-        onAddItem={() => navigate(MERCHANT_MENU_NEW_PATH)}
+        onAddItem={() => navigate(MERCHANT_MENU_UPLOAD_PATH)}
       />
 
-      <MerchantInventoryMobileSummaryCards summary={data.summary} />
+      {error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+      ) : null}
 
-      <MerchantInventoryMobileProductList products={products} />
+      <MerchantInventoryMobileSummaryCards summary={summary} />
+
+      {loading ? (
+        <p className="text-sm text-merchant-muted">Loading inventory…</p>
+      ) : (
+        <MerchantInventoryMobileProductList products={products} />
+      )}
 
       <MerchantInventoryMobilePagination
         page={pagination.page}
@@ -58,7 +70,7 @@ export default function MerchantInventoryMobile() {
         onPageChange={setPage}
       />
 
-      <MerchantInventoryMobileInsights title={mobile.insightsTitle} insights={mobile.insights} />
+      <MerchantInventoryMobileInsights title={mobile.insightsTitle} insights={insights} />
     </div>
   )
 }

@@ -12,6 +12,16 @@ const EMPTY = {
   city: 'Lagos',
 }
 
+function parseDiscoveryPayload(response) {
+  const payload = response?.data?.data
+
+  if (!payload || !Array.isArray(payload.food)) {
+    throw new Error('Discovery API returned an unexpected response. Check VITE_API_URL and that the API is running.')
+  }
+
+  return payload
+}
+
 export function useDiscovery() {
   const { location, loading: locationLoading } = useLocation()
   const [data, setData] = useState(EMPTY)
@@ -19,7 +29,7 @@ export function useDiscovery() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (locationLoading || !location?.latitude) {
+    if (locationLoading || location?.latitude == null || location?.longitude == null) {
       return
     }
 
@@ -39,11 +49,15 @@ export function useDiscovery() {
         })
 
         if (!cancelled) {
-          setData(response.data?.data ?? EMPTY)
+          setData(parseDiscoveryPayload(response))
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err?.response?.data?.message || 'Could not load nearby results.')
+          const message =
+            err?.response?.data?.message ||
+            err?.message ||
+            'Could not load nearby results.'
+          setError(message)
           setData(EMPTY)
         }
       } finally {

@@ -5,15 +5,24 @@ export default function MerchantDashboardHeader({
   merchantId,
   onMenuClick,
   showMenuButton = false,
+  variant = 'inline',
 }) {
+  const isBar = variant === 'bar'
+
   return (
-    <header className="flex items-center justify-between gap-4">
+    <header
+      className={
+        isBar
+          ? 'flex h-16 shrink-0 items-center justify-between gap-4 border-b border-merchant-divider bg-merchant-surface px-8'
+          : 'flex items-center justify-between gap-4'
+      }
+    >
       <div className="flex min-w-0 items-center gap-3">
         {showMenuButton && (
           <button
             type="button"
             onClick={onMenuClick}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-merchant-divider bg-merchant-surface text-merchant-ink lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-merchant-field-border bg-merchant-surface text-merchant-ink-slate lg:hidden"
             aria-label="Open navigation menu"
           >
             <span className="flex flex-col gap-1">
@@ -23,22 +32,32 @@ export default function MerchantDashboardHeader({
             </span>
           </button>
         )}
-        <h1 className="truncate text-xl font-semibold tracking-[-0.02em] text-merchant-ink md:text-2xl">
+        <h1
+          className={
+            isBar
+              ? 'truncate text-lg font-semibold leading-7 text-merchant-ink-slate'
+              : 'truncate text-xl font-semibold tracking-[-0.02em] text-merchant-ink md:text-2xl'
+          }
+        >
           {title}
         </h1>
       </div>
 
-      <div className="flex shrink-0 items-center gap-4 md:gap-6">
+      <div className="flex shrink-0 items-center gap-4">
         <button
           type="button"
-          className="relative flex h-10 w-10 items-center justify-center rounded-lg text-merchant-muted transition-colors hover:bg-merchant-surface hover:text-merchant-ink"
+          className="relative flex h-9 w-8 items-center justify-center text-[#64748B] transition-colors hover:text-merchant-ink-slate"
           aria-label="Notifications"
         >
-          <Bell size={20} strokeWidth={1.75} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#E67E22]" aria-hidden />
+          <Bell size={18} strokeWidth={1.75} />
+          <span
+            className="absolute right-1 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-merchant-warning"
+            aria-hidden
+          />
         </button>
-        <p className="hidden text-sm font-medium text-merchant-muted sm:block">
-          Merchant ID: <span className="text-merchant-ink">#{merchantId}</span>
+        {isBar ? <span className="h-8 w-px bg-merchant-divider" aria-hidden /> : null}
+        <p className="text-xs font-medium leading-4 text-merchant-header-muted">
+          Merchant ID: <span className="text-merchant-header-muted">#{merchantId}</span>
         </p>
       </div>
     </header>

@@ -6,8 +6,22 @@ const ADMIN_TOKEN_KEY = 'rapid_admin_token'
 const ADMIN_SESSION_TOKEN_KEY = 'rapid_admin_session_token'
 const ADMIN_USER_KEY = 'rapid_admin_user'
 const ADMIN_PENDING_KEY = 'rapid_admin_pending_session'
+const ADMIN_PENDING_BACKUP_KEY = 'rapid_admin_pending_session_backup'
+
+/** When false (default), any 6-digit code is accepted until email OTP is wired. */
+const ADMIN_2FA_STRICT = import.meta.env.VITE_ADMIN_2FA_STRICT === 'true'
 
 const delay = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms))
+
+function writePendingSession(session) {
+  const json = JSON.stringify(session)
+  sessionStorage.setItem(ADMIN_PENDING_KEY, json)
+  try {
+    localStorage.setItem(ADMIN_PENDING_BACKUP_KEY, json)
+  } catch {
+    // localStorage may be unavailable in private mode
+  }
+}
 
 export function getStoredAdminSession() {
   const token = localStorage.getItem(ADMIN_TOKEN_KEY)
@@ -21,7 +35,9 @@ export function getStoredAdminSession() {
 }
 
 export function getAdminPendingSession() {
-  const raw = sessionStorage.getItem(ADMIN_PENDING_KEY)
+  const raw =
+    sessionStorage.getItem(ADMIN_PENDING_KEY) ||
+    localStorage.getItem(ADMIN_PENDING_BACKUP_KEY)
   if (!raw) return null
   try {
     return JSON.parse(raw)
@@ -32,6 +48,7 @@ export function getAdminPendingSession() {
 
 export function clearAdminPendingSession() {
   sessionStorage.removeItem(ADMIN_PENDING_KEY)
+  localStorage.removeItem(ADMIN_PENDING_BACKUP_KEY)
 }
 
 export function clearAdminSession() {
@@ -48,6 +65,12 @@ export function getAdminAuthToken() {
     getAdminPendingSession()?.token ||
     null
   )
+}
+
+/** True only after login + 2FA (excludes pending verification). */
+export function isAdminAuthenticated() {
+  if (getStoredAdminSession()?.token) return true
+  return Boolean(sessionStorage.getItem(ADMIN_SESSION_TOKEN_KEY))
 }
 
 function persistAdminSession(session) {
@@ -71,7 +94,7 @@ export async function adminLogin({ email, password, rememberMe = false }) {
       rememberMe,
     }
 
-    sessionStorage.setItem(ADMIN_PENDING_KEY, JSON.stringify(session))
+    writePendingSession(session)
     return session
   } catch (err) {
     const message = getApiFieldError(err, 'email') || err.response?.data?.message
@@ -92,7 +115,15 @@ export async function adminVerify2fa({ code }) {
     throw error
   }
 
-  if (code !== ADMIN_2FA_OTP) {
+  const normalized = String(code).replace(/\D/g, '')
+
+  if (!/^\d{6}$/.test(normalized)) {
+    const error = new Error('Please enter a valid 6-digit code.')
+    error.code = 'INVALID_OTP'
+    throw error
+  }
+
+  if (ADMIN_2FA_STRICT && normalized !== ADMIN_2FA_OTP) {
     const error = new Error('Invalid code. Please try again.')
     error.code = 'INVALID_OTP'
     throw error

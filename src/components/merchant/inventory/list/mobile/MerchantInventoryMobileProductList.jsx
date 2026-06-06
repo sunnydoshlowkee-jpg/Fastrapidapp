@@ -18,6 +18,14 @@ function StatusBadge({ stockWarning }) {
 }
 
 export default function MerchantInventoryMobileProductList({ products }) {
+  if (!products.length) {
+    return (
+      <p className="rounded-merchant-stat bg-merchant-surface px-4 py-8 text-center text-sm text-merchant-muted shadow-merchant-stat">
+        No products yet. Add your first menu item to get started.
+      </p>
+    )
+  }
+
   return (
     <ul className="space-y-3">
       {products.map((product) => (

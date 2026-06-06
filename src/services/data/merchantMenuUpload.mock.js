@@ -1,4 +1,6 @@
 /** Desktop [272:6754](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-6754) · Mobile [622:1396](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1396) */
+export const MERCHANT_MENU_UPLOAD_PATH = '/merchant/menu/upload'
+
 export const MERCHANT_MENU_UPLOAD = {
   title: 'Menu Upload',
   intro: {

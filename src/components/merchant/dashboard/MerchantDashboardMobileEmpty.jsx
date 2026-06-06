@@ -12,39 +12,51 @@ export default function MerchantDashboardMobileEmpty() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-5 lg:pb-8">
-      <MerchantMobileHeader />
+    <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas lg:hidden">
+      <MerchantMobileHeader variant="bar" />
 
-      <section aria-labelledby="overview-heading">
-        <h2 id="overview-heading" className="text-lg font-semibold text-merchant-ink">
-          {overview.title}
-        </h2>
-        <p className="mt-0.5 text-sm text-merchant-muted">{overview.subtitle}</p>
+      <div className="flex flex-col gap-8 px-6 pb-8 pt-6">
+        <section aria-labelledby="overview-heading">
+          <h2
+            id="overview-heading"
+            className="text-base font-bold leading-6 tracking-[-0.4px] text-merchant-ink"
+          >
+            {overview.title}
+          </h2>
+          <p className="mt-1 text-base leading-6 text-merchant-mobile-muted">
+            {overview.subtitle}
+          </p>
 
-        <div className="mt-4 flex flex-col gap-3">
-          {stats.map((stat) => (
-            <MerchantMobileStatCard key={stat.id} {...stat} />
-          ))}
-        </div>
-      </section>
+          <div className="mt-4 flex flex-col gap-4">
+            {stats.map((stat) => (
+              <MerchantMobileStatCard key={stat.id} {...stat} />
+            ))}
+          </div>
+        </section>
 
-      <MerchantMobileEmptyState
-        title={emptyState.title}
-        description={emptyState.description}
-        action={emptyState.action}
-        onAction={handleViewCustomerLink}
-      />
+        <MerchantMobileEmptyState
+          title={emptyState.title}
+          description={emptyState.description}
+          primaryAction={emptyState.primaryAction}
+          secondaryAction={emptyState.secondaryAction}
+          onPrimaryClick={() => {}}
+          onSecondaryClick={handleViewCustomerLink}
+        />
 
-      <section aria-labelledby="getting-started-heading">
-        <h2 id="getting-started-heading" className="text-lg font-semibold text-merchant-ink">
-          {gettingStarted.title}
-        </h2>
-        <div className="mt-4 flex flex-col gap-3">
-          {gettingStarted.items.map((item) => (
-            <MerchantGettingStartedCard key={item.id} {...item} />
-          ))}
-        </div>
-      </section>
+        <section aria-labelledby="getting-started-heading">
+          <h2
+            id="getting-started-heading"
+            className="px-1 text-lg font-bold leading-[27px] tracking-[-0.45px] text-merchant-ink"
+          >
+            {gettingStarted.title}
+          </h2>
+          <div className="mt-4 flex flex-col gap-4">
+            {gettingStarted.items.map((item) => (
+              <MerchantGettingStartedCard key={item.id} {...item} />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ import ForgotPassword from '../apps/merchant/pages/auth/ForgotPassword'
 import ResetPassword from '../apps/merchant/pages/auth/ResetPassword'
 import Dashboard from '../apps/merchant/pages/Dashboard'
 import Menu from '../apps/merchant/pages/Menu'
+import MenuUpload from '../apps/merchant/pages/MenuUpload'
 import MenuItemCreate from '../apps/merchant/pages/MenuItemCreate'
 import MenuImportSuccess from '../apps/merchant/pages/MenuImportSuccess'
 import MerchantOrders from '../apps/merchant/pages/Orders'
@@ -42,6 +43,7 @@ export default function MerchantRoutes() {
           <Route element={<MerchantLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="menu" element={<Menu />} />
+            <Route path="menu/upload" element={<MenuUpload />} />
             <Route path="menu/new" element={<MenuItemCreate />} />
             <Route path="menu/import/success" element={<MenuImportSuccess />} />
             <Route path="orders" element={<MerchantOrders />} />

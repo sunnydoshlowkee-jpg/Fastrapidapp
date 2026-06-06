@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Cloud, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Logo from '../../../../components/brand/Logo'
-import { adminLogin } from '../../../../services/adminAuthService'
+import {
+  adminLogin,
+  isAdminAuthenticated,
+} from '../../../../services/adminAuthService'
 import {
   ADMIN_DUMMY_CREDENTIALS,
   ADMIN_LOGIN_COPY,
@@ -18,6 +21,12 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isAdminAuthenticated()) {
+      navigate('/admin', { replace: true })
+    }
+  }, [navigate])
 
   const handleSubmit = async (event) => {
     event.preventDefault()

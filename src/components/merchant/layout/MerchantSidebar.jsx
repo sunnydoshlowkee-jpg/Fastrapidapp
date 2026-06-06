@@ -2,7 +2,6 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   BarChart2,
   ClipboardList,
-  Headphones,
   LayoutDashboard,
   LogOut,
   Package,
@@ -29,10 +28,12 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
 
   const sidebarContent = (
     <>
-      <div className="flex items-start justify-between gap-3 px-2">
+      <div className="flex items-start justify-between gap-3 px-6">
         <div>
-          <p className="text-lg font-bold tracking-[-0.02em] text-merchant-ink">Rapid Merchant</p>
-          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[rgba(69,69,87,0.55)]">
+          <p className="text-xl font-bold leading-7 tracking-[-0.5px] text-merchant-ink-slate">
+            Rapid Merchant
+          </p>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-[1px] text-merchant-nav-muted">
             Merchant Portal
           </p>
         </div>
@@ -54,10 +55,10 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
             end={end}
             onClick={onClose}
             className={({ isActive }) =>
-              `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              `relative flex items-center gap-3 px-6 py-4 text-sm transition-colors ${
                 isActive
-                  ? 'bg-merchant-nav-active text-merchant-primary'
-                  : 'text-merchant-muted hover:bg-merchant-icon-tile hover:text-merchant-ink'
+                  ? 'bg-merchant-nav-active font-medium text-merchant-primary'
+                  : 'font-normal text-merchant-nav-muted hover:bg-merchant-nav-active hover:text-merchant-ink-slate'
               }`
             }
             {...(matchPrefix
@@ -68,7 +69,7 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
               <>
                 {isActive && (
                   <span
-                    className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-merchant-primary"
+                    className="absolute bottom-0 left-0 top-0 w-1 bg-merchant-primary"
                     aria-hidden
                   />
                 )}
@@ -80,22 +81,21 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
         ))}
       </nav>
 
-      <div className="mt-6 flex flex-col gap-2 border-t border-merchant-divider pt-6">
+      <div className="mx-4 mt-6 flex flex-col gap-2 border-t border-merchant-input pt-4">
         <button
           type="button"
           onClick={() => {
             navigate('/merchant/support')
             onClose?.()
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-merchant-primary px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3837e6]"
+          className="flex w-full items-center justify-center rounded-lg bg-merchant-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-merchant-primary-dark"
         >
-          <Headphones size={16} strokeWidth={1.75} aria-hidden />
           Quick Support
         </button>
         <button
           type="button"
           onClick={handleSignOut}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-merchant-sign-out px-4 py-3 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-nav-active"
+          className="flex w-full items-center justify-center gap-3 rounded-lg bg-merchant-sign-out px-4 py-3 text-sm font-semibold text-merchant-ink transition-colors hover:opacity-90"
         >
           <LogOut size={16} strokeWidth={1.75} aria-hidden />
           Sign Out
@@ -116,7 +116,7 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 hidden w-[260px] flex-col border-r border-merchant-divider bg-merchant-surface px-4 py-6 transition-transform duration-200 lg:static lg:z-auto lg:flex lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 hidden w-60 flex-col bg-merchant-surface px-0 py-6 transition-transform duration-200 lg:static lg:z-auto lg:flex lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

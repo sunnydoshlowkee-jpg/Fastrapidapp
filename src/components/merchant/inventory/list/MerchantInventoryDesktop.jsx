@@ -1,5 +1,5 @@
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { MERCHANT_MENU_NEW_PATH } from '../../../../services/data/merchantMenuItemCreate.mock'
+import { MERCHANT_MENU_UPLOAD_PATH } from '../../../../services/data/merchantMenuUpload.mock'
 import { MERCHANT_INVENTORY } from '../../../../services/data/merchantInventory.mock'
 import MerchantDashboardHeader from '../../dashboard/MerchantDashboardHeader'
 import MerchantInventoryInsightCards from './MerchantInventoryInsightCards'
@@ -14,11 +14,15 @@ export default function MerchantInventoryDesktop() {
   const data = MERCHANT_INVENTORY
   const {
     products,
+    summary,
+    insights,
     searchQuery,
     handleSearchChange,
     toggleAvailability,
     pagination,
     setPage,
+    loading,
+    error,
   } = useMerchantInventoryPage()
 
   return (
@@ -37,19 +41,27 @@ export default function MerchantInventoryDesktop() {
         onSearchChange={handleSearchChange}
         bulkUpdateLabel={data.bulkUpdateLabel}
         addItemLabel={data.addItemLabel}
-        onAddItem={() => navigate(MERCHANT_MENU_NEW_PATH)}
+        onAddItem={() => navigate(MERCHANT_MENU_UPLOAD_PATH)}
       />
 
-      <MerchantInventorySummaryCards summary={data.summary} />
+      {error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+      ) : null}
 
-      <MerchantInventoryTable
-        products={products}
-        pagination={pagination}
-        onPageChange={setPage}
-        onToggleAvailability={toggleAvailability}
-      />
+      <MerchantInventorySummaryCards summary={summary} />
 
-      <MerchantInventoryInsightCards insights={data.insights} />
+      {loading ? (
+        <p className="text-sm text-merchant-muted">Loading inventory…</p>
+      ) : (
+        <MerchantInventoryTable
+          products={products}
+          pagination={pagination}
+          onPageChange={setPage}
+          onToggleAvailability={toggleAvailability}
+        />
+      )}
+
+      <MerchantInventoryInsightCards insights={insights} />
     </div>
   )
 }

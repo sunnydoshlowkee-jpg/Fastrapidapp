@@ -23,14 +23,23 @@ export default function MerchantMenuUploadMobileCsvCard({
   }
 
   return (
-    <article className="rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-merchant-nav-active text-merchant-primary">
-          <FileSpreadsheet size={20} strokeWidth={1.75} aria-hidden />
+    <article className="relative overflow-hidden rounded-xl border border-[rgba(198,196,218,0.15)] border-l-4 border-l-[rgba(198,196,218,0.15)] bg-merchant-surface p-5">
+      <div
+        className="pointer-events-none absolute inset-y-0 left-1 right-0 bg-gradient-to-br from-[rgba(36,25,233,0.05)] to-transparent"
+        aria-hidden
+      />
+
+      <div className="relative flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-merchant-tip-purple text-merchant-link">
+          <FileSpreadsheet size={16} strokeWidth={1.75} aria-hidden />
         </div>
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-merchant-ink">{csvUpload.title}</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-merchant-muted">{csvUpload.description}</p>
+          <h3 className="text-[15px] font-semibold leading-[22px] text-merchant-ink">
+            {csvUpload.title}
+          </h3>
+          <p className="mt-1 text-[13px] leading-[21px] text-merchant-mobile-muted">
+            {csvUpload.description}
+          </p>
         </div>
       </div>
 
@@ -45,10 +54,10 @@ export default function MerchantMenuUploadMobileCsvCard({
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 transition-colors ${
+        className={`relative mt-4 flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-6 py-6 transition-colors ${
           dragOver
-            ? 'border-merchant-primary bg-merchant-nav-active/50'
-            : 'border-merchant-divider bg-merchant-canvas'
+            ? 'border-merchant-link bg-[rgba(36,25,233,0.05)]'
+            : 'border-[rgba(198,196,218,0.3)] bg-[rgba(243,244,245,0.5)]'
         }`}
       >
         <input
@@ -58,34 +67,38 @@ export default function MerchantMenuUploadMobileCsvCard({
           className="sr-only"
           onChange={(e) => handleFiles(e.target.files)}
         />
-        <UploadCloud size={28} className="text-merchant-muted" strokeWidth={1.5} aria-hidden />
-        <p className="mt-2 text-center text-sm text-merchant-muted">
+        <UploadCloud size={20} className="text-merchant-mobile-muted" strokeWidth={1.5} aria-hidden />
+        <p className="text-center text-[13px] font-medium leading-5 text-merchant-ink">
           {csvUpload.dropzoneHint}{' '}
-          <span className="font-semibold text-merchant-primary">{csvUpload.browseLabel}</span>
+          <span className="text-merchant-link">{csvUpload.browseLabel}</span>
         </p>
-        <p className="mt-1 text-xs text-merchant-muted">{mobileCsv.dropzoneSubtext}</p>
-        {fileName && (
-          <p className="mt-2 text-xs font-medium text-merchant-ink">Selected: {fileName}</p>
-        )}
+        <p className="text-center text-[11px] leading-4 text-merchant-mobile-muted">
+          {mobileCsv.dropzoneSubtext}
+        </p>
+        {fileName ? (
+          <p className="text-xs font-medium text-merchant-ink">Selected: {fileName}</p>
+        ) : null}
       </div>
 
-      <button
-        type="button"
-        onClick={onUpload}
-        className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6]"
-      >
-        <Upload size={18} strokeWidth={2} aria-hidden />
-        {mobileCsv.uploadLabel}
-      </button>
+      <div className="relative mt-3 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={onUpload}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-merchant-link to-merchant-primary py-4 text-sm font-semibold leading-[21px] text-white shadow-merchant-btn transition-opacity hover:opacity-95"
+        >
+          {mobileCsv.uploadLabel}
+          <Upload size={12} strokeWidth={2.5} aria-hidden />
+        </button>
 
-      <button
-        type="button"
-        onClick={onDownloadTemplate}
-        className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-semibold text-merchant-primary hover:text-[#3837e6]"
-      >
-        <Download size={16} strokeWidth={2} aria-hidden />
-        {mobileCsv.templateLabel}
-      </button>
+        <button
+          type="button"
+          onClick={onDownloadTemplate}
+          className="flex items-center justify-center gap-2 text-[13px] font-medium leading-5 text-merchant-link hover:text-merchant-primary-dark"
+        >
+          <Download size={10} strokeWidth={2.5} aria-hidden />
+          {mobileCsv.templateLabel}
+        </button>
+      </div>
     </article>
   )
 }

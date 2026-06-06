@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import AdminAuthGuard from '../components/admin/auth/AdminAuthGuard'
 import AdminLayout from '../layouts/AdminLayout'
 import AdminLogin from '../apps/admin/pages/auth/Login'
 import AdminVerify2fa from '../apps/admin/pages/auth/Verify2fa'
@@ -39,8 +40,9 @@ export default function AdminRoutes() {
       <Route path="forgot-password/reset" element={<AdminResetPassword />} />
       <Route path="forgot-password/success" element={<AdminResetSuccess />} />
       <Route path="session-expired" element={<AdminSessionExpired />} />
-      <Route element={<AdminLayout />}>
-        <Route index element={<Overview />} />
+      <Route element={<AdminAuthGuard />}>
+        <Route element={<AdminLayout />}>
+          <Route index element={<Overview />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="users" element={<Users />} />
         <Route path="users/:userId" element={<UserDetail />} />
@@ -65,7 +67,8 @@ export default function AdminRoutes() {
         <Route path="disputes/:disputeId" element={<DisputeDetail />} />
         <Route path="audit-log" element={<AuditLog />} />
         <Route path="support" element={<Support />} />
-        <Route path="support/:ticketId" element={<SupportTicketDetail />} />
+          <Route path="support/:ticketId" element={<SupportTicketDetail />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/admin/login" replace />} />
     </Routes>

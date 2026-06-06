@@ -7,25 +7,32 @@ const icons = {
 }
 
 const iconToneStyles = {
-  purple: 'bg-[rgba(67,66,255,0.12)] text-merchant-primary',
-  orange: 'bg-[rgba(245,158,11,0.14)] text-merchant-warning-star',
-  gray: 'bg-merchant-icon-tile text-merchant-muted',
+  purple: 'bg-merchant-tip-purple text-merchant-link',
+  orange: 'bg-merchant-tip-orange text-merchant-tip-orange-icon',
+  gray: 'bg-merchant-mobile-secondary text-merchant-body',
 }
 
-export default function MerchantGettingStartedCard({ title, description, icon, iconTone = 'gray' }) {
+export default function MerchantGettingStartedCard({
+  title,
+  description,
+  icon,
+  iconTone = 'gray',
+}) {
   const Icon = icons[icon] || LineChart
 
   return (
-    <article className="flex gap-4 rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat">
+    <article className="flex gap-4 rounded-xl bg-merchant-surface p-5">
       <div
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${iconToneStyles[iconTone] || iconToneStyles.gray}`}
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+          iconToneStyles[iconTone] || iconToneStyles.gray
+        }`}
         aria-hidden
       >
-        <Icon size={20} strokeWidth={1.75} />
+        <Icon size={16} strokeWidth={1.75} />
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-semibold text-merchant-ink">{title}</h3>
-        <p className="mt-1 text-xs leading-[18px] text-merchant-muted">{description}</p>
+        <h3 className="text-base font-bold leading-6 text-merchant-ink">{title}</h3>
+        <p className="mt-1 text-base leading-6 text-merchant-mobile-muted">{description}</p>
       </div>
     </article>
   )

@@ -1,8 +1,21 @@
 import { Bell } from 'lucide-react'
 
-export default function MerchantMenuUploadHeader({ title, onMenuClick, showMenuButton }) {
+export default function MerchantMenuUploadHeader({
+  title,
+  onMenuClick,
+  showMenuButton,
+  variant = 'inline',
+}) {
+  const isBar = variant === 'bar'
+
   return (
-    <header className="flex items-center justify-between gap-4">
+    <header
+      className={
+        isBar
+          ? 'flex h-16 shrink-0 items-center justify-between gap-4 border-b border-merchant-divider bg-merchant-surface px-8'
+          : 'flex items-center justify-between gap-4'
+      }
+    >
       <div className="flex min-w-0 items-center gap-3">
         {showMenuButton && (
           <button
@@ -18,18 +31,23 @@ export default function MerchantMenuUploadHeader({ title, onMenuClick, showMenuB
             </span>
           </button>
         )}
-        <h1 className="truncate text-xl font-semibold tracking-[-0.02em] text-merchant-ink md:text-2xl">
+        <h1
+          className={
+            isBar
+              ? 'truncate text-lg font-semibold leading-7 text-merchant-ink-slate'
+              : 'truncate text-xl font-semibold tracking-[-0.02em] text-merchant-ink md:text-2xl'
+          }
+        >
           {title}
         </h1>
       </div>
 
       <button
         type="button"
-        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-merchant-muted transition-colors hover:bg-merchant-surface hover:text-merchant-ink"
+        className="relative flex h-10 w-10 shrink-0 items-center justify-center text-[#64748B] transition-colors hover:text-merchant-ink-slate"
         aria-label="Notifications"
       >
-        <Bell size={20} strokeWidth={1.75} />
-        <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#E67E22]" aria-hidden />
+        <Bell size={18} strokeWidth={1.75} />
       </button>
     </header>
   )

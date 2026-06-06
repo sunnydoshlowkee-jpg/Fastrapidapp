@@ -14,8 +14,8 @@ const icons = {
 
 const subtextStyles = {
   warning: 'text-merchant-warning',
-  positive: 'text-[#E67E22]',
-  muted: 'text-merchant-muted',
+  positive: 'text-merchant-warning',
+  muted: 'text-merchant-body',
 }
 
 export default function MerchantStatCard({
@@ -27,30 +27,25 @@ export default function MerchantStatCard({
   iconTone = 'primary',
 }) {
   const Icon = icons[icon] || Banknote
-  const iconClass =
-    iconTone === 'warning'
-      ? 'bg-[rgba(245,158,11,0.12)] text-merchant-warning-star'
-      : 'bg-merchant-nav-active text-merchant-primary'
+  const iconColor =
+    iconTone === 'warning' ? 'text-merchant-warning-star' : 'text-merchant-primary'
 
   return (
-    <article className="rounded-merchant-stat bg-merchant-surface p-5 shadow-merchant-stat">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-merchant-body">{label}</p>
-          <p className="mt-2 text-[28px] font-semibold leading-8 tracking-[-0.02em] text-merchant-ink">
-            {value}
-          </p>
-          <p className={`mt-2 text-xs font-medium ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
-            {subtextTone === 'positive' ? `↗ ${subtext}` : subtext}
-          </p>
-        </div>
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconClass}`}
-          aria-hidden
-        >
-          <Icon size={20} strokeWidth={1.75} />
-        </div>
+    <article className="flex flex-col gap-2 rounded-lg bg-merchant-surface p-6">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-semibold leading-5 text-merchant-body">{label}</p>
+        <Icon size={20} strokeWidth={1.75} className={`shrink-0 ${iconColor}`} aria-hidden />
       </div>
+      <p className="pt-2 text-2xl font-bold leading-8 tracking-[-0.6px] text-merchant-ink">
+        {value}
+      </p>
+      <p
+        className={`text-xs font-medium leading-4 ${
+          subtextStyles[subtextTone] || subtextStyles.muted
+        }`}
+      >
+        {subtext}
+      </p>
     </article>
   )
 }

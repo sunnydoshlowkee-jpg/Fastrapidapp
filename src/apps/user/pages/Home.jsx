@@ -340,14 +340,23 @@ export default function Home() {
           {discoveryLoading && (
             <p className="text-gray-500 mb-4">Loading nearby restaurants…</p>
           )}
-          {!discoveryLoading && desktopPopular.length === 0 && (
+          {discoveryError && (
+            <p className="text-red-600 mb-4 py-4 px-4 text-center bg-red-50 rounded-2xl text-sm">
+              {discoveryError}
+            </p>
+          )}
+          {!discoveryLoading && !discoveryError && desktopPopular.length === 0 && (
             <p className="text-gray-500 mb-4 py-8 text-center bg-gray-50 rounded-2xl">
               No restaurants near this location. Update your delivery area above.
             </p>
           )}
           <div className="grid grid-cols-4 gap-6">
             {desktopPopular.map(item => (
-              <div key={item.id} className="flex flex-col cursor-pointer group">
+              <div
+                key={item.id}
+                className="flex flex-col cursor-pointer group"
+                onClick={() => navigate(`/app/vendor/${item.id}`)}
+              >
                 <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden mb-4 relative shadow-sm">
                   <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   {/* Rating Top Right */}

@@ -1,31 +1,22 @@
 import {
   Banknote,
-  CheckCircle2,
-  ChefHat,
+  Calculator,
   Eye,
-  Receipt,
   ShoppingBag,
-  Star,
   Wallet,
 } from 'lucide-react'
 
 const icons = {
   wallet: Wallet,
   bag: ShoppingBag,
-  receipt: Receipt,
+  receipt: Calculator,
   eye: Eye,
   banknote: Banknote,
-  refresh: ChefHat,
-  chefhat: ChefHat,
-  check: CheckCircle2,
-  star: Star,
 }
 
 const subtextStyles = {
-  warning: 'text-merchant-warning',
-  positive: 'text-[#E67E22]',
-  positiveGreen: 'text-emerald-600',
-  muted: 'text-merchant-muted',
+  warning: 'font-medium text-merchant-mobile-warning',
+  muted: 'text-merchant-mobile-muted',
 }
 
 export default function MerchantMobileStatCard({
@@ -34,24 +25,30 @@ export default function MerchantMobileStatCard({
   subtext,
   subtextTone = 'muted',
   icon,
-  iconAccent = 'muted',
 }) {
   const Icon = icons[icon] || Wallet
-  const iconColor =
-    iconAccent === 'primary' ? 'text-merchant-primary' : 'text-merchant-muted'
 
   return (
-    <article className="rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat">
+    <article className="flex flex-col justify-between gap-3.5 rounded-xl bg-merchant-surface p-6">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium leading-tight text-merchant-body sm:text-sm">{label}</p>
-        <Icon size={18} strokeWidth={1.75} className={`shrink-0 ${iconColor}`} aria-hidden />
+        <p className="text-base leading-6 text-merchant-mobile-muted">{label}</p>
+        <Icon
+          size={18}
+          strokeWidth={1.75}
+          className="shrink-0 text-merchant-mobile-muted opacity-50"
+          aria-hidden
+        />
       </div>
-      <p className="mt-2 text-xl font-semibold leading-7 tracking-[-0.02em] text-merchant-ink sm:text-2xl sm:leading-8">
-        {value}
-      </p>
-      <p className={`mt-1 text-[11px] font-medium leading-snug sm:text-xs ${subtextStyles[subtextTone] || subtextStyles.muted}`}>
-        {subtextTone === 'positive' || subtextTone === 'positiveGreen' ? `↗ ${subtext}` : subtext}
-      </p>
+      <div className="flex flex-col gap-1">
+        <p className="text-[22px] font-bold leading-[33px] text-merchant-ink">{value}</p>
+        <p
+          className={`text-[11px] leading-4 ${
+            subtextStyles[subtextTone] || subtextStyles.muted
+          }`}
+        >
+          {subtext}
+        </p>
+      </div>
     </article>
   )
 }
