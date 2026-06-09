@@ -4,14 +4,7 @@ import { MapPin, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Ute
 import AppLocationBar from '../../../components/location/AppLocationBar'
 import { useLocation } from '../../../context/LocationContext'
 import { useDiscovery } from '../../../hooks/useDiscovery'
-
-// Mock Data (Shared/Mobile)
-const mobileQuickReorder = [
-  { id: 1, name: 'Burger King', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Pizza Hut', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Bowl Hub', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop' },
-  { id: 4, name: 'The Salad Bar', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop' },
-]
+import { useDashboard } from '../../../hooks/useDashboard'
 
 // Mock Data (Desktop Only)
 const desktopServices = [
@@ -34,6 +27,8 @@ export default function Home() {
   const navigate = useNavigate()
   const { location } = useLocation()
   const { data: discovery, loading: discoveryLoading, error: discoveryError } = useDiscovery()
+  const { data: dashboard, loading: dashboardLoading } = useDashboard()
+  
   const [activeTab, setActiveTab] = useState('Food')
   const [bannerIndex, setBannerIndex] = useState(0)
 
@@ -60,7 +55,7 @@ export default function Home() {
           onClick={() => navigate('/app/wallet')}
         >
           <span className="font-bold text-[#4F46E5] text-[14px] flex items-center gap-2">
-            ₦4,500
+            ₦{dashboardLoading ? '...' : dashboard.wallet_balance.toLocaleString()}
           </span>
         </div>
       </div>
@@ -128,22 +123,26 @@ export default function Home() {
         </div>
 
         {/* Mobile: Active Order Tracker */}
-        <div className="mb-7">
-          <div className="bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => navigate('/app/track/123')}>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-[#F3F4F6] rounded-full flex items-center justify-center">
-                <span className="text-[18px]">🛵</span>
+        {dashboard.active_order && (
+          <div className="mb-7">
+            <div className="bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => navigate(`/app/orders/${dashboard.active_order.id}`)}>
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-[#F3F4F6] rounded-full flex items-center justify-center">
+                  <span className="text-[18px]">🛵</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-[13px] leading-tight">
+                    {dashboard.active_order.display_status} <span className="text-[#4F46E5]">• {dashboard.active_order.eta_mins} mins</span>
+                  </h3>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{dashboard.active_order.merchant_name}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-[13px] leading-tight">On the way <span className="text-[#4F46E5]">• 8 mins</span></h3>
-                <p className="text-[11px] text-gray-500 mt-0.5">KFC · Yaba Branch</p>
+              <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
+                <ChevronRight size={16} className="text-gray-400" />
               </div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
-              <ChevronRight size={16} className="text-gray-400" />
             </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile: Stores / Restaurants */}
         <div className="mb-7">
@@ -198,19 +197,25 @@ export default function Home() {
         </div>
 
         {/* Mobile: Quick Reorder */}
-        <div className="mb-7">
-          <h3 className="text-[15px] font-bold text-gray-900 mb-3">Quick reorder</h3>
-          <div className="flex gap-5 overflow-x-auto pb-2 hide-scrollbar">
-            {mobileQuickReorder.map(brand => (
-              <div key={brand.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
-                <div className="w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#4F46E5] transition-colors">
-                  <img src={brand.img} alt={brand.name} className="w-full h-full object-cover" />
+        {dashboard.quick_reorders?.length > 0 && (
+          <div className="mb-7">
+            <h3 className="text-[15px] font-bold text-gray-900 mb-3">Quick reorder</h3>
+            <div className="flex gap-5 overflow-x-auto pb-2 hide-scrollbar">
+              {dashboard.quick_reorders.map(item => (
+                <div key={item.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+                  <div className="w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#4F46E5] transition-colors flex items-center justify-center bg-gray-50">
+                    {item.img ? (
+                      <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl">🍔</span>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-medium text-gray-600 truncate max-w-[60px] text-center">{item.name}</span>
                 </div>
-                <span className="text-[10px] font-medium text-gray-600">{brand.name}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile: Trending Items */}
         <div className="mb-8">
@@ -309,22 +314,28 @@ export default function Home() {
         </div>
 
         {/* Desktop Quick Reorder */}
-        <div className="mb-14">
-          <div className="mb-6">
-            <h3 className="text-[22px] font-bold text-gray-900 mb-1">Quick reorder</h3>
-            <p className="text-gray-500 text-[14px]">Based on your favorites</p>
-          </div>
-          <div className="flex gap-10">
-            {desktopQuickReorder.map(item => (
-              <div key={item.id} className="flex flex-col items-center gap-3 cursor-pointer group">
-                <div className={`w-[85px] h-[85px] rounded-full p-1 ring-2 ${item.color} group-hover:scale-105 transition-transform bg-white`}>
-                  <img src={item.img} alt={item.name.replace('\n', ' ')} className="w-full h-full object-cover rounded-full" />
+        {dashboard.quick_reorders?.length > 0 && (
+          <div className="mb-14">
+            <div className="mb-6">
+              <h3 className="text-[22px] font-bold text-gray-900 mb-1">Quick reorder</h3>
+              <p className="text-gray-500 text-[14px]">Based on your favorites</p>
+            </div>
+            <div className="flex gap-10">
+              {dashboard.quick_reorders.slice(0, 5).map(item => (
+                <div key={item.id} className="flex flex-col items-center gap-3 cursor-pointer group">
+                  <div className={`w-[85px] h-[85px] rounded-full p-1 ring-2 ring-indigo-500 group-hover:scale-105 transition-transform bg-gray-50 flex items-center justify-center`}>
+                    {item.img ? (
+                      <img src={item.img} alt={item.name.replace('\n', ' ')} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <span className="text-3xl">🍔</span>
+                    )}
+                  </div>
+                  <span className="font-bold text-[13px] text-gray-900 text-center leading-tight whitespace-pre-line truncate max-w-[85px]">{item.name}</span>
                 </div>
-                <span className="font-bold text-[13px] text-gray-900 text-center leading-tight whitespace-pre-line">{item.name}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Desktop Popular Near You */}
         <div className="mb-12">
