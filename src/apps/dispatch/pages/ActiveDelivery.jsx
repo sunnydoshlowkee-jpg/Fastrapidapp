@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import {
   ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
   Navigation, Package, Camera, CheckSquare, Square, ChevronRight
@@ -92,12 +93,42 @@ function CheckItem({ label, checked, onToggle }) {
 // ═══════════════════════════════════════════════════════════════════
 export default function ActiveDelivery() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { accept, updateStatus, loading } = useRiderDeliveries()
+  
   const [step, setStep] = useState(STEPS.NEW_ORDER)
   const [checks, setChecks] = useState({ collected: true, sealed: true, matches: true })
   const [photoTaken, setPhotoTaken] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const toggleCheck = key => setChecks(c => ({ ...c, [key]: !c[key] }))
   const allChecked = Object.values(checks).every(Boolean)
+
+  const handleAccept = async () => {
+    try {
+      setIsProcessing(true)
+      await accept(id)
+      setStep(STEPS.HEADING_PICKUP)
+    } catch (e) {
+      console.error(e)
+      alert("Failed to accept delivery")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleStatusUpdate = async (status, nextStep) => {
+    try {
+      setIsProcessing(true)
+      await updateStatus(id, status)
+      if (nextStep) setStep(nextStep)
+    } catch (e) {
+      console.error(e)
+      alert("Failed to update status")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   // ── NEW ORDER MODAL ────────────────────────────────────────────
   if (step === STEPS.NEW_ORDER) {
@@ -170,10 +201,10 @@ export default function ActiveDelivery() {
               className="flex-1 py-4 rounded-2xl border-2 border-red-400 text-red-500 font-black text-sm uppercase tracking-wider transition-opacity active:opacity-70">
               Decline
             </button>
-            <button onClick={() => setStep(STEPS.HEADING_PICKUP)}
-              className="flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wider transition-opacity active:opacity-80"
+            <button onClick={handleAccept} disabled={isProcessing}
+              className="flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wider transition-opacity active:opacity-80 disabled:opacity-50"
               style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-              Accept
+              {isProcessing ? 'Accepting...' : 'Accept'}
             </button>
           </div>
         </div>
@@ -253,10 +284,10 @@ export default function ActiveDelivery() {
           </div>
 
           {/* CTA */}
-          <button onClick={() => setStep(STEPS.CONFIRM_PICKUP)}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
+          <button onClick={() => handleStatusUpdate('arrived', STEPS.CONFIRM_PICKUP)} disabled={isProcessing}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
             style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-            Confirm Pickup
+            {isProcessing ? 'Updating...' : 'Arrived at Pickup'}
           </button>
         </div>
       </div>
@@ -327,11 +358,11 @@ export default function ActiveDelivery() {
             <CheckItem label="Order matches receipt" checked={checks.matches} onToggle={() => toggleCheck('matches')} />
           </div>
 
-          <button onClick={() => setStep(STEPS.EN_ROUTE)}
-            disabled={!allChecked}
+          <button onClick={() => handleStatusUpdate('picked_up', STEPS.EN_ROUTE)}
+            disabled={!allChecked || isProcessing}
             className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-40"
             style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-            I have picked up this order
+            {isProcessing ? 'Confirming...' : 'I have picked up this order'}
           </button>
         </div>
       </div>
@@ -411,10 +442,10 @@ export default function ActiveDelivery() {
             </div>
           </div>
 
-          <button onClick={() => setStep(STEPS.CONFIRM_DELIVERY)}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
+          <button onClick={() => handleStatusUpdate('arrived_dropoff', STEPS.CONFIRM_DELIVERY)} disabled={isProcessing}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
             style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-            Confirm Delivery
+            {isProcessing ? 'Updating...' : 'Confirm Arrival'}
           </button>
         </div>
       </div>
@@ -476,10 +507,15 @@ export default function ActiveDelivery() {
           </div>
         </label>
 
-        <button onClick={() => navigate('/dispatch/delivery/1/success')}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
+        <button 
+          onClick={async () => {
+            await handleStatusUpdate('delivered', null);
+            navigate(`/dispatch/delivery/${id}/success`);
+          }}
+          disabled={isProcessing}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-          Complete Delivery
+          {isProcessing ? 'Completing...' : 'Complete Delivery'}
         </button>
       </div>
     </div>

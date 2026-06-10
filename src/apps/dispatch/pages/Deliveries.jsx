@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ArrowRight, Clock, SlidersHorizontal, Search } from 'lucide-react'
+import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 
 const TABS = ['All', 'Completed', 'Declined', 'Cancelled']
 
@@ -10,75 +11,19 @@ const STATUS_STYLES = {
   CANCELLED: { bg: '#f97316',     text: '#fff',    border: 'none', pill: true },
 }
 
-const DELIVERIES = [
-  {
-    id: 1,
-    restaurant: 'Mama Cass Buka',
-    category: 'Food',
-    orderId: '#KB-88291',
-    amount: '₦650',
-    status: 'COMPLETED',
-    pickup: 'Ikeja City Mall',
-    dropoff: 'Opebi, Allen',
-    date: 'Oct 24, 2023 • 02:45 PM',
-    duration: '22 mins',
-    reason: null,
-    emoji: '🍛',
-  },
-  {
-    id: 2,
-    restaurant: 'Debonairs Pizza',
-    category: 'Food',
-    orderId: '#KB-88280',
-    amount: '₦650',
-    status: 'DECLINED',
-    pickup: 'Lekki Phase 1',
-    dropoff: 'Opebi, Allen',
-    date: 'Oct 23, 2023 • 05:45 PM',
-    duration: null,
-    reason: 'Distance too far',
-    emoji: '🍕',
-  },
-  {
-    id: 3,
-    restaurant: 'The Burger Joint',
-    category: 'Food',
-    orderId: '#KB-88270',
-    amount: '₦1,200',
-    status: 'COMPLETED',
-    pickup: 'Victoria Island',
-    dropoff: 'Lekki Phase 1',
-    date: 'Oct 22, 2023 • 01:15 PM',
-    duration: '31 mins',
-    reason: null,
-    emoji: '🍔',
-  },
-  {
-    id: 4,
-    restaurant: 'Fresh Mart Express',
-    category: 'Grocery',
-    orderId: '#KB-88261',
-    amount: '₦850',
-    status: 'CANCELLED',
-    pickup: 'Yaba Market',
-    dropoff: 'Surulere',
-    date: 'Oct 21, 2023 • 11:30 AM',
-    duration: null,
-    reason: 'Customer cancelled',
-    emoji: '🛒',
-  },
-]
-
 export default function Deliveries() {
   const navigate = useNavigate()
+  const { deliveries, loading, error, refresh } = useRiderDeliveries()
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch] = useState('')
 
-  const filtered = DELIVERIES.filter(d => {
+  const safeDeliveries = Array.isArray(deliveries) ? deliveries : []
+
+  const filtered = safeDeliveries.filter(d => {
     const matchTab = activeTab === 'All' || d.status === activeTab.toUpperCase()
     const matchSearch = search === '' ||
-      d.restaurant.toLowerCase().includes(search.toLowerCase()) ||
-      d.orderId.toLowerCase().includes(search.toLowerCase())
+      (d.restaurant || d.merchant_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (d.orderId || String(d.id)).toLowerCase().includes(search.toLowerCase())
     return matchTab && matchSearch
   })
 
@@ -128,7 +73,9 @@ export default function Deliveries() {
 
       {/* Delivery list */}
       <div className="px-5">
-        {filtered.length === 0 ? (
+        {loading && <p className="text-center py-10 text-gray-500">Loading deliveries...</p>}
+        {error && <p className="text-center py-10 text-red-500">{error}</p>}
+        {!loading && !error && filtered.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">📦</p>
             <p className="font-bold text-gray-700 mb-1">No deliveries found</p>
@@ -151,24 +98,24 @@ export default function Deliveries() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-black text-gray-900 text-sm">{d.restaurant}</p>
+                        <p className="font-black text-gray-900 text-sm">{d.restaurant || d.merchant_name || 'Delivery'}</p>
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {d.category} &nbsp;
-                          <span style={{ color: '#5B5BFF' }}>{d.orderId}</span>
+                          {d.category || 'Order'} &nbsp;
+                          <span style={{ color: '#5B5BFF' }}>{d.orderId || `#${d.id}`}</span>
                         </p>
                       </div>
 
                       {/* Amount + status */}
                       <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <p className="font-black text-sm" style={{ color: '#22c55e' }}>{d.amount}</p>
-                        {s.pill ? (
+                        <p className="font-black text-sm" style={{ color: '#22c55e' }}>{d.amount || `₦${d.delivery_fee || 0}`}</p>
+                        {s && s.pill ? (
                           <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"
                             style={{ background: s.bg, color: s.text }}>
                             {d.status}
                           </span>
                         ) : (
                           <span className="text-[9px] font-black uppercase tracking-wider"
-                            style={{ color: s.text }}>
+                            style={{ color: s?.text || '#666' }}>
                             {d.status}
                           </span>
                         )}
@@ -176,16 +123,18 @@ export default function Deliveries() {
                     </div>
 
                     {/* Route bar */}
-                    <div className="rounded-2xl px-4 py-3 flex items-center gap-2 mb-3"
-                      style={{ background: '#F0F0F8' }}>
+                    <div className="rounded-2xl px-4 py-3 flex items-center gap-2 mb-3 cursor-pointer hover:bg-gray-200 transition-colors"
+                      style={{ background: '#F0F0F8' }}
+                      onClick={() => navigate(`/dispatch/active-delivery/${d.id}`)}
+                    >
                       <div className="flex-1 min-w-0">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pickup</p>
-                        <p className="text-sm font-bold text-gray-900 truncate">{d.pickup}</p>
+                        <p className="text-sm font-bold text-gray-900 truncate">{d.pickup || 'Merchant'}</p>
                       </div>
                       <ArrowRight size={16} className="text-gray-400 flex-shrink-0 mx-1" />
                       <div className="flex-1 min-w-0 text-right">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Dropoff</p>
-                        <p className="text-sm font-bold text-gray-900 truncate">{d.dropoff}</p>
+                        <p className="text-sm font-bold text-gray-900 truncate">{d.dropoff || 'Customer'}</p>
                       </div>
                     </div>
 

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Truck, TrendingUp, Star, Building2, Clock } from 'lucide-react'
+import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 
 const PERIOD_TABS = ['Today', 'This Week', 'This Month']
 
@@ -39,10 +40,19 @@ const STATS = {
 
 export default function Earnings() {
   const navigate = useNavigate()
+  const { earnings, loading, refresh } = useRiderEarnings()
   const [period, setPeriod] = useState('This Week')
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   const stats = STATS[period]
   const tierProgress = 72  // % toward Gold
+  
+  const balance = earnings?.balance || 0
+  const totalDeliveries = earnings?.deliveries_count || stats.deliveries
+  const totalEarnings = earnings?.total_earnings || 0
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-6">
@@ -74,12 +84,16 @@ export default function Earnings() {
           </div>
 
           <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-1">Total Balance</p>
-          <p className="text-white text-4xl font-black mb-4">₦428,500</p>
+          <p className="text-white text-4xl font-black mb-4">
+            ₦{loading ? '...' : balance.toLocaleString()}
+          </p>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white/50 text-[9px] uppercase tracking-widest font-bold">Rider ID</p>
-              <p className="text-white/90 font-bold text-sm mt-0.5">KR-2024-9982</p>
+              <p className="text-white/50 text-[9px] uppercase tracking-widest font-bold">Total Earned</p>
+              <p className="text-white/90 font-bold text-sm mt-0.5">
+                ₦{loading ? '...' : totalEarnings.toLocaleString()}
+              </p>
             </div>
             <button
               onClick={() => navigate('/dispatch/earnings/withdraw')}
@@ -112,7 +126,7 @@ export default function Earnings() {
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
             <Truck size={18} className="text-gray-400 mb-3" />
             <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Deliveries</p>
-            <p className="text-3xl font-black text-white">{stats.deliveries}</p>
+            <p className="text-3xl font-black text-white">{totalDeliveries}</p>
           </div>
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
             <TrendingUp size={18} className="text-yellow-400 mb-3" />

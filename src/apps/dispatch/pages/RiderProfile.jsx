@@ -4,6 +4,8 @@ import {
   Bell, Star, MapPin, Pencil, FileText, Building2,
   BellRing, HelpCircle, ScrollText, LogOut, ChevronRight
 } from 'lucide-react'
+import { toggleStatus } from '../../../services/riderAuthService'
+import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
 
 const MENU = [
   { icon: FileText,  label: 'My Documents',        to: '/dispatch/profile/documents' },
@@ -16,6 +18,23 @@ const MENU = [
 export default function RiderProfile() {
   const navigate = useNavigate()
   const [online, setOnline] = useState(false)
+  const [isToggling, setIsToggling] = useState(false)
+
+  // Activates the GPS tracking automatically when online=true
+  useRiderLocationTracking(online)
+
+  const handleToggleOnline = async () => {
+    try {
+      setIsToggling(true)
+      await toggleStatus()
+      setOnline(!online)
+    } catch (e) {
+      console.error(e)
+      alert("Failed to toggle status")
+    } finally {
+      setIsToggling(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
@@ -91,8 +110,9 @@ export default function RiderProfile() {
             <p className="text-white/70 text-xs mt-0.5">Toggle your status to start earning.</p>
           </div>
           <button
-            onClick={() => setOnline(o => !o)}
-            className="relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 focus:outline-none"
+            onClick={handleToggleOnline}
+            disabled={isToggling}
+            className="relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 focus:outline-none disabled:opacity-50"
             style={{ background: online ? '#fff' : 'rgba(255,255,255,0.3)' }}>
             <span
               className="absolute top-[3px] w-[22px] h-[22px] rounded-full shadow-md transition-all duration-300"
