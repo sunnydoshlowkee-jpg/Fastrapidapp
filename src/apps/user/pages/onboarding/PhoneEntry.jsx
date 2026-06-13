@@ -58,12 +58,12 @@ export default function PhoneEntry() {
         </p>
 
         {/* Input Group */}
-        <div className="mb-auto w-full md:flex md:gap-4 md:items-start md:mb-10">
-          <div className="hidden md:block md:w-1/3">
+        <div className="mb-auto w-full flex gap-3 items-start md:gap-4 md:mb-10">
+          <div className="w-[110px] md:w-1/3 flex-shrink-0">
             <label className="block text-[11px] md:text-[13px] font-bold text-[#111827] uppercase tracking-wider mb-2">
-              Country *
+              Country
             </label>
-            <div className="relative flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 border-transparent transition-all shadow-sm focus-within:border-[#4342FF] focus-within:bg-white cursor-pointer">
+            <div className="relative flex items-center justify-between bg-[#F3F4F6] rounded-2xl p-4 md:p-5 border-2 border-transparent transition-all shadow-sm focus-within:border-[#4342FF] focus-within:bg-white cursor-pointer">
               <select
                 value={selectedCountry.code}
                 onChange={(e) => {
@@ -76,17 +76,17 @@ export default function PhoneEntry() {
                   <option key={c.code} value={c.code}>{c.dialCode} ({c.code})</option>
                 ))}
               </select>
-              <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-2">{selectedCountry.dialCode}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 ml-auto pointer-events-none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              <span className="text-[#111827] font-bold text-[14px] md:text-[18px]">{selectedCountry.dialCode}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 pointer-events-none"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
 
-          <div className="w-full md:w-2/3">
+          <div className="flex-1 w-full">
             <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] md:text-[#111827] uppercase tracking-wider mb-2">
               Phone Number <span className="text-red-500">*</span>
             </label>
             <div
-              className={`flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 transition-all shadow-sm ${
+              className={`flex items-center bg-[#F3F4F6] rounded-2xl p-4 md:p-5 border-2 transition-all shadow-sm h-full ${
                 phoneError
                   ? 'border-red-500 bg-red-50/30'
                   : 'border-transparent focus-within:border-[#4342FF] focus-within:bg-white'
