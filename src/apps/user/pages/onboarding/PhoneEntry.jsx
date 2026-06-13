@@ -4,11 +4,19 @@ import CenteredLayout from '../../../../components/layout/CenteredLayout'
 import { requestPhoneOtp } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
 
-const COUNTRY = 'NG'
+const COUNTRIES = [
+  { code: 'NG', dialCode: '+234' },
+  { code: 'GH', dialCode: '+233' },
+  { code: 'KE', dialCode: '+254' },
+  { code: 'ZA', dialCode: '+27' },
+  { code: 'US', dialCode: '+1' },
+  { code: 'GB', dialCode: '+44' },
+]
 
 export default function PhoneEntry() {
   const navigate = useNavigate()
   const [phone, setPhone] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0])
   const [phoneError, setPhoneError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -22,7 +30,7 @@ export default function PhoneEntry() {
 
     setLoading(true)
     try {
-      const { data } = await requestPhoneOtp({ country: COUNTRY, phone, flow: 'register' })
+      const { data } = await requestPhoneOtp({ country: selectedCountry.code, phone, flow: 'register' })
       const payload = data?.data ?? data
       navigate('/onboarding/otp', {
         state: {
@@ -55,9 +63,21 @@ export default function PhoneEntry() {
             <label className="block text-[11px] md:text-[13px] font-bold text-[#111827] uppercase tracking-wider mb-2">
               Country *
             </label>
-            <div className="flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 border-transparent transition-all shadow-sm">
-              <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-2">+234</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 ml-auto"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            <div className="relative flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 border-transparent transition-all shadow-sm focus-within:border-[#4342FF] focus-within:bg-white cursor-pointer">
+              <select
+                value={selectedCountry.code}
+                onChange={(e) => {
+                  const c = COUNTRIES.find(x => x.code === e.target.value)
+                  if (c) setSelectedCountry(c)
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.dialCode} ({c.code})</option>
+                ))}
+              </select>
+              <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-2">{selectedCountry.dialCode}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 ml-auto pointer-events-none"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
 
