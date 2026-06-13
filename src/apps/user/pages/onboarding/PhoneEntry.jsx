@@ -56,7 +56,7 @@ export default function PhoneEntry() {
               Country *
             </label>
             <div className="flex items-center bg-[#F3F4F6] rounded-2xl p-5 border-2 border-transparent transition-all shadow-sm">
-              <span className="text-2xl mr-2">🇳🇬</span>
+              <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-2">+234</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 ml-auto"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
           </div>
@@ -72,8 +72,6 @@ export default function PhoneEntry() {
                   : 'border-transparent focus-within:border-[#4342FF] focus-within:bg-white'
               }`}
             >
-              <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-3">+234</span>
-              <div className="w-px h-6 bg-[#D1D5DB] mr-4" />
               <input
                 type="tel"
                 value={phone}
