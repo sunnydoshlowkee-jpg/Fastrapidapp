@@ -44,9 +44,9 @@ export default function PhoneEntry() {
     >
       <div className="flex-1 flex flex-col md:items-center pt-4 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-gray-100 md:rounded-3xl md:p-12 md:flex-none">
         
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2 md:mb-4 tracking-tight md:text-center">Log in to your account</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2 md:mb-4 tracking-tight md:text-center">Create an account</h1>
         <p className="text-[#6B7280] text-[16px] md:text-[18px] mb-10 md:mb-12 md:text-center">
-          Welcome back! Enter your phone number to log in
+          Enter your phone number to get started
         </p>
 
         {/* Input Group */}
@@ -106,8 +106,8 @@ export default function PhoneEntry() {
           </button>
 
           <p className="text-center text-[15px] md:text-[16px] text-[#4B5563] mb-8 md:mb-0">
-            Don't have an account?{' '}
-            <Link to="/onboarding/account-type" className="text-[#4342FF] font-bold hover:underline">Sign up</Link>
+            Already have an account?{' '}
+            <Link to="/auth/login" className="text-[#4342FF] font-bold hover:underline">Log in</Link>
           </p>
         </div>
       </div>
