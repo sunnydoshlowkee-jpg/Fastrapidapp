@@ -1,24 +1,70 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Camera, CheckCircle2, User } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { updateProfile } from '../../../services/authService'
+import { updateProfile, uploadProfileAvatar } from '../../../services/authService'
 import { getApiFieldError } from '../../../utils/apiErrors'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
+
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024
+const ACCEPTED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif']
 
 const fieldClass = (hasError) =>
   `w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] md:text-[15px] text-gray-900 font-medium outline-none transition-all ${
     hasError ? 'ring-2 ring-red-500 bg-red-50/30' : 'focus:ring-2 focus:ring-[#4F46E5]'
   }`
 
+function ProfileAvatar({
+  avatarUrl,
+  fallbackLetter,
+  sizeClass,
+  buttonSizeClass,
+  iconSize,
+  uploading,
+  onPickPhoto,
+}) {
+  return (
+    <div className={`relative ${sizeClass}`}>
+      <button
+        type="button"
+        onClick={onPickPhoto}
+        disabled={uploading}
+        className={`${sizeClass} rounded-full overflow-hidden border-4 border-white shadow-sm flex items-center justify-center bg-[#4F46E5] disabled:opacity-70`}
+        aria-label="Upload profile photo"
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-3xl md:text-5xl font-bold text-white">
+            {fallbackLetter}
+          </span>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onPickPhoto}
+        disabled={uploading}
+        className={`absolute ${buttonSizeClass} bg-[#4F46E5] rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm disabled:opacity-70`}
+        aria-label="Upload profile photo"
+      >
+        <Camera size={iconSize} />
+      </button>
+    </div>
+  )
+}
+
 export default function EditProfile() {
   const navigate = useNavigate()
+  const fileInputRef = useRef(null)
+  const previewUrlRef = useRef(null)
   const { user, loading, refreshUser, setUser } = useAuth()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState(null)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useEffect(() => {
     if (!loading && !localStorage.getItem('rapid_token')) {
@@ -31,7 +77,14 @@ export default function EditProfile() {
     setFirstName(user.first_name || '')
     setLastName(user.last_name || '')
     setEmail(user.email || '')
+    setAvatarUrl(user.avatar_url || null)
   }, [user])
+
+  useEffect(() => () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+  }, [])
 
   const clearError = (field) => {
     if (errors[field]) {
@@ -40,6 +93,70 @@ export default function EditProfile() {
         delete next[field]
         return next
       })
+    }
+  }
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) return
+
+    clearError('avatar')
+
+    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
+      setErrors((prev) => ({
+        ...prev,
+        avatar: 'Profile photo must be a JPG, GIF, or PNG file.',
+      }))
+      return
+    }
+
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      setErrors((prev) => ({
+        ...prev,
+        avatar: 'Profile photo must be 2 MB or smaller.',
+      }))
+      return
+    }
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+
+    const preview = URL.createObjectURL(file)
+    previewUrlRef.current = preview
+    setAvatarUrl(preview)
+
+    setUploadingAvatar(true)
+    try {
+      const { data } = await uploadProfileAvatar(file)
+      const updatedUser = data?.data?.user
+      if (updatedUser) {
+        setUser(updatedUser)
+        setAvatarUrl(updatedUser.avatar_url || null)
+      }
+      await refreshUser()
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+        previewUrlRef.current = null
+      }
+    } catch (err) {
+      setAvatarUrl(user?.avatar_url || null)
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+        previewUrlRef.current = null
+      }
+      setErrors((prev) => ({
+        ...prev,
+        avatar: getApiFieldError(err, 'avatar') || 'Could not upload profile photo. Try again.',
+      }))
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -94,9 +211,17 @@ export default function EditProfile() {
   }
 
   const displayPhone = formatPhoneDisplay(user?.phone)
+  const fallbackLetter = (firstName?.[0] || email?.[0] || '?').toUpperCase()
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12 relative">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
 
       <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
@@ -108,15 +233,22 @@ export default function EditProfile() {
       </div>
 
       <div className="md:hidden flex-1 px-6 w-full max-w-md mx-auto pt-6 flex flex-col items-center">
-        <div className="relative mb-10">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-[#4F46E5] border-4 border-white shadow-sm flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">
-              {(firstName?.[0] || email?.[0] || '?').toUpperCase()}
-            </span>
-          </div>
-          <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-[#4F46E5] rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm">
-            <Camera size={14} />
-          </button>
+        <div className="mb-6">
+          <ProfileAvatar
+            avatarUrl={avatarUrl}
+            fallbackLetter={fallbackLetter}
+            sizeClass="w-24 h-24"
+            buttonSizeClass="w-8 h-8 bottom-0 right-0"
+            iconSize={14}
+            uploading={uploadingAvatar}
+            onPickPhoto={openFilePicker}
+          />
+          <p className="mt-3 text-center text-[11px] text-gray-500">
+            {uploadingAvatar ? 'Uploading photo…' : 'JPG, GIF or PNG. Max size 2MB'}
+          </p>
+          {errors.avatar ? (
+            <p className="mt-2 text-center text-sm text-red-600" role="alert">{errors.avatar}</p>
+          ) : null}
         </div>
 
         {errors.form ? (
@@ -186,7 +318,7 @@ export default function EditProfile() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || uploadingAvatar}
             className="w-full bg-[#4F46E5] disabled:opacity-60 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors text-sm"
           >
             {saving ? 'Saving…' : 'Save Changes'}
@@ -209,16 +341,22 @@ export default function EditProfile() {
 
           <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-12 mb-8">
             <div className="flex flex-col items-center mb-12">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden border border-gray-200 mb-4 bg-[#2D2AEE] flex items-center justify-center">
-                <span className="text-5xl font-bold text-white">
-                  {(firstName?.[0] || email?.[0] || '?').toUpperCase()}
-                </span>
-                <button type="button" className="absolute bottom-2 right-2 w-10 h-10 bg-[#2D2AEE] rounded-full flex items-center justify-center text-white border-[3px] border-white shadow-sm">
-                  <Camera size={18} />
-                </button>
-              </div>
-              <h3 className="font-bold text-gray-900 text-[18px] mb-1">{getDisplayName(user) || 'Your profile'}</h3>
-              <p className="text-[13px] text-gray-500">JPG, GIF or PNG. Max size 2MB</p>
+              <ProfileAvatar
+                avatarUrl={avatarUrl}
+                fallbackLetter={fallbackLetter}
+                sizeClass="w-32 h-32"
+                buttonSizeClass="w-10 h-10 bottom-2 right-2 border-[3px]"
+                iconSize={18}
+                uploading={uploadingAvatar}
+                onPickPhoto={openFilePicker}
+              />
+              <h3 className="font-bold text-gray-900 text-[18px] mb-1 mt-4">{getDisplayName(user) || 'Your profile'}</h3>
+              <p className="text-[13px] text-gray-500">
+                {uploadingAvatar ? 'Uploading photo…' : 'JPG, GIF or PNG. Max size 2MB'}
+              </p>
+              {errors.avatar ? (
+                <p className="mt-2 text-sm text-red-600" role="alert">{errors.avatar}</p>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-2 gap-8">
@@ -292,7 +430,7 @@ export default function EditProfile() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || uploadingAvatar}
               className="bg-[#2D2AEE] disabled:opacity-60 text-white font-bold px-10 py-4 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 text-[15px] flex items-center gap-2"
             >
               {saving ? 'Saving…' : 'Save Changes'} <CheckCircle2 size={18} />

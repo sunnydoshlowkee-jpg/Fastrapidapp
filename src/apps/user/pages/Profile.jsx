@@ -55,9 +55,13 @@ export default function Profile() {
       <div className="md:hidden px-6 w-full max-w-md mx-auto pt-4 flex flex-col items-center">
         <div className="bg-white w-full rounded-[32px] p-8 shadow-sm border border-gray-100 flex flex-col items-center mb-6">
           <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-white shadow-md bg-[#3B82F6] flex items-center justify-center">
-            <span className="text-3xl font-bold text-[#FEF38D]">
-              {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
-            </span>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-3xl font-bold text-[#FEF38D]">
+                {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
+              </span>
+            )}
             <div className="absolute bottom-1 right-1 bg-white rounded-full p-0.5">
               <CheckCircle2 size={18} className="text-[#4F46E5] fill-white" strokeWidth={3} />
             </div>
@@ -122,9 +126,13 @@ export default function Profile() {
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex items-center justify-between mb-10 relative overflow-hidden border-t-[6px] border-t-red-600">
             <div className="flex items-center gap-6">
               <div className="relative w-28 h-28 bg-[#2C3440] rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                <span className="text-4xl font-bold text-[#FCD34D]">
-                  {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
-                </span>
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-4xl font-bold text-[#FCD34D]">
+                    {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
+                  </span>
+                )}
                 <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#2D2AEE] rounded-full flex items-center justify-center text-white border-[3px] border-white cursor-pointer z-10 hover:bg-blue-700 transition-colors">
                   <Camera size={14} />
                 </div>

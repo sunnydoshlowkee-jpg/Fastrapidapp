@@ -101,7 +101,9 @@ export default function VerifyIdentity() {
       }
 
       if (user?.status === 'pending_profile') {
-        navigate('/onboarding/profile', { state: { phoneE164, phone: nationalPhone } })
+        navigate('/onboarding/profile', {
+          state: { signupMethod: 'phone', phoneE164, phone: nationalPhone },
+        })
         return
       }
 

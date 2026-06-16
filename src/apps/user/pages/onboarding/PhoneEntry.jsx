@@ -113,12 +113,18 @@ export default function PhoneEntry() {
           </div>
         </div>
 
+        <p className="text-center text-sm text-[#6B7280] mb-6 w-full">
+          <Link to="/onboarding/email" className="text-[#4342FF] font-bold hover:underline">
+            Use email instead
+          </Link>
+        </p>
+
         <div className="w-full mt-auto md:mt-0">
           <button 
             type="button"
             onClick={handleContinue}
             disabled={loading}
-            className="w-full bg-[#4342FF] hover:bg-[#3231d6] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 mt-8 md:mt-2 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6"
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 mt-2 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6"
           >
             {loading ? 'Please wait…' : 'Continue'}
           </button>

@@ -96,6 +96,12 @@ export default function Login() {
           ) : null}
         </div>
 
+        <p className="text-center text-sm text-gray-500 mb-6">
+          <Link to="/auth/login/email" className="text-[#4F46E5] font-semibold">
+            Use email instead
+          </Link>
+        </p>
+
         <button 
           type="button"
           onClick={handleLogin}

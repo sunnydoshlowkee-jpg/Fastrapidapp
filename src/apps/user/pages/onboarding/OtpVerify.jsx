@@ -95,7 +95,9 @@ export default function OtpVerify() {
       if (token) {
         localStorage.setItem('rapid_token', token)
       }
-      navigate('/onboarding/profile', { state: { phoneE164, phone: nationalPhone } })
+      navigate('/onboarding/profile', {
+        state: { signupMethod: 'phone', phoneE164, phone: nationalPhone },
+      })
     } catch (err) {
       setCodeError(getApiFieldError(err, 'code'))
     } finally {

@@ -5,10 +5,13 @@ import Welcome from '../apps/user/pages/onboarding/Welcome'
 import AccountType from '../apps/user/pages/onboarding/AccountType'
 import Location from '../apps/user/pages/onboarding/Location'
 import PhoneEntry from '../apps/user/pages/onboarding/PhoneEntry'
+import EmailSignup from '../apps/user/pages/onboarding/EmailSignup'
 import OtpVerify from '../apps/user/pages/onboarding/OtpVerify'
 import ProfileSetup from '../apps/user/pages/onboarding/ProfileSetup'
 import ServicePreference from '../apps/user/pages/onboarding/ServicePreference'
 import Login from '../apps/user/pages/auth/Login'
+import EmailLogin from '../apps/user/pages/auth/EmailLogin'
+import EmailVerify from '../apps/user/pages/auth/EmailVerify'
 import VerifyIdentity from '../apps/user/pages/auth/VerifyIdentity'
 
 export default function OnboardingRoutes() {
@@ -20,10 +23,13 @@ export default function OnboardingRoutes() {
       <Route path="onboarding/account-type" element={<AccountType />} />
       <Route path="onboarding/location" element={<Location />} />
       <Route path="onboarding/phone" element={<PhoneEntry />} />
+      <Route path="onboarding/email" element={<EmailSignup />} />
       <Route path="onboarding/otp" element={<OtpVerify />} />
       <Route path="onboarding/profile" element={<ProfileSetup />} />
       <Route path="onboarding/preferences" element={<ServicePreference />} />
       <Route path="auth/login" element={<Login />} />
+      <Route path="auth/login/email" element={<EmailLogin />} />
+      <Route path="auth/verify-email" element={<EmailVerify />} />
       <Route path="auth/verify" element={<VerifyIdentity />} />
     </Routes>
   )

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ChevronDown, Calendar, User } from 'lucide-react'
 import CenteredLayout from '../../../../components/layout/CenteredLayout'
-import { completeProfile } from '../../../../services/authService'
+import { completeProfile, getMe } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
+
+const COUNTRY = 'NG'
 
 const GENDER_OPTIONS = [
   { value: '', label: 'Select Gender' },
@@ -13,21 +15,16 @@ const GENDER_OPTIONS = [
   { value: 'prefer_not_to_say', label: 'Prefer not to say' },
 ]
 
-function parseDateOfBirth(value) {
-  const trimmed = value.trim()
-  if (!trimmed) return null
+function maxDateOfBirth() {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() - 1)
 
-  const slashMatch = trimmed.match(/^(\d{1,2})\s*\/\s*(\d{1,2})\s*\/\s*(\d{4})$/)
-  if (slashMatch) {
-    const [, day, month, year] = slashMatch
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-  }
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return trimmed
-  }
-
-  return null
+  return `${year}-${month}-${day}`
 }
 
 const fieldClass = (hasError) =>
@@ -40,19 +37,41 @@ const fieldClass = (hasError) =>
 export default function ProfileSetup() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [signupMethod, setSignupMethod] = useState(location.state?.signupMethod ?? null)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [gender, setGender] = useState('')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
+  const needsPhone = signupMethod === 'email'
+  const needsEmail = signupMethod === 'phone'
+  const backTo = needsPhone ? '/onboarding/email' : '/onboarding/otp'
+
   useEffect(() => {
     if (!localStorage.getItem('rapid_token')) {
-      navigate('/onboarding/phone', { replace: true })
+      navigate('/onboarding/account-type', { replace: true })
+      return
     }
-  }, [navigate])
+
+    if (signupMethod) return
+
+    getMe()
+      .then(({ data }) => {
+        const user = data?.data?.user
+        if (user?.email && !user?.phone) {
+          setSignupMethod('email')
+        } else {
+          setSignupMethod('phone')
+        }
+      })
+      .catch(() => {
+        navigate('/onboarding/account-type', { replace: true })
+      })
+  }, [navigate, signupMethod])
 
   const clearError = (field) => {
     if (errors[field]) {
@@ -70,12 +89,12 @@ export default function ProfileSetup() {
     const nextErrors = {}
     if (!firstName.trim()) nextErrors.first_name = 'First name is required.'
     if (!lastName.trim()) nextErrors.last_name = 'Last name is required.'
-    if (!email.trim()) nextErrors.email = 'Email address is required.'
+    if (needsEmail && !email.trim()) nextErrors.email = 'Email address is required.'
+    if (needsPhone && !phone.trim()) nextErrors.phone = 'Phone number is required.'
     if (!gender) nextErrors.gender = 'Please select a gender.'
 
-    const parsedDob = parseDateOfBirth(dateOfBirth)
-    if (dateOfBirth.trim() && !parsedDob) {
-      nextErrors.date_of_birth = 'Enter a valid date (DD / MM / YYYY).'
+    if (dateOfBirth && dateOfBirth > maxDateOfBirth()) {
+      nextErrors.date_of_birth = 'Date of birth must be in the past.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -83,15 +102,25 @@ export default function ProfileSetup() {
       return
     }
 
+    const payload = {
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      gender,
+      date_of_birth: dateOfBirth || null,
+    }
+
+    if (needsEmail) {
+      payload.email = email.trim()
+    }
+
+    if (needsPhone) {
+      payload.country = COUNTRY
+      payload.phone = phone.trim()
+    }
+
     setLoading(true)
     try {
-      await completeProfile({
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim(),
-        gender,
-        date_of_birth: parsedDob,
-      })
+      await completeProfile(payload)
       navigate('/onboarding/preferences', {
         state: { phoneE164: location.state?.phoneE164 },
       })
@@ -111,14 +140,16 @@ export default function ProfileSetup() {
     }
   }
 
+  if (!signupMethod) {
+    return null
+  }
+
   return (
-    <CenteredLayout 
-      showBackButton={true} 
-      backTo="/onboarding/otp"
-    >
+    <CenteredLayout showBackButton backTo={backTo}>
       <div className="flex-1 flex flex-col md:items-center pt-2 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-gray-100 md:rounded-3xl md:p-12 md:flex-none">
-        
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2 md:mb-4 tracking-tight md:text-center">Complete your profile</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2 md:mb-4 tracking-tight md:text-center">
+          Complete your profile
+        </h1>
         <p className="text-[#6B7280] text-[16px] md:text-[18px] mb-8 md:mb-12 md:text-center">
           Help us personalize your delivery experience in Lagos.
         </p>
@@ -130,7 +161,6 @@ export default function ProfileSetup() {
         ) : null}
 
         <div className="flex flex-col gap-5 md:gap-6 mb-10 w-full md:grid md:grid-cols-2 md:mb-12">
-          
           <div className="md:col-span-1">
             <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider mb-2">
               First Name
@@ -163,21 +193,47 @@ export default function ProfileSetup() {
             {errors.last_name ? <p className="mt-1 text-sm text-red-600">{errors.last_name}</p> : null}
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider mb-2">
-              Email Address
-            </label>
-            <div className={fieldClass(errors.email)}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); clearError('email') }}
-                placeholder="name@example.com"
-                className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
-              />
+          {needsEmail ? (
+            <div className="md:col-span-2">
+              <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider mb-2">
+                Email Address
+              </label>
+              <div className={fieldClass(errors.email)}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); clearError('email') }}
+                  placeholder="name@example.com"
+                  autoComplete="email"
+                  className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
+                />
+              </div>
+              {errors.email ? <p className="mt-1 text-sm text-red-600">{errors.email}</p> : null}
             </div>
-            {errors.email ? <p className="mt-1 text-sm text-red-600">{errors.email}</p> : null}
-          </div>
+          ) : null}
+
+          {needsPhone ? (
+            <div className="md:col-span-2">
+              <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider mb-2">
+                Phone Number
+              </label>
+              <div className={fieldClass(errors.phone)}>
+                <div className="flex items-center">
+                  <span className="text-[#111827] font-bold text-[16px] md:text-[18px] mr-3 shrink-0">+234</span>
+                  <div className="w-px h-6 bg-[#D1D5DB] mr-4 shrink-0" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value); clearError('phone') }}
+                    placeholder="000 000 0000"
+                    autoComplete="tel"
+                    className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
+                  />
+                </div>
+              </div>
+              {errors.phone ? <p className="mt-1 text-sm text-red-600">{errors.phone}</p> : null}
+            </div>
+          ) : null}
 
           <div className="md:col-span-1">
             <label
@@ -211,28 +267,34 @@ export default function ProfileSetup() {
 
           <div className="md:col-span-1">
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider">
+              <label
+                htmlFor="profile-dob"
+                className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] uppercase tracking-wider"
+              >
                 Date of Birth
               </label>
               <span className="text-[11px] md:text-[13px] font-bold text-[#9CA3AF] uppercase">optional</span>
             </div>
-            <div className={`${fieldClass(errors.date_of_birth)} flex items-center gap-3`}>
-              <Calendar size={20} className="text-[#6B7280]" />
+            <div className={`${fieldClass(errors.date_of_birth)} relative`}>
               <input
-                type="text"
+                id="profile-dob"
+                type="date"
                 value={dateOfBirth}
                 onChange={(e) => { setDateOfBirth(e.target.value); clearError('date_of_birth') }}
-                placeholder="DD / MM / YYYY"
-                className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
+                max={maxDateOfBirth()}
+                className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full [color-scheme:light] pr-10"
+              />
+              <Calendar
+                size={20}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none"
               />
             </div>
             {errors.date_of_birth ? <p className="mt-1 text-sm text-red-600">{errors.date_of_birth}</p> : null}
           </div>
-
         </div>
 
         <div className="w-full mt-auto md:mt-0">
-          <button 
+          <button
             type="button"
             onClick={handleContinue}
             disabled={loading}
@@ -241,7 +303,6 @@ export default function ProfileSetup() {
             {loading ? 'Saving…' : 'Continue'}
           </button>
         </div>
-
       </div>
     </CenteredLayout>
   )
