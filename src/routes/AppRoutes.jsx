@@ -24,6 +24,7 @@ import ReceiveMoney from '../apps/user/pages/ReceiveMoney'
 import FundWallet from '../apps/user/pages/FundWallet'
 import PayBills from '../apps/user/pages/PayBills'
 import WalletReceipt from '../apps/user/pages/WalletReceipt'
+import Notifications from '../apps/user/pages/Notifications'
 
 export default function AppRoutes() {
   return (
@@ -50,6 +51,7 @@ export default function AppRoutes() {
         <Route path="wallet/receipt/:id" element={<WalletReceipt />} />
 
         {/* Profile Routes */}
+        <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
         <Route path="profile/addresses" element={<Addresses />} />

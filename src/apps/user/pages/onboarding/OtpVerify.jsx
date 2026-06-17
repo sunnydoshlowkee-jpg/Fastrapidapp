@@ -121,7 +121,7 @@ export default function OtpVerify() {
       showBackButton={true} 
       backTo="/onboarding/phone"
     >
-      <div className="flex-1 flex flex-col md:items-center pt-2 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-gray-100 md:rounded-3xl md:p-12 md:flex-none">
+      <div className="flex-1 flex flex-col items-center pt-2 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-gray-100 md:rounded-3xl md:p-12 md:flex-none">
         
         {/* Icon */}
         <div className="relative mb-8 mt-4 md:mb-10">
@@ -133,7 +133,7 @@ export default function OtpVerify() {
           </div>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-3 md:mb-4 tracking-tight md:text-center">Check your phone</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-3 md:mb-4 tracking-tight text-center">Check your phone</h1>
         <p className="text-[#6B7280] text-[16px] md:text-[18px] text-center mb-10 md:mb-12 px-4">
           We've sent a 4-digit code to<br className="md:hidden" />
           <span className="text-[#111827] font-semibold md:ml-1">{displayPhone || 'your number'}</span>{' '}

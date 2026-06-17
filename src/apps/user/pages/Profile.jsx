@@ -46,7 +46,7 @@ export default function Profile() {
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-        <button type="button" className="p-1 -mr-1 text-[#4F46E5] rounded-full transition-colors relative">
+        <button type="button" onClick={() => navigate('/app/notifications')} className="p-1 -mr-1 text-[#4F46E5] rounded-full transition-colors relative hover:bg-indigo-50">
           <Bell size={22} />
           <div className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
         </button>

@@ -4,7 +4,7 @@ import Logo from '../components/brand/Logo'
 
 const navItems = [
   { to: '/app', icon: Home, label: 'Home', desktopLabel: 'Home' },
-  { to: '/app/promotions', icon: Search, label: 'Search', desktopLabel: 'Discovery' },
+  { to: '/app/search', icon: Search, label: 'Search', desktopLabel: 'Search' },
   { to: '/app/orders', icon: ShoppingBag, label: 'Orders', desktopLabel: 'Orders' },
   { to: '/app/wallet', icon: Wallet, label: 'Wallet', desktopLabel: 'Wallet' },
   { to: '/app/profile', icon: User, label: 'Profile', desktopLabel: 'Profile' },
@@ -14,7 +14,7 @@ export default function UserLayout() {
   const location = useLocation();
   const isHome = location.pathname === '/app';
   
-  const topLevelPaths = ['/app', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile'];
+  const topLevelPaths = ['/app', '/app/search', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile'];
   const showMobileNav = topLevelPaths.includes(location.pathname);
   
   return (

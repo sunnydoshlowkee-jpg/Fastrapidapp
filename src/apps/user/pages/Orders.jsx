@@ -6,12 +6,14 @@ import { useCart } from '../../../context/CartContext'
 
 export default function Orders() {
   const navigate = useNavigate()
-  const { cartItems, getCartTotal } = useCart()
+  const { items: cartItems = [], total } = useCart()
   const [activeTab, setActiveTab] = useState('Ongoing') // Cart | Ongoing | Completed
   const [activeTabDesktop, setActiveTabDesktop] = useState('Orders') // Just for sidebar
   
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -30,6 +32,19 @@ export default function Orders() {
 
   const ongoingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled')
   const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled')
+
+  const filterOrder = (o) => {
+    if (!searchQuery) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      getOrderVendor(o).toLowerCase().includes(query) ||
+      getOrderItemsString(o).toLowerCase().includes(query) ||
+      String(o.id).includes(query)
+    )
+  }
+
+  const filteredOngoing = ongoingOrders.filter(filterOrder)
+  const filteredCompleted = completedOrders.filter(filterOrder)
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
@@ -54,16 +69,37 @@ export default function Orders() {
 
       <div className="md:hidden flex flex-col min-h-screen">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
-              <ArrowLeft size={24} />
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Orders</h1>
-          </div>
-          <button className="p-1 text-gray-400">
-            <Search size={22} />
-          </button>
+        <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30 h-[88px]">
+          {!isSearching ? (
+            <>
+              <div className="flex items-center gap-3">
+                <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
+                  <ArrowLeft size={24} />
+                </button>
+                <h1 className="text-xl font-bold text-gray-900">Orders</h1>
+              </div>
+              <button onClick={() => setIsSearching(true)} className="p-1 text-gray-400 hover:text-[#4F46E5] transition-colors">
+                <Search size={22} />
+              </button>
+            </>
+          ) : (
+            <div className="flex items-center w-full gap-3 h-full animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 flex items-center gap-2 shadow-sm focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] transition-all">
+                <Search size={18} className="text-gray-400" />
+                <input 
+                  type="text" 
+                  autoFocus
+                  placeholder="Search orders, items..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-sm outline-none text-gray-900 placeholder-gray-400"
+                />
+              </div>
+              <button onClick={() => { setIsSearching(false); setSearchQuery('') }} className="text-gray-500 font-medium text-[13px] hover:text-gray-700 transition-colors">
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="px-6 w-full max-w-md mx-auto pt-4 flex-1">
@@ -97,7 +133,7 @@ export default function Orders() {
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900 text-sm mb-0.5">Your Cart</h3>
-                        <p className="text-[11px] font-medium text-gray-500">{cartItems.length} items • {formatCurrency(getCartTotal())}</p>
+                        <p className="text-[11px] font-medium text-gray-500">{cartItems.length} items • {formatCurrency(total)}</p>
                       </div>
                     </div>
                     <button onClick={() => navigate('/app/cart')} className="text-[#4F46E5] text-[11px] font-bold">
@@ -122,10 +158,10 @@ export default function Orders() {
             <div className="flex flex-col gap-6">
               {loading ? (
                 <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
-              ) : ongoingOrders.length === 0 ? (
-                <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders.</div>
+              ) : filteredOngoing.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders found.</div>
               ) : (
-                ongoingOrders.map(order => (
+                filteredOngoing.map(order => (
                   <div key={order.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex flex-col gap-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -164,10 +200,10 @@ export default function Orders() {
             <div className="flex flex-col gap-4">
               {loading ? (
                 <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
-              ) : completedOrders.length === 0 ? (
-                <div className="text-center py-10 text-gray-500 text-sm">No completed orders yet.</div>
+              ) : filteredCompleted.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 text-sm">No completed orders found.</div>
               ) : (
-                completedOrders.map(order => (
+                filteredCompleted.map(order => (
                   <div key={order.id} className="bg-white rounded-[24px] p-4 shadow-sm border border-gray-100 flex flex-col gap-4">
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-xl">
@@ -211,7 +247,9 @@ export default function Orders() {
               <Search size={20} className="text-gray-400" />
               <input 
                 type="text" 
-                placeholder="Search for food, groceries, or essentials..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search orders, vendors, items..." 
                 className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
               />
             </div>
@@ -252,10 +290,10 @@ export default function Orders() {
                 <div className="flex flex-col gap-6">
                   {loading ? (
                     <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
-                  ) : ongoingOrders.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders.</div>
+                  ) : filteredOngoing.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders found.</div>
                   ) : (
-                    ongoingOrders.map(order => (
+                    filteredOngoing.map(order => (
                       <div key={order.id} className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 flex flex-col">
                         <div className="flex items-center justify-between mb-6">
                           <div className="flex items-center gap-4">
@@ -319,10 +357,10 @@ export default function Orders() {
                 <div className="flex flex-col gap-6">
                   {loading ? (
                     <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
-                  ) : completedOrders.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 text-sm">No completed orders.</div>
+                  ) : filteredCompleted.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500 text-sm">No completed orders found.</div>
                   ) : (
-                    completedOrders.map((order, i) => (
+                    filteredCompleted.map((order, i) => (
                       <div key={i} className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow">
                         
                         <div className="flex items-center gap-6">

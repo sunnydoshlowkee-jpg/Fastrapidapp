@@ -5,6 +5,7 @@ import AppLocationBar from '../../../components/location/AppLocationBar'
 import { useLocation } from '../../../context/LocationContext'
 import { useDiscovery } from '../../../hooks/useDiscovery'
 import { useDashboard } from '../../../hooks/useDashboard'
+import { useCart } from '../../../context/CartContext'
 
 // Mock Data (Desktop Only)
 const desktopServices = [
@@ -28,6 +29,7 @@ export default function Home() {
   const { location } = useLocation()
   const { data: discovery, loading: discoveryLoading, error: discoveryError } = useDiscovery()
   const { data: dashboard, loading: dashboardLoading } = useDashboard()
+  const { items: cartItems = [] } = useCart()
   
   const [activeTab, setActiveTab] = useState('Food')
   const [bannerIndex, setBannerIndex] = useState(0)
@@ -182,7 +184,7 @@ export default function Home() {
             <h3 className="text-[15px] font-bold text-gray-900">
               {activeTab === 'Food' ? 'Restaurants near you' : 'Grocery stores near you'}
             </h3>
-            <span className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
+            <span onClick={() => navigate(`/app/vendors/${activeTab.toLowerCase()}`)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
           </div>
           <p className="text-[11px] text-gray-500 mb-3 -mt-2">
             Within {radiusLabel} of {areaLabel}
@@ -234,7 +236,7 @@ export default function Home() {
             <h3 className="text-[15px] font-bold text-gray-900 mb-3">Quick reorder</h3>
             <div className="flex gap-5 overflow-x-auto pb-2 hide-scrollbar">
               {dashboard.quick_reorders.map(item => (
-                <div key={item.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+                <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
                   <div className="w-[56px] h-[56px] rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#4F46E5] transition-colors flex items-center justify-center bg-gray-50">
                     {item.img ? (
                       <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
@@ -253,14 +255,14 @@ export default function Home() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-gray-900">Trending Items</h3>
-            <span className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">View Market</span>
+            <span onClick={() => navigate(`/app/vendors/${activeTab.toLowerCase()}`)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">View Market</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {trending.map(item => (
-              <div key={item.id} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md border border-gray-100 flex flex-col group cursor-pointer transition-all hover:-translate-y-1">
+              <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md border border-gray-100 flex flex-col group cursor-pointer transition-all hover:-translate-y-1">
                 <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-gray-50">
                   <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <button className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] shadow-sm">
+                  <button onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] shadow-sm">
                     <Heart size={14} />
                   </button>
                 </div>
@@ -268,7 +270,7 @@ export default function Home() {
                 <p className="text-[10px] font-medium text-gray-400 mb-3 truncate">{item.store}</p>
                 <div className="flex items-center justify-between mt-auto pt-1 border-t border-gray-50">
                   <span className="font-bold text-gray-900 text-[14px]">{item.price}</span>
-                  <button className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
+                  <button onClick={(e) => e.stopPropagation()} className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
                     <Plus size={16} />
                   </button>
                 </div>
@@ -289,16 +291,21 @@ export default function Home() {
             <Search size={20} className="text-gray-400" />
             <input 
               type="text" 
+              onClick={() => navigate('/app/search')}
               placeholder="Search for food, groceries, or essentials..." 
-              className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
+              className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900 cursor-text"
             />
           </div>
         </div>
         <div className="flex items-center gap-6 shrink-0">
           <AppLocationBar variant="desktop" />
-          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/orders')}>
             <ShoppingCart size={24} className="text-gray-700" />
-            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+            {cartItems.length > 0 && (
+              <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">
+                {cartItems.length}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -334,7 +341,7 @@ export default function Home() {
             {desktopServices.map((service, index) => {
               const Icon = service.icon
               return (
-                <div key={index} className="flex flex-col items-center gap-4 cursor-pointer group">
+                <div key={index} onClick={() => navigate(`/app/vendors/${service.name.toLowerCase()}`)} className="flex flex-col items-center gap-4 cursor-pointer group">
                   <div className="w-full aspect-[4/3] bg-white rounded-3xl border border-gray-100/50 shadow-sm shadow-gray-200/50 flex items-center justify-center group-hover:shadow-md group-hover:border-indigo-100 transition-all">
                     <Icon size={42} className="text-[#2D2AEE] group-hover:scale-110 transition-transform" />
                   </div>
@@ -354,7 +361,7 @@ export default function Home() {
             </div>
             <div className="flex gap-10">
               {dashboard.quick_reorders.slice(0, 5).map(item => (
-                <div key={item.id} className="flex flex-col items-center gap-3 cursor-pointer group">
+                <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="flex flex-col items-center gap-3 cursor-pointer group">
                   <div className={`w-[85px] h-[85px] rounded-full p-1 ring-2 ring-indigo-500 group-hover:scale-105 transition-transform bg-gray-50 flex items-center justify-center`}>
                     {item.img ? (
                       <img src={item.img} alt={item.name.replace('\n', ' ')} className="w-full h-full object-cover rounded-full" />
@@ -413,7 +420,7 @@ export default function Home() {
                 Sorted by distance · within {radiusLabel} of {areaLabel}
               </p>
             </div>
-            <span className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
+            <span onClick={() => navigate(`/app/vendors/food`)} className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
           </div>
           {discoveryLoading && (
             <p className="text-gray-500 mb-4">Loading nearby restaurants…</p>

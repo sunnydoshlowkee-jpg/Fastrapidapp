@@ -93,12 +93,14 @@ export default function Search() {
                 <h3 className="text-[13px] font-bold text-gray-900 mb-4">Recent searches</h3>
                 <div className="flex flex-col gap-4">
                   {recentSearchesMobile.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between cursor-pointer group">
+                    <div key={i} className="flex items-center justify-between cursor-pointer group" onClick={() => setQuery(s)}>
                       <div className="flex items-center gap-3">
                         <Clock size={16} className="text-gray-400 group-hover:text-[#4F46E5]" />
                         <span className="text-[13px] text-gray-600">{s}</span>
                       </div>
-                      <X size={16} className="text-gray-300 hover:text-gray-500" />
+                      <button onClick={(e) => e.stopPropagation()} className="p-1">
+                        <X size={16} className="text-gray-300 hover:text-gray-500" />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -108,7 +110,7 @@ export default function Search() {
                 <h3 className="text-[13px] font-bold text-gray-900 mb-4">Popular near you</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {popularTagsMobile.map((tag, i) => (
-                    <button key={i} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-[11px] font-medium hover:bg-gray-200 transition-colors">
+                    <button key={i} onClick={() => setQuery(tag)} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-[11px] font-medium hover:bg-gray-200 transition-colors">
                       {tag}
                     </button>
                   ))}
@@ -236,7 +238,7 @@ export default function Search() {
                   
                   <div className="flex flex-col gap-4">
                     {recentSearchesDesktop.map((search, idx) => (
-                      <div key={idx} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
+                      <div key={idx} onClick={() => setQuery(search.term)} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-[#F4F5F7] rounded-full flex items-center justify-center text-gray-400 group-hover:text-[#2D2AEE] transition-colors">
                             <Clock size={18} />
@@ -272,7 +274,7 @@ export default function Search() {
                 <h2 className="text-[20px] font-bold text-gray-900 mb-6">Popular near you</h2>
                 <div className="flex gap-3">
                   {popularTagsDesktop.map((tag, idx) => (
-                    <button key={idx} className="bg-white border border-gray-100 text-gray-900 px-6 py-3.5 rounded-full text-[13px] font-bold shadow-sm hover:border-gray-300 transition-colors">
+                    <button key={idx} onClick={() => setQuery(tag)} className="bg-white border border-gray-100 text-gray-900 px-6 py-3.5 rounded-full text-[13px] font-bold shadow-sm hover:border-gray-300 transition-colors">
                       {tag}
                     </button>
                   ))}
