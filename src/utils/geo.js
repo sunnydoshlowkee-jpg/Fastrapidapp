@@ -1,8 +1,8 @@
-/** Default center: Yaba, Lagos */
+/** Default center: Lagos */
 export const DEFAULT_LOCATION = {
-  latitude: 6.5158,
-  longitude: 3.3696,
-  location_label: 'Yaba',
+  latitude: 6.5244,
+  longitude: 3.3792,
+  location_label: 'Lagos',
   city: 'Lagos',
   state: 'Lagos',
   country_code: 'NG',

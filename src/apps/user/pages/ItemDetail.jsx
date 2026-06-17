@@ -1,22 +1,82 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Star, Minus, Plus } from 'lucide-react'
+import { useCart } from '../../../context/CartContext'
+import { getDiscoveryItem } from '../../../services/discoveryService'
+import { trackEvent } from '../../../services/analyticsService'
 
 export default function ItemDetail() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { add } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [hasAddon, setHasAddon] = useState(false)
+  const [notes, setNotes] = useState('')
 
-  const basePrice = 4500
+  const [itemData, setItemData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getDiscoveryItem(id)
+        setItemData(data.data)
+        trackEvent('view_product', 'product', id)
+      } catch (err) {
+        console.error('Failed to fetch item', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchItem()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Loading item...</p>
+      </div>
+    )
+  }
+
+  if (!itemData) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Item not found.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
+      </div>
+    )
+  }
+
+  const basePrice = Number(itemData.price)
   const addonPrice = 1200
   const total = (basePrice + (hasAddon ? addonPrice : 0)) * quantity
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      ...itemData,
+      price: basePrice + (hasAddon ? addonPrice : 0),
+      qty: quantity,
+      notes
+    }
+    for (let i = 0; i < quantity; i++) {
+      add(cartItem)
+    }
+    trackEvent('add_to_cart', 'product', id, { qty: quantity })
+    navigate(-1)
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24">
       
       {/* Header Image */}
       <div className="relative h-64 md:h-80 w-full">
-        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" alt="Item Cover" className="w-full h-full object-cover" />
+        <img src={itemData.img} alt="Item Cover" className="w-full h-full object-cover" />
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />
@@ -28,18 +88,18 @@ export default function ItemDetail() {
         
         {/* Item Info */}
         <div className="flex justify-between items-start mb-1">
-          <h1 className="text-2xl font-bold text-gray-900">Jollof Rice Special</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{itemData.name}</h1>
           <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-md text-gray-800 font-bold ml-auto flex-shrink-0">
-            <Star size={12} className="fill-yellow-500 text-yellow-500" /> 4.8
+            <Star size={12} className="fill-yellow-500 text-yellow-500" /> {itemData.merchant?.rating || 4.8}
           </div>
         </div>
-        <p className="text-sm text-gray-500 mb-2">Mama's Kitchen Lagos</p>
-        <p className="text-xl font-bold text-gray-900 mb-6">₦4,500</p>
+        <p className="text-sm text-gray-500 mb-2">{itemData.merchant?.name}</p>
+        <p className="text-xl font-bold text-gray-900 mb-6">{formatCurrency(basePrice)}</p>
 
         {/* Description */}
         <h3 className="text-sm font-bold text-gray-900 mb-2">Description</h3>
         <p className="text-[13px] text-gray-500 leading-relaxed mb-8">
-          Authentic firewood smoked jollof rice served with spicy peppered chicken, fried ripe plantains (dodo), and a side of mixed vegetable coleslaw. The ultimate Nigerian party experience.
+          {itemData.description || 'No description available.'}
         </p>
 
         {/* Quantity */}
@@ -81,6 +141,8 @@ export default function ItemDetail() {
         {/* Special Instructions */}
         <h3 className="text-sm font-bold text-gray-900 mb-2">Special Instructions</h3>
         <textarea 
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
           placeholder="Add a note (e.g. no onions, extra spicy...)"
           className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] resize-none h-24 mb-4 border border-transparent"
         ></textarea>
@@ -91,10 +153,10 @@ export default function ItemDetail() {
       <div className="fixed bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-white via-white to-transparent pb-safe z-40">
         <div className="w-full max-w-md mx-auto">
           <button 
-            onClick={() => navigate(-1)} 
+            onClick={handleAddToCart} 
             className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors"
           >
-            Add to cart — ₦{total.toLocaleString()}
+            Add to cart — {formatCurrency(total)}
           </button>
         </div>
       </div>

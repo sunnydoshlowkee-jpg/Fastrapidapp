@@ -1,34 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Search, ChevronDown, ChevronUp, MessageSquare, MapPin, Plus, User, Clock, Wallet, CheckCircle2 } from 'lucide-react'
-
-const faqs = [
-  {
-    id: 1,
-    q: 'How do I track my RAPID delivery?',
-    a: "You can track your order in real-time. Go to 'Orders', select your active order, and tap 'Track Order'. You will see the courier's location on the map."
-  },
-  {
-    id: 2,
-    q: 'Can I change my delivery address after ordering?',
-    a: "Yes, you can change your address before the rider picks up your order. If the order is already in transit, please contact support immediately."
-  },
-  {
-    id: 3,
-    q: 'What is the "Wallet" refund policy?',
-    a: "If your order is cancelled or delayed by more than 45 minutes past the maximum estimated time, you may be eligible for a refund in Rapid Wallet credits."
-  },
-  {
-    id: 4,
-    q: 'How to verify my merchant account?',
-    a: "Go to your merchant dashboard settings and click 'Verify Account'. You will need to upload your business registration documents and a valid ID."
-  }
-]
+import { ArrowLeft, Search, ChevronDown, ChevronUp, MessageSquare, MapPin, Plus } from 'lucide-react'
+import { getFaqs } from '../../../services/faqService'
 
 export default function Help() {
   const navigate = useNavigate()
-  const [openFaq, setOpenFaq] = useState(1)
   const [activeTab] = useState('profile')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [openFaq, setOpenFaq] = useState(null)
+  const [faqs, setFaqs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getFaqs()
+        setFaqs(data.data || [])
+      } catch (err) {
+        console.error('Failed to fetch FAQs', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchFaqs()
+  }, [])
+
+  const filteredFaqs = faqs.filter(faq => {
+    return faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+           faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  })
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">
@@ -57,6 +58,8 @@ export default function Help() {
             <input 
               type="text" 
               placeholder="Search topics, orders, or issues..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#F4F5F7] rounded-2xl py-3.5 pl-11 pr-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] transition-all"
             />
           </div>
@@ -66,30 +69,34 @@ export default function Help() {
         <div className="mb-10">
           <h3 className="text-sm font-bold text-gray-900 mb-4">Frequently Asked Questions</h3>
           <div className="flex flex-col gap-2">
-            {faqs.map(faq => (
-              <div key={faq.id} className="flex flex-col">
-                <button 
-                  onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
-                  className="flex items-center justify-between py-4 text-left"
-                >
-                  <span className={`text-[13px] font-bold pr-4 ${openFaq === faq.id ? 'text-[#4F46E5]' : 'text-gray-900'}`}>
-                    {faq.q}
-                  </span>
-                  {openFaq === faq.id ? (
-                    <ChevronUp size={18} className="text-[#4F46E5] flex-shrink-0" />
-                  ) : (
-                    <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
+            {loading ? (
+              <p className="text-center text-sm text-gray-500 py-4">Loading FAQs...</p>
+            ) : (
+              filteredFaqs.map(faq => (
+                <div key={faq.id} className="flex flex-col">
+                  <button 
+                    onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
+                    className="flex items-center justify-between py-4 text-left"
+                  >
+                    <span className={`text-[13px] font-bold pr-4 ${openFaq === faq.id ? 'text-[#4F46E5]' : 'text-gray-900'}`}>
+                      {faq.question}
+                    </span>
+                    {openFaq === faq.id ? (
+                      <ChevronUp size={18} className="text-[#4F46E5] flex-shrink-0" />
+                    ) : (
+                      <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  {openFaq === faq.id && (
+                    <div className="bg-[#F8F9FA] rounded-2xl p-5 mb-2 border border-gray-100">
+                      <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+                        {faq.answer}
+                      </p>
+                    </div>
                   )}
-                </button>
-                {openFaq === faq.id && (
-                  <div className="bg-[#F8F9FA] rounded-2xl p-5 mb-2 border border-gray-100">
-                    <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
-                      {faq.a}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -123,6 +130,8 @@ export default function Help() {
           <input 
             type="text" 
             placeholder="Search for food, groceries, or essentials..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
           />
         </div>
@@ -163,27 +172,35 @@ export default function Help() {
                 </button>
               </div>
               
-              <div className="flex flex-col gap-3">
-                {faqs.map(faq => (
-                  <div key={faq.id} className="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden transition-all">
-                    <button 
+              <div className="flex flex-col gap-4">
+                {loading && <p className="text-center text-sm text-gray-500 py-4">Loading FAQs...</p>}
+                {!loading && filteredFaqs.map((faq) => (
+                  <div key={faq.id} className="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100 transition-all">
+                    <div 
+                      className="flex justify-between items-start gap-4 cursor-pointer"
                       onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
-                      className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
                     >
-                      <span className="text-[15px] font-bold text-gray-900">
-                        {faq.q}
-                      </span>
-                      <Plus size={20} className={`text-gray-400 transition-transform ${openFaq === faq.id ? 'rotate-45 text-[#2D2AEE]' : ''}`} />
-                    </button>
+                      <h3 className={`font-bold text-[15px] leading-snug ${openFaq === faq.id ? 'text-[#4F46E5]' : 'text-gray-900'}`}>
+                        {faq.question}
+                      </h3>
+                      <button className="text-gray-400 mt-0.5">
+                        {openFaq === faq.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                      </button>
+                    </div>
                     {openFaq === faq.id && (
-                      <div className="px-6 pb-6 pt-2 border-t border-gray-50">
-                        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
-                          {faq.a}
+                      <div className="mt-4 pt-4 border-t border-gray-50">
+                        <p className="text-[13px] text-gray-500 leading-relaxed">
+                          {faq.answer}
                         </p>
                       </div>
                     )}
                   </div>
                 ))}
+                {!loading && filteredFaqs.length === 0 && (
+                  <div className="text-center py-10">
+                    <p className="text-gray-500 text-[14px]">No FAQs found matching your criteria.</p>
+                  </div>
+                )}
               </div>
             </div>
 

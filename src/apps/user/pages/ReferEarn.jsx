@@ -1,10 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Copy, Share2, Search, MapPin, Home, Clock, Wallet, User, Send, ShoppingCart, Gift, Users } from 'lucide-react'
+import { ArrowLeft, Copy, Share2, Search, MapPin, Home, Clock, Wallet, User, Send, ShoppingCart, Gift, Users, ChevronDown } from 'lucide-react'
+import { getReferrals } from '../../../services/referralService'
 
 export default function ReferEarn() {
   const navigate = useNavigate()
   const [activeTab] = useState('profile')
+  const [referralData, setReferralData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchReferralData = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getReferrals()
+        setReferralData(data.data)
+      } catch (err) {
+        console.error('Failed to fetch referral data', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchReferralData()
+  }, [])
+
+  const copyToClipboard = () => {
+    if (referralData?.referral_code) {
+      navigator.clipboard.writeText(referralData.referral_code)
+      alert('Referral code copied!')
+    }
+  }
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount || 0)
+  }
+
+  if (loading || !referralData) {
+    return <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">Loading referral stats...</div>
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">
@@ -44,8 +77,8 @@ export default function ReferEarn() {
         <div className="w-full bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Your Referral Code</p>
           <div className="bg-[#F4F5F7] rounded-2xl p-4 flex items-center justify-between">
-            <span className="font-bold text-gray-900 text-lg tracking-wider">RAPIDJIDE500</span>
-            <button className="text-[#4F46E5] p-2 hover:bg-indigo-50 rounded-xl transition-colors">
+            <span className="font-bold text-gray-900 text-lg tracking-wider">{referralData.referral_code}</span>
+            <button onClick={copyToClipboard} className="text-[#4F46E5] p-2 hover:bg-indigo-50 rounded-xl transition-colors">
               <Copy size={20} />
             </button>
           </div>
@@ -55,11 +88,11 @@ export default function ReferEarn() {
         <div className="flex gap-4 w-full mb-8">
           <div className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-col justify-center">
             <p className="text-[11px] font-bold text-gray-500 mb-1">Successful Refers</p>
-            <p className="text-2xl font-bold text-gray-900">12</p>
+            <p className="text-2xl font-bold text-gray-900">{referralData.successful}</p>
           </div>
           <div className="flex-1 bg-indigo-50/50 rounded-[24px] p-5 shadow-sm border border-indigo-50 flex flex-col justify-center">
             <p className="text-[11px] font-bold text-[#4F46E5] mb-1">Earnings</p>
-            <p className="text-2xl font-bold text-[#4F46E5]">₦6,000</p>
+            <p className="text-2xl font-bold text-[#4F46E5]">{formatCurrency(referralData.earnings)}</p>
           </div>
         </div>
 
@@ -144,8 +177,8 @@ export default function ReferEarn() {
                 <p className="text-[14px] text-gray-500 mb-6">Share this unique code with your network to start earning.</p>
                 
                 <div className="bg-[#F4F5F7] border border-gray-200 border-dashed rounded-2xl p-5 flex items-center justify-between mb-6">
-                  <span className="font-bold text-[#2D2AEE] text-[20px] tracking-wider">RAPID-X88B2</span>
-                  <button className="text-[#2D2AEE] font-bold text-[13px] flex items-center gap-2 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors">
+                  <span className="font-bold text-[#2D2AEE] text-[20px] tracking-wider">{referralData.referral_code}</span>
+                  <button onClick={copyToClipboard} className="text-[#2D2AEE] font-bold text-[13px] flex items-center gap-2 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-colors">
                     <Copy size={16} /> COPY
                   </button>
                 </div>
@@ -197,15 +230,15 @@ export default function ReferEarn() {
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                 </div>
                 <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase mb-2">Lifetime Earnings</p>
-                <h3 className="text-[42px] font-bold mb-10">₦6,000</h3>
+                <h3 className="text-[42px] font-bold mb-10">{formatCurrency(referralData.earnings)}</h3>
                 <div className="flex gap-4">
                   <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Referrals</p>
-                    <p className="text-[20px] font-bold">12</p>
+                    <p className="text-[20px] font-bold">{referralData.total_referrals}</p>
                   </div>
                   <div className="flex-1 bg-white/5 rounded-2xl p-4 border border-white/10 backdrop-blur">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pending</p>
-                    <p className="text-[20px] font-bold">4</p>
+                    <p className="text-[20px] font-bold">{referralData.pending}</p>
                   </div>
                 </div>
               </div>
@@ -217,11 +250,7 @@ export default function ReferEarn() {
                 </div>
                 
                 <div className="flex flex-col gap-6">
-                  {[
-                    { name: 'Chukwudi O.', status: 'Completed 1st order', amount: '+₦500', color: 'text-green-500' },
-                    { name: 'Amina J.', status: 'Completed 1st order', amount: '+₦500', color: 'text-green-500' },
-                    { name: 'Tunde W.', status: 'Signed up', amount: 'Pending order', color: 'text-gray-400 text-[12px]' }
-                  ].map((user, i) => (
+                  {referralData.recent.map((user, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
@@ -235,6 +264,9 @@ export default function ReferEarn() {
                       <span className={`font-bold ${user.color}`}>{user.amount}</span>
                     </div>
                   ))}
+                  {referralData.recent.length === 0 && (
+                    <p className="text-[12px] text-gray-400">No referrals yet.</p>
+                  )}
                 </div>
               </div>
 

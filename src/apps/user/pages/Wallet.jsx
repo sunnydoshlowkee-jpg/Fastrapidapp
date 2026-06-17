@@ -1,16 +1,41 @@
 import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Send, ArrowDownLeft, PlusSquare, Phone, Globe, Receipt, Zap, ArrowDown, ArrowUpRight, Copy, Eye, EyeOff, QrCode } from 'lucide-react'
-import { useState } from 'react'
-
-const transactions = [
-  { id: 1, title: 'Fund Wallet', date: 'May 12, 10:24 AM', amount: '+ ₦ 15,000.00', type: 'credit', status: 'Completed', icon: ArrowDown, iconBg: 'bg-green-50', iconColor: 'text-green-500' },
-  { id: 2, title: 'IKEDC Prepaid', date: 'May 10, 04:30 PM', amount: '- ₦ 5,000.00', type: 'debit', status: 'DEBIT', icon: Zap, iconBg: 'bg-red-50', iconColor: 'text-red-500' },
-  { id: 3, title: 'MTN Data Purchase', date: 'May 11, 09:15 PM', amount: '- ₦ 2,500.00', type: 'debit', status: 'DEBIT', icon: ArrowUpRight, iconBg: 'bg-orange-50', iconColor: 'text-orange-500' },
-]
+import { useState, useEffect } from 'react'
+import { getWalletData } from '../../../services/walletService'
 
 export default function Wallet() {
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
+  const [balance, setBalance] = useState(0)
+  const [transactions, setTransactions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getWalletData()
+        if (data?.data) {
+          setBalance(data.data.balance || 0)
+          setTransactions(data.data.transactions || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch wallet data', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const getIconData = (type) => {
+    if (type === 'credit') return { icon: ArrowDown, iconBg: 'bg-green-50', iconColor: 'text-green-500' }
+    return { icon: ArrowUpRight, iconBg: 'bg-red-50', iconColor: 'text-red-500' }
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
@@ -44,7 +69,7 @@ export default function Wallet() {
                 </div>
               </div>
               <h2 className="text-[32px] md:text-[48px] font-bold mb-6 md:mb-10 tracking-tight">
-                {showBalance ? '₦284,500.00' : '₦•••••••'}
+                {showBalance ? formatCurrency(balance) : '₦•••••••'}
               </h2>
               <div className="bg-white/15 rounded-xl px-3.5 md:px-5 py-2.5 md:py-3 flex items-center justify-between backdrop-blur-sm">
                 <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">Wema Bank • 0123456789</span>
@@ -151,28 +176,39 @@ export default function Wallet() {
                 <button className="text-[#4F46E5] text-[12px] font-semibold hover:underline">View All</button>
               </div>
               
-              <div className="flex flex-col gap-3 md:gap-2 md:bg-white md:p-2 md:rounded-3xl md:border md:border-gray-100 md:shadow-sm">
-                {transactions.map(tx => (
-                  <button 
-                    key={tx.id}
-                    onClick={() => navigate(`/app/wallet/receipt/${tx.id}`)}
-                    className="bg-white md:bg-transparent rounded-2xl md:rounded-xl p-4 md:p-3 shadow-sm md:shadow-none border border-gray-100 md:border-none md:hover:bg-gray-50 flex items-center justify-between transition-colors"
-                  >
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full ${tx.iconBg} flex items-center justify-center ${tx.iconColor} shrink-0`}>
-                        <tx.icon size={18} className="md:w-5 md:h-5" />
-                      </div>
-                      <div className="text-left">
-                        <h4 className="font-bold text-gray-900 text-[13px] md:text-[14px] mb-0.5">{tx.title}</h4>
-                        <p className="text-[11px] md:text-[12px] text-gray-500 font-medium">{tx.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`block font-bold text-[13px] md:text-[14px] mb-0.5 ${tx.type === 'credit' ? 'text-green-600' : 'text-gray-900'}`}>{tx.amount}</span>
-                      <span className={`md:hidden text-[10px] font-bold uppercase tracking-wider ${tx.type === 'credit' ? 'text-green-500' : 'text-gray-400'}`}>{tx.status}</span>
-                    </div>
-                  </button>
-                ))}
+              <div className="flex flex-col gap-3 md:gap-2 md:bg-white md:p-2 md:rounded-3xl md:border md:border-gray-100 md:shadow-sm min-h-[200px]">
+                {loading ? (
+                  <div className="flex items-center justify-center h-32 text-gray-400 text-sm">Loading transactions...</div>
+                ) : transactions.length === 0 ? (
+                  <div className="flex items-center justify-center h-32 text-gray-400 text-sm">No recent activity.</div>
+                ) : (
+                  transactions.map((tx) => {
+                    const { icon: TxIcon, iconBg, iconColor } = getIconData(tx.type)
+                    return (
+                      <button 
+                        key={tx.id}
+                        onClick={() => navigate(`/app/wallet/receipt/${tx.id}`)}
+                        className="bg-white md:bg-transparent rounded-2xl md:rounded-xl p-4 md:p-3 shadow-sm md:shadow-none border border-gray-100 md:border-none md:hover:bg-gray-50 flex items-center justify-between transition-colors"
+                      >
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full ${iconBg} flex items-center justify-center ${iconColor} shrink-0`}>
+                            <TxIcon size={18} className="md:w-5 md:h-5" />
+                          </div>
+                          <div className="text-left">
+                            <h4 className="font-bold text-gray-900 text-[13px] md:text-[14px] mb-0.5">{tx.reference || 'Wallet Transaction'}</h4>
+                            <p className="text-[11px] md:text-[12px] text-gray-500 font-medium">{new Date(tx.created_at).toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`block font-bold text-[13px] md:text-[14px] mb-0.5 ${tx.type === 'credit' ? 'text-green-600' : 'text-gray-900'}`}>
+                            {tx.type === 'credit' ? '+ ' : '- '} {formatCurrency(tx.amount)}
+                          </span>
+                          <span className={`md:hidden text-[10px] font-bold uppercase tracking-wider ${tx.type === 'credit' ? 'text-green-500' : 'text-gray-400'}`}>{tx.status}</span>
+                        </div>
+                      </button>
+                    )
+                  })
+                )}
               </div>
             </div>
 

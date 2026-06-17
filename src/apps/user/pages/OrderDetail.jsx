@@ -1,36 +1,56 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, MapPin, Download, CheckCircle2, Info, Search, Home, Clock, Wallet, User, ShoppingCart, CreditCard, Copy, PhoneCall } from 'lucide-react'
-
-// Mock Data
-const orderItems = [
-  {
-    id: 1,
-    quantity: 1,
-    name: 'Smokey Jollof Rice (Party Style)',
-    description: 'Extra Spicy, Side of Coleslaw',
-    price: '₦4,500'
-  },
-  {
-    id: 2,
-    quantity: 2,
-    name: 'Grilled Turkey Wings',
-    description: 'Peppered Glaze',
-    price: '₦6,000'
-  },
-  {
-    id: 3,
-    quantity: 1,
-    name: 'Fresh Chapman',
-    description: 'Ice and Mint',
-    price: '₦2,500'
-  }
-]
+import { getOrder } from '../../../services/orderService'
+import { useCart } from '../../../context/CartContext'
 
 export default function OrderDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const [activeTabDesktop] = useState('orders')
+  const { cartItems } = useCart()
+  const [order, setOrder] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getOrder(id)
+        setOrder(data.data)
+      } catch (err) {
+        console.error('Failed to fetch order details', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchOrder()
+  }, [id])
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const getOrderVendor = () => {
+    if (!order?.items || order.items.length === 0) return 'Unknown Vendor'
+    return order.items[0]?.product?.merchant?.business_name || 'Vendor'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Loading order details...</p>
+      </div>
+    )
+  }
+
+  if (!order) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Order not found.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
@@ -45,10 +65,10 @@ export default function OrderDetail() {
             <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
               <ArrowLeft size={24} />
             </button>
-            <h1 className="text-[17px] font-bold text-gray-900">Order #{id || 'RD-4821'}</h1>
+            <h1 className="text-[17px] font-bold text-gray-900">Order #{order.id}</h1>
           </div>
-          <div className="bg-indigo-50 px-3 py-1.5 rounded-full text-[#4F46E5] font-bold text-[10px] tracking-widest uppercase">
-            Delivered
+          <div className={`px-3 py-1.5 rounded-full font-bold text-[10px] tracking-widest uppercase ${order.status === 'delivered' ? 'bg-green-50 text-green-600' : 'bg-indigo-50 text-[#4F46E5]'}`}>
+            {order.status}
           </div>
         </div>
 
@@ -56,11 +76,11 @@ export default function OrderDetail() {
           
           {/* Vendor Header */}
           <div className="flex flex-col items-center mb-2">
-            <div className="w-24 h-24 rounded-3xl overflow-hidden mb-4 shadow-sm border border-gray-100">
-              <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop" alt="Vendor" className="w-full h-full object-cover" />
+            <div className="w-24 h-24 rounded-3xl overflow-hidden mb-4 shadow-sm border border-gray-100 bg-gray-200 flex items-center justify-center text-gray-400 font-bold text-2xl uppercase">
+              {getOrderVendor().charAt(0)}
             </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Kitchen Culture Lagos</h2>
-            <p className="text-[11px] text-gray-500 font-medium">Delivered on Oct 24, 2023 • 2:45 PM</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">{getOrderVendor()}</h2>
+            <p className="text-[11px] text-gray-500 font-medium">Placed on {new Date(order.created_at).toLocaleString()}</p>
             
             <div className="flex gap-4 w-full mt-6">
               <button className="flex-1 bg-[#4F46E5] text-white py-3.5 rounded-2xl font-semibold shadow-sm hover:bg-indigo-700 transition-colors text-[13px]">
@@ -76,14 +96,13 @@ export default function OrderDetail() {
           <div>
             <h3 className="text-sm font-bold text-gray-900 mb-3">Items Summary</h3>
             <div className="bg-[#F8F9FA] rounded-[24px] p-5 flex flex-col gap-5 border border-gray-100">
-              {orderItems.map(item => (
+              {order.items?.map(item => (
                 <div key={item.id} className="flex justify-between items-start gap-3">
                   <span className="text-[#4F46E5] font-bold text-[13px] w-5">{item.quantity}x</span>
                   <div className="flex-1">
-                    <h4 className="font-bold text-gray-900 text-[13px] mb-1">{item.name}</h4>
-                    <p className="text-[11px] text-gray-400">{item.description}</p>
+                    <h4 className="font-bold text-gray-900 text-[13px] mb-1">{item.product?.name || 'Item'}</h4>
                   </div>
-                  <span className="font-bold text-gray-900 text-[13px]">{item.price}</span>
+                  <span className="font-bold text-gray-900 text-[13px]">{formatCurrency(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
@@ -94,21 +113,15 @@ export default function OrderDetail() {
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="font-bold text-gray-900">₦13,000</span>
+                <span className="font-bold text-gray-900">{formatCurrency(order.total_amount)}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-gray-500">Delivery Fee</span>
-                <span className="font-bold text-gray-900">₦1,200</span>
-              </div>
-              <div className="flex justify-between items-center text-[13px]">
-                <div className="flex items-center gap-1 text-gray-500">
-                  Service Charge <Info size={12} className="text-gray-400" />
-                </div>
-                <span className="font-bold text-gray-900">₦500</span>
+                <span className="font-bold text-gray-900">{formatCurrency(order.delivery_fee)}</span>
               </div>
               <div className="flex justify-between items-center mt-3 pt-4 border-t border-gray-200">
                 <span className="text-sm font-bold text-gray-900">Total Amount</span>
-                <span className="text-2xl font-bold text-[#4F46E5]">₦14,700</span>
+                <span className="text-2xl font-bold text-[#4F46E5]">{formatCurrency(Number(order.total_amount) + Number(order.delivery_fee))}</span>
               </div>
             </div>
           </div>
@@ -121,7 +134,7 @@ export default function OrderDetail() {
                 <CheckCircle2 size={18} />
               </div>
             </div>
-            <h3 className="text-[15px] font-bold text-[#4F46E5] mb-6">Delivered</h3>
+            <h3 className="text-[15px] font-bold text-[#4F46E5] mb-6 capitalize">{order.status}</h3>
             
             <div className="relative pl-2.5 mb-2">
               <div className="absolute left-[13px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
@@ -131,21 +144,7 @@ export default function OrderDetail() {
                   <div className="w-2 h-2 rounded-full bg-[#A0AAB2] mt-1.5 ring-4 ring-[#FAFAFA]"></div>
                   <div>
                     <h4 className="font-bold text-gray-900 text-sm mb-0.5">Ordered</h4>
-                    <p className="text-[11px] text-gray-400">12:00 PM</p>
-                  </div>
-                </div>
-                <div className="flex gap-5 items-start">
-                  <div className="w-2 h-2 rounded-full bg-[#A0AAB2] mt-1.5 ring-4 ring-[#FAFAFA]"></div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm mb-0.5">Accepted</h4>
-                    <p className="text-[11px] text-gray-400">12:05 PM</p>
-                  </div>
-                </div>
-                <div className="flex gap-5 items-start">
-                  <div className="w-2 h-2 rounded-full bg-[#4F46E5] mt-1.5 ring-4 ring-indigo-50"></div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-sm mb-0.5">Delivered</h4>
-                    <p className="text-[11px] text-[#4F46E5] font-bold">12:45 PM</p>
+                    <p className="text-[11px] text-gray-400">{new Date(order.created_at).toLocaleTimeString()}</p>
                   </div>
                 </div>
               </div>
@@ -160,8 +159,8 @@ export default function OrderDetail() {
                 <MapPin size={18} />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">Home</h4>
-                <p className="text-[11px] text-gray-500 leading-snug">Block 4, Admiralty Way, Lekki Phase 1, Lagos</p>
+                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">{order.deliveryAddress?.label || 'Address'}</h4>
+                <p className="text-[11px] text-gray-500 leading-snug">{order.deliveryAddress?.address || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -205,9 +204,9 @@ export default function OrderDetail() {
                 <MapPin size={20} className="text-[#2D2AEE]" strokeWidth={2} />
                 <span className="font-semibold text-[#2D2AEE] text-[15px]">Lagos, NG</span>
               </div>
-              <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+              <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
                 <ShoppingCart size={20} className="text-gray-700" strokeWidth={2} />
-                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+                {cartItems?.length > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{cartItems.length}</span>}
               </div>
             </div>
           </div>
@@ -274,11 +273,10 @@ export default function OrderDetail() {
                       <h3 className="text-[16px] font-bold text-gray-900">Delivery Address</h3>
                     </div>
                     <div className="bg-[#F4F5F7] rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-colors">
-                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">Alexander Mitchell</h4>
+                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">{order.deliveryAddress?.label || 'Address'}</h4>
                       <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                        Block 4, Admiralty Way, Lekki Phase 1, Lagos, Nigeria
+                        {order.deliveryAddress?.address || 'N/A'}
                       </p>
-                      <p className="text-[13px] text-gray-500 font-medium mt-2">+1 (555) 0123-4567</p>
                     </div>
                   </div>
 
@@ -292,11 +290,11 @@ export default function OrderDetail() {
                     </div>
                     <div className="bg-[#F4F5F7] rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-colors">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded">VISA</div>
-                        <h4 className="font-bold text-gray-900 text-[14px]">•••• •••• •••• 4242</h4>
+                        <div className="bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">{order.payment_status || 'Paid'}</div>
+                        <h4 className="font-bold text-gray-900 text-[14px] capitalize">{order.payment_method || 'Wallet'}</h4>
                       </div>
                       <p className="text-[13px] text-gray-500 font-medium mt-3">
-                        Total paid: <span className="font-bold text-gray-900">₦14,700</span>
+                        Total: <span className="font-bold text-gray-900">{formatCurrency(Number(order.total_amount) + Number(order.delivery_fee))}</span>
                       </p>
                     </div>
                   </div>
@@ -336,24 +334,23 @@ export default function OrderDetail() {
                   <h2 className="text-[20px] font-bold text-gray-900 mb-6">Order Receipt</h2>
                   
                   <div className="flex items-center gap-4 mb-8">
-                    <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" className="w-full h-full object-cover" />
+                    <div className="w-14 h-14 bg-gray-200 rounded-2xl flex items-center justify-center overflow-hidden font-bold text-xl uppercase">
+                      {getOrderVendor().charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-900 text-[16px] mb-1">Kitchen Culture Lagos</h3>
-                      <p className="text-[13px] text-gray-500 font-medium">Oct 24, 2023 • 2:45 PM</p>
+                      <h3 className="font-bold text-gray-900 text-[16px] mb-1">{getOrderVendor()}</h3>
+                      <p className="text-[13px] text-gray-500 font-medium">{new Date(order.created_at).toLocaleString()}</p>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-4 border-t border-gray-100 pt-6 mb-6">
-                    {orderItems.map(item => (
+                    {order.items?.map(item => (
                       <div key={item.id} className="flex justify-between items-start gap-3">
                         <span className="text-gray-400 font-bold text-[14px] w-5">{item.quantity}x</span>
                         <div className="flex-1">
-                          <h4 className="font-bold text-gray-900 text-[14px] mb-1">{item.name}</h4>
-                          <p className="text-[12px] text-gray-500">{item.description}</p>
+                          <h4 className="font-bold text-gray-900 text-[14px] mb-1">{item.product?.name || 'Item'}</h4>
                         </div>
-                        <span className="font-bold text-gray-900 text-[14px]">{item.price}</span>
+                        <span className="font-bold text-gray-900 text-[14px]">{formatCurrency(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
@@ -361,21 +358,15 @@ export default function OrderDetail() {
                   <div className="bg-[#F4F5F7] rounded-2xl p-5 border border-transparent flex flex-col gap-4 mb-8">
                     <div className="flex justify-between items-center text-[14px]">
                       <span className="text-gray-500 font-medium">Subtotal</span>
-                      <span className="font-bold text-gray-900">₦13,000</span>
+                      <span className="font-bold text-gray-900">{formatCurrency(order.total_amount)}</span>
                     </div>
                     <div className="flex justify-between items-center text-[14px]">
                       <span className="text-gray-500 font-medium">Delivery Fee</span>
-                      <span className="font-bold text-gray-900">₦1,200</span>
-                    </div>
-                    <div className="flex justify-between items-center text-[14px]">
-                      <div className="flex items-center gap-1 text-gray-500 font-medium">
-                        Service Charge <Info size={14} className="text-gray-400" />
-                      </div>
-                      <span className="font-bold text-gray-900">₦500</span>
+                      <span className="font-bold text-gray-900">{formatCurrency(order.delivery_fee)}</span>
                     </div>
                     <div className="flex justify-between items-center mt-2 pt-4 border-t border-gray-200 border-dashed">
                       <span className="text-[16px] font-bold text-gray-900">Total Amount</span>
-                      <span className="text-[24px] font-bold text-[#2D2AEE]">₦14,700</span>
+                      <span className="text-[24px] font-bold text-[#2D2AEE]">{formatCurrency(Number(order.total_amount) + Number(order.delivery_fee))}</span>
                     </div>
                   </div>
 

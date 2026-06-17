@@ -31,6 +31,7 @@ export default function OtpVerify() {
   const location = useLocation()
   const phoneE164 = location.state?.phoneE164
   const nationalPhone = location.state?.phone
+  const flow = location.state?.flow ?? 'register'
 
   const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
   const [codeError, setCodeError] = useState('')
@@ -90,14 +91,22 @@ export default function OtpVerify() {
 
     setLoading(true)
     try {
-      const { data } = await verifyPhoneOtp({ phone_e164: phoneE164, code: otp, flow: 'register' })
+      const { data } = await verifyPhoneOtp({ phone_e164: phoneE164, code: otp, flow })
       const token = data?.data?.token
+      const user = data?.data?.user
+
       if (token) {
         localStorage.setItem('rapid_token', token)
       }
-      navigate('/onboarding/profile', {
-        state: { signupMethod: 'phone', phoneE164, phone: nationalPhone },
-      })
+
+      if (user?.status === 'pending_profile') {
+        navigate('/onboarding/profile', {
+          state: { signupMethod: 'phone', phoneE164, phone: nationalPhone },
+        })
+        return
+      }
+
+      navigate('/app')
     } catch (err) {
       setCodeError(getApiFieldError(err, 'code'))
     } finally {

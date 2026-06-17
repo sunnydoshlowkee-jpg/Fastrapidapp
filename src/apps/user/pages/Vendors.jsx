@@ -1,44 +1,32 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, Search, Navigation, Star, Truck, SlidersHorizontal, MapPin, Heart } from 'lucide-react'
-
-// Mock Data
-const foodVendors = [
-  { id: 1, name: "Mama's Kitchen Lagos", tags: 'Continental • African fusion', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop', time: '25-35 min', isOpen: true },
-  { id: 2, name: 'The Burger Project', tags: 'American • Gourmet Burgers', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop', time: '15-25 min', isOpen: true },
-  { id: 3, name: 'Green Leaf Salads', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=500&fit=crop', time: '30-45 min', isOpen: true },
-  { id: 4, name: 'Late Night Munchies', tags: 'Snacks • Drinks', rating: 4.2, distance: '3.1 km', delivery: '₦700', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop', time: '10-20 min', isOpen: false },
-]
-
-const groceryVendors = [
-  { id: 1, name: 'Fresh Forte Supermarket', tags: 'Groceries • Household • Drinks', rating: 4.8, distance: '1.2 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?w=500&h=500&fit=crop', time: '20-30 min', isOpen: true },
-  { id: 2, name: 'Mile 12 Fresh Vendors', tags: 'Fresh Produce • Spices • Grains', rating: 4.6, distance: '4.8 km', delivery: '₦800', img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop', time: '35-45 min', isOpen: true },
-  { id: 3, name: 'Organic Life Store', tags: 'Healthy • Organic • Vegan', rating: 4.9, distance: '0.8 km', delivery: '₦500', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500&h=500&fit=crop', time: '30-45 min', isOpen: true },
-  { id: 4, name: 'Neighborhood Mart', tags: 'Convenience • Snacks', rating: 4.2, distance: '3.1 km', delivery: '₦700', img: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop', time: '10-20 min', isOpen: false },
-]
-
-const desktopVendors = [
-  { id: 101, name: 'The Rustic Kitchen', tags: 'Italian • Pizza • ₦₦', rating: 4.8, time: '20–30 min', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=500&fit=crop' },
-  { id: 102, name: 'Lagos Fusion', tags: 'African • Continental • ₦₦₦', rating: 4.9, time: '15–25 min', img: 'https://images.unsplash.com/photo-1604329760661-e75dc8398f09?w=800&h=500&fit=crop' },
-  { id: 103, name: 'Grill & Chill', tags: 'Steakhouse • BBQ • ₦₦', rating: 4.6, time: '30–45 min', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=500&fit=crop' },
-  { id: 104, name: 'Burger Empire', tags: 'Fast Food • American • ₦', rating: 4.7, time: '10–20 min', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=500&fit=crop' },
-  { id: 105, name: 'Green Garden', tags: 'Healthy • Salads • Vegan • ₦₦', rating: 4.8, time: '25–35 min', img: 'https://images.unsplash.com/photo-1540420773420-3365887f394e?w=800&h=500&fit=crop' },
-  { id: 106, name: 'Zen Sushi', tags: 'Japanese • Sushi • ₦₦₦', rating: 4.9, time: '35–50 min', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&h=500&fit=crop' },
-]
+import { useDiscovery } from '../../../hooks/useDiscovery'
+import { useCart } from '../../../context/CartContext'
 
 export default function Vendors() {
   const { type } = useParams()
   const navigate = useNavigate()
+  const { data, loading } = useDiscovery()
+  const { count } = useCart()
   const isFood = type === 'food'
   
-  const title = isFood ? 'Food' : 'Groceries'
-  const vendors = isFood ? foodVendors : groceryVendors
+  const title = isFood ? 'Food Vendors' : 'Grocery Stores'
+  const vendors = isFood ? data.food : data.grocery
   
   const filters = isFood 
     ? ['All', 'Nearest', 'Top Rated', 'Free Delivery']
     : ['Nearest', 'Supermarkets', 'Local Markets']
 
   const [activeFilter, setActiveFilter] = useState(filters[0])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#FAFAFA]">
+        <p className="text-gray-500">Loading vendors...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col w-full bg-[#FAFAFA] min-h-screen pb-24 md:pb-8">
@@ -55,8 +43,9 @@ export default function Vendors() {
           </button>
           <h1 className="text-lg font-bold text-gray-900">{title}</h1>
         </div>
-        <button className="relative p-1 text-[#4F46E5] rounded-full transition-colors">
+        <button onClick={() => navigate('/app/cart')} className="relative p-1 text-[#4F46E5] rounded-full transition-colors">
           <ShoppingCart size={22} />
+          {count > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">{count}</span>}
         </button>
       </div>
 
@@ -113,25 +102,28 @@ export default function Vendors() {
               
               <div className="flex justify-between items-start mb-1">
                 <h4 className="font-bold text-gray-900 text-[15px]">{v.name}</h4>
-                {isFood && (
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[11px] font-bold text-green-500 uppercase tracking-wider">Open</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                  <span className="text-[11px] font-bold text-green-500 uppercase tracking-wider">Open</span>
+                </div>
               </div>
               
               <p className="text-[11px] text-gray-500 mb-2">{v.tags}</p>
               
               <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
-                <span className="flex items-center gap-0.5 text-yellow-500 font-bold"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> {v.rating}</span>
+                <span className="flex items-center gap-0.5 text-yellow-500 font-bold"><Star size={10} className="fill-yellow-500 text-yellow-500" /> {v.rating || 4.9}</span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>{v.distance}</span>
+                <span>{v.distance_km} km</span>
                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <span>{v.delivery} Delivery</span>
+                <span>{v.fee || 'Free'} Delivery</span>
               </div>
             </div>
           ))}
+          {vendors.length === 0 && (
+            <div className="text-center text-gray-500 py-10 text-sm">
+              No vendors found nearby.
+            </div>
+          )}
         </div>
       </div>
 
@@ -156,9 +148,9 @@ export default function Vendors() {
             <MapPin size={20} className="text-[#4F46E5]" strokeWidth={2} />
             <span className="font-semibold text-[#4F46E5] text-[15px]">Lagos, NG</span>
           </div>
-          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
             <ShoppingCart size={24} className="text-gray-700" />
-            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+            {count > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{count}</span>}
           </div>
         </div>
       </div>
@@ -186,19 +178,18 @@ export default function Vendors() {
           </button>
         </div>
 
-        {/* Vendors Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {desktopVendors.map(v => (
+          {vendors.map(v => (
             <div 
               key={v.id} 
               onClick={() => navigate(`/app/vendor/${v.id}`)}
               className="bg-transparent cursor-pointer group flex flex-col"
             >
-              <div className="w-full aspect-[16/10] rounded-[24px] overflow-hidden relative shadow-sm mb-4">
+              <div className="w-full aspect-[16/10] rounded-[24px] overflow-hidden relative shadow-sm mb-4 bg-gray-100">
                 <img src={v.img} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 {/* Top Left Badge */}
                 <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-full text-[13px] font-bold text-[#2D2AEE] shadow-sm">
-                  {v.time}
+                  {v.time || '15-25 min'}
                 </div>
                 {/* Top Right Heart */}
                 <button className="absolute top-4 right-4 w-10 h-10 bg-white hover:bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
@@ -208,11 +199,11 @@ export default function Vendors() {
               <div className="flex items-start justify-between gap-2 px-1">
                 <div>
                   <h4 className="font-bold text-gray-900 text-[20px] mb-1">{v.name}</h4>
-                  <p className="text-[14px] text-gray-500 font-medium">{v.tags}</p>
+                  <p className="text-[14px] text-gray-500 font-medium">{v.tags || title}</p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded text-[13px] font-bold text-gray-700 shrink-0">
                   <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                  {v.rating}
+                  {v.rating || 4.9}
                 </div>
               </div>
             </div>

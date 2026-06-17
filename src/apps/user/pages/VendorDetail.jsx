@@ -1,36 +1,84 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Heart, ShoppingCart, Star, Plus, Search, MapPin, Minus, ArrowRight } from 'lucide-react'
-
-// Mobile Mock Data
-const menuCategories = ['Popular', 'Main Course', 'Sides', 'Drinks']
-const menuItems = [
-  { id: 1, name: 'Jollof Rice Special', description: 'Smoky party jollof served with 2 pieces of grilled chicken and...', price: '₦4,500', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Grilled Croaker Fish', description: 'Whole grilled croaker spiced with local herbs, served with yam...', price: '₦8,200', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Beef Suya Platter', description: 'Authentic Hausa style suya meat served with sliced onions, cabbage...', price: '₦3,500', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' }
-]
-
-// Desktop Mock Data
-const desktopTabs = ['Popular', 'Main Course', 'Sides', 'Drinks', 'Platters']
-const desktopMenuItems = [
-  { id: 201, name: 'Smoky Party Jollof', price: '₦4,500', desc: 'Authentic smoky firewood flavor, served with grilled...', tag: 'LAGOS FAVORITE', tagColor: 'text-red-500', icon: '🔥', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
-  { id: 202, name: 'Special Egusi Soup', price: '₦5,200', desc: 'Rich melon seed soup cooked with spinach, stockfish, and...', tag: '35 - 45 MINS', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
-  { id: 203, name: 'Spicy Beef Suya', price: '₦3,800', desc: 'Thinly sliced beef marinated in traditional Yaji spice, flame-...', tag: 'TRENDING', tagColor: 'text-orange-500', icon: '📈', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop' },
-  { id: 204, name: 'Seafood Fried Rice', price: '₦6,000', desc: 'Loaded with prawns, calamari, and seasonal vegetables. A...', tag: '40 - 50 MINS', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop' },
-  { id: 205, name: 'Oven-Baked Moi Moi', price: '₦1,200', desc: 'Savory steamed bean pudding with fish, egg, and extra crayfis...', tag: 'HEALTHY CHOICE', tagColor: 'text-green-500', icon: null, img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' },
-  { id: 206, name: 'Signature Zobo', price: '₦800', desc: 'Infused with ginger, pineapple, and cloves. Chilled perfectly f...', tag: '500ML BOTTLE', tagColor: 'text-gray-400', icon: null, img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' }
-]
-const desktopCartItems = [
-  { id: 301, name: 'Party Jollof Rice', price: '₦4,500', qty: 1, img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
-  { id: 302, name: 'Spicy Beef Suya', price: '₦3,800', qty: 1, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
-  { id: 303, name: 'Signature Zobo', price: '₦800', qty: 1, img: 'https://images.unsplash.com/photo-1559715745-e1b33a271c8f?w=500&h=500&fit=crop' },
-]
+import { useCart } from '../../../context/CartContext'
+import { getVendor } from '../../../services/discoveryService'
+import { trackEvent } from '../../../services/analyticsService'
 
 export default function VendorDetail() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { items: cartItems, add, updateQty, remove, count, total, subtotal, deliveryFee } = useCart()
   const [activeTab, setActiveTab] = useState('Menu')
   const [activeCategory, setActiveCategory] = useState('Popular')
   const [desktopActiveTab, setDesktopActiveTab] = useState('Popular')
+  
+  const [vendorData, setVendorData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchVendor = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getVendor(id)
+        setVendorData(data.data)
+        trackEvent('view_merchant', 'merchant', id)
+      } catch (err) {
+        console.error('Failed to fetch vendor details', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVendor()
+  }, [id])
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const { merchant, products } = vendorData || {}
+
+  const categories = useMemo(() => {
+    if (!products) return []
+    const cats = new Set(products.map(p => p.category || 'Popular'))
+    return Array.from(cats)
+  }, [products])
+
+  useEffect(() => {
+    if (categories.length > 0 && !categories.includes(activeCategory)) {
+      setActiveCategory(categories[0])
+    }
+    if (categories.length > 0 && !categories.includes(desktopActiveTab)) {
+      setDesktopActiveTab(categories[0])
+    }
+  }, [categories, activeCategory, desktopActiveTab])
+
+  const filteredProducts = useMemo(() => {
+    if (!products) return []
+    return products.filter(p => (p.category || 'Popular') === activeCategory)
+  }, [products, activeCategory])
+
+  const desktopFilteredProducts = useMemo(() => {
+    if (!products) return []
+    return products.filter(p => (p.category || 'Popular') === desktopActiveTab)
+  }, [products, desktopActiveTab])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Loading vendor details...</p>
+      </div>
+    )
+  }
+
+  if (!vendorData) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Vendor not found.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-32 md:pb-12">
@@ -41,7 +89,7 @@ export default function VendorDetail() {
 
       {/* Header Image & Top Nav */}
       <div className="relative h-60 w-full rounded-b-3xl md:rounded-3xl overflow-hidden md:h-80 md:mb-6 shadow-sm">
-        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&h=800&fit=crop" alt="Vendor Cover" className="w-full h-full object-cover" />
+        <img src={merchant.img} alt="Vendor Cover" className="w-full h-full object-cover" />
         
         {/* Top actions */}
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
@@ -52,8 +100,9 @@ export default function VendorDetail() {
             <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
               <Heart size={20} className="text-gray-400" />
             </button>
-            <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm" onClick={() => navigate('/app/cart')}>
+            <button className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm" onClick={() => navigate('/app/cart')}>
               <ShoppingCart size={20} className="text-gray-900" />
+              {count > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">{count}</span>}
             </button>
           </div>
         </div>
@@ -62,21 +111,21 @@ export default function VendorDetail() {
       {/* Vendor Info Card */}
       <div className="md:hidden w-full max-w-md mx-auto px-6 -mt-10 relative z-10">
         <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100">
-          <h1 className="text-xl font-bold text-gray-900 mb-1.5 tracking-tight">Mama's Kitchen Lagos</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-1.5 tracking-tight">{merchant.name}</h1>
           <p className="text-[11px] text-gray-500 font-medium mb-4 leading-relaxed">
-            Authentic Nigerian local dishes prepared with love. Experience the best party jollof in the heart of Lagos.
+            {merchant.description}
           </p>
           
           {/* Stats Row */}
           <div className="flex items-center gap-4 text-[10px] font-bold">
             <span className="flex items-center gap-1 bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full">
-              <Star size={12} className="fill-yellow-500 text-yellow-500" /> 4.8 (2.4k)
+              <Star size={12} className="fill-yellow-500 text-yellow-500" /> {merchant.rating}
             </span>
             <span className="text-gray-400 flex items-center gap-1">
-              🕐 15-25 min
+              🕐 {merchant.delivery_time}
             </span>
             <span className="text-gray-400">
-              Free delivery
+              {merchant.delivery_fee}
             </span>
           </div>
         </div>
@@ -104,7 +153,7 @@ export default function VendorDetail() {
           <>
             {/* Menu Categories */}
             <div className="flex gap-3 overflow-x-auto hide-scrollbar mb-6 pb-2">
-              {menuCategories.map(cat => (
+              {categories.map(cat => (
                 <button 
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
@@ -122,7 +171,7 @@ export default function VendorDetail() {
             {/* Menu Items */}
             <h2 className="text-lg font-bold text-gray-900 mb-4">{activeCategory}</h2>
             <div className="flex flex-col gap-4">
-              {menuItems.map(item => (
+              {filteredProducts.map(item => (
                 <div 
                   key={item.id} 
                   onClick={() => navigate(`/app/item/${item.id}`)}
@@ -134,8 +183,11 @@ export default function VendorDetail() {
                       <p className="text-[11px] text-gray-500 leading-snug line-clamp-2">{item.description}</p>
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <span className="font-bold text-[#4F46E5] text-sm">{item.price}</span>
-                      <button className="w-8 h-8 bg-[#F4F5F7] text-gray-900 rounded-full flex items-center justify-center group-hover:bg-[#4F46E5] group-hover:text-white transition-colors">
+                      <span className="font-bold text-[#4F46E5] text-sm">{formatCurrency(item.price)}</span>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); add(item); }}
+                        className="w-8 h-8 bg-[#F4F5F7] text-gray-900 rounded-full flex items-center justify-center group-hover:bg-[#4F46E5] group-hover:text-white transition-colors"
+                      >
                         <Plus size={16} />
                       </button>
                     </div>
@@ -145,6 +197,9 @@ export default function VendorDetail() {
                   </div>
                 </div>
               ))}
+              {filteredProducts.length === 0 && (
+                <p className="text-gray-500 text-sm py-4 text-center">No products in this category.</p>
+              )}
             </div>
           </>
         )}
@@ -158,20 +213,22 @@ export default function VendorDetail() {
       </div>
 
       {/* Floating View Cart Button */}
-      <div className="md:hidden fixed bottom-6 left-0 right-0 px-6 z-40">
-        <button 
-          onClick={() => navigate('/app/cart')}
-          className="w-full max-w-md mx-auto bg-[#4F46E5] text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-colors flex items-center justify-between px-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-[13px]">3</span>
+      {count > 0 && (
+        <div className="md:hidden fixed bottom-6 left-0 right-0 px-6 z-40">
+          <button 
+            onClick={() => navigate('/app/cart')}
+            className="w-full max-w-md mx-auto bg-[#4F46E5] text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-colors flex items-center justify-between px-6"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-[13px]">{count}</span>
+              </div>
+              <span className="text-[13px]">View cart</span>
             </div>
-            <span className="text-[13px]">View cart</span>
-          </div>
-          <span className="text-[13px]">₦16,500</span>
-        </button>
-      </div>
+            <span className="text-[13px]">₦{total.toLocaleString()}</span>
+          </button>
+        </div>
+      )}
 
       {/* -------------------------------------------------------------------------------- */}
       {/*                                DESKTOP LAYOUT                                      */}
@@ -194,9 +251,9 @@ export default function VendorDetail() {
             <MapPin size={20} className="text-[#4F46E5]" strokeWidth={2} />
             <span className="font-semibold text-[#4F46E5] text-[15px]">Lagos, NG</span>
           </div>
-          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
             <ShoppingCart size={24} className="text-gray-700" />
-            <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+            {count > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{count}</span>}
           </div>
         </div>
       </div>
@@ -204,22 +261,22 @@ export default function VendorDetail() {
       <div className="hidden md:flex flex-col flex-1 w-full max-w-[1200px] mx-auto pt-6 pb-12">
         
         {/* Desktop Banner */}
-        <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-10 relative h-[280px] flex items-center shadow-md">
+        <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-10 relative h-[280px] flex items-center shadow-md rounded-3xl">
           {/* Mock Character Image on the right */}
-          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop" alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
+          <img src={merchant.img} alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
           
           <div className="relative z-10 px-12 w-[65%]">
             <div className="flex items-center gap-3 mb-4">
-              <span className="px-2.5 py-1 bg-red-600/30 border border-red-500/50 text-white text-[10px] font-bold tracking-wider rounded">TOP RATED VENDOR</span>
+              <span className="px-2.5 py-1 bg-red-600/30 border border-red-500/50 text-white text-[10px] font-bold tracking-wider rounded uppercase">TOP RATED VENDOR</span>
               <div className="flex items-center gap-1 text-yellow-400 text-[13px] font-bold">
-                <Star size={14} className="fill-yellow-400" /> 4.9 (2k+ reviews)
+                <Star size={14} className="fill-yellow-400" /> {merchant.rating}
               </div>
             </div>
             <h1 className="text-white text-[48px] font-bold leading-tight mb-3">
-              Mama's Kitchen Lagos
+              {merchant.name}
             </h1>
             <p className="text-white/80 text-[16px] leading-relaxed">
-              Authentic home-style Nigerian delicacies crafted with heritage recipes and premium local ingredients. The heart of Lagos on your plate.
+              {merchant.description}
             </p>
           </div>
         </div>
@@ -230,12 +287,12 @@ export default function VendorDetail() {
           {/* Left Column (Menu) */}
           <div className="flex-1">
             {/* Horizontal Tabs */}
-            <div className="flex items-center gap-8 border-b border-gray-200 mb-8">
-              {desktopTabs.map(tab => (
+            <div className="flex items-center gap-8 border-b border-gray-200 mb-8 overflow-x-auto hide-scrollbar">
+              {categories.map(tab => (
                 <button
                   key={tab}
                   onClick={() => setDesktopActiveTab(tab)}
-                  className={`pb-4 text-[15px] font-bold transition-colors relative ${
+                  className={`pb-4 text-[15px] font-bold transition-colors relative whitespace-nowrap ${
                     desktopActiveTab === tab ? 'text-[#2D2AEE]' : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
@@ -249,27 +306,32 @@ export default function VendorDetail() {
 
             {/* Menu Grid */}
             <div className="grid grid-cols-2 gap-6">
-              {desktopMenuItems.map(item => (
-                <div key={item.id} className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col group">
+              {desktopFilteredProducts.map(item => (
+                <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col group">
                   <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-gray-50">
                     <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-bold text-[16px] text-gray-900 group-hover:text-[#2D2AEE] transition-colors">{item.name}</h3>
-                    <span className="font-bold text-[15px] text-[#2D2AEE] shrink-0">{item.price}</span>
+                    <span className="font-bold text-[15px] text-[#2D2AEE] shrink-0">{formatCurrency(item.price)}</span>
                   </div>
-                  <p className="text-[13px] text-gray-500 mb-6 leading-relaxed line-clamp-2 flex-1">{item.desc}</p>
+                  <p className="text-[13px] text-gray-500 mb-6 leading-relaxed line-clamp-2 flex-1">{item.description}</p>
                   <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                    <div className={`flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase ${item.tagColor}`}>
-                      {item.icon && <span>{item.icon}</span>}
-                      {item.tag}
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase text-gray-400">
+                      {item.category}
                     </div>
-                    <button className="w-8 h-8 bg-[#2D2AEE] text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); add(item); }}
+                      className="w-8 h-8 bg-[#2D2AEE] text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
+                    >
                       <Plus size={18} />
                     </button>
                   </div>
                 </div>
               ))}
+              {desktopFilteredProducts.length === 0 && (
+                <p className="text-gray-500 text-sm py-4">No products in this category.</p>
+              )}
             </div>
           </div>
 
@@ -278,12 +340,12 @@ export default function VendorDetail() {
             <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-xl shadow-gray-200/50">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[20px] font-bold text-gray-900">Your Order</h2>
-                <span className="bg-[#EAE9FE] text-[#2D2AEE] px-3 py-1 rounded-full text-[12px] font-bold">3 Items</span>
+                <span className="bg-[#EAE9FE] text-[#2D2AEE] px-3 py-1 rounded-full text-[12px] font-bold">{count} Items</span>
               </div>
 
               {/* Cart Items */}
-              <div className="flex flex-col gap-4 mb-6">
-                {desktopCartItems.map(item => (
+              <div className="flex flex-col gap-4 mb-6 max-h-[300px] overflow-y-auto">
+                {cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-50">
                       <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
@@ -291,15 +353,15 @@ export default function VendorDetail() {
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="font-bold text-[13px] text-gray-900 leading-tight">{item.name}</h4>
-                        <span className="font-bold text-[13px] text-gray-900">{item.price}</span>
+                        <span className="font-bold text-[13px] text-gray-900">{formatCurrency(item.price * item.qty)}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-gray-500 font-medium">Qty: {item.qty}</span>
                         <div className="flex items-center gap-2">
-                          <button className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
+                          <button onClick={() => updateQty(item.id, item.qty - 1)} className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
                             <Minus size={10} />
                           </button>
-                          <button className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
+                          <button onClick={() => updateQty(item.id, item.qty + 1)} className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
                             <Plus size={10} />
                           </button>
                         </div>
@@ -307,30 +369,39 @@ export default function VendorDetail() {
                     </div>
                   </div>
                 ))}
+                {cartItems.length === 0 && (
+                  <div className="text-center py-6 text-gray-400 text-[13px]">
+                    Your cart is empty.
+                  </div>
+                )}
               </div>
 
               {/* Order Summary */}
-              <div className="border-t border-gray-100 pt-4 flex flex-col gap-3 mb-6">
-                <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-gray-500 font-medium">Subtotal</span>
-                  <span className="font-bold text-gray-900">₦9,100</span>
-                </div>
-                <div className="flex justify-between items-center text-[13px]">
-                  <span className="text-gray-500 font-medium">Delivery Fee</span>
-                  <span className="font-bold text-gray-900">₦1,500</span>
-                </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-[16px] font-bold text-gray-900">Total</span>
-                  <span className="text-[18px] font-bold text-[#2D2AEE]">₦10,600</span>
-                </div>
-              </div>
+              {cartItems.length > 0 && (
+                <>
+                  <div className="border-t border-gray-100 pt-4 flex flex-col gap-3 mb-6">
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-gray-500 font-medium">Subtotal</span>
+                      <span className="font-bold text-gray-900">₦{subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[13px]">
+                      <span className="text-gray-500 font-medium">Delivery Fee</span>
+                      <span className="font-bold text-gray-900">₦{deliveryFee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-[16px] font-bold text-gray-900">Total</span>
+                      <span className="text-[18px] font-bold text-[#2D2AEE]">₦{total.toLocaleString()}</span>
+                    </div>
+                  </div>
 
-              <button 
-                onClick={() => navigate('/app/checkout')}
-                className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 mb-4"
-              >
-                Checkout <ArrowRight size={18} />
-              </button>
+                  <button 
+                    onClick={() => navigate('/app/checkout')}
+                    className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 mb-4"
+                  >
+                    Checkout <ArrowRight size={18} />
+                  </button>
+                </>
+              )}
               
               <div className="text-center">
                 <span className="text-[9px] font-bold text-gray-400 tracking-wider uppercase">Secure payment powered by RAPID</span>

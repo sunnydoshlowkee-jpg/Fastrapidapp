@@ -1,55 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, MapPin, ShoppingCart, ChevronDown, Home, Clock, Wallet, User, Rocket } from 'lucide-react'
-
-const promotions = [
-  {
-    id: 1,
-    tag: 'NEW',
-    category: 'FOOD & DINING',
-    title: 'Weekend Feast with Terra Kitchen',
-    desc: 'Enjoy a premium dining experience with a massive discount this weekend only.',
-    discount: '40%',
-    code: 'TERRA40',
-    img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop'
-  },
-  {
-    id: 2,
-    tag: 'FLASH DEAL',
-    tagColor: 'bg-red-500',
-    category: 'GROCERIES',
-    title: 'Stock Up for the Month',
-    desc: 'Get fresh produce and household essentials delivered in minutes.',
-    discount: '25%',
-    code: 'STOCK25',
-    img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop'
-  },
-  {
-    id: 3,
-    category: 'HOME ESSENTIALS',
-    title: 'Modern Living Upgrade',
-    desc: 'Elevate your home with top-tier kitchenware and appliances.',
-    discount: '15%',
-    code: 'HOME15',
-    img: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500&h=500&fit=crop'
-  },
-  {
-    id: 4,
-    tag: 'NEW USERS',
-    tagColor: 'bg-orange-500',
-    category: 'ONBOARDING EXCLUSIVE',
-    title: 'Your First Three Deliveries',
-    desc: "Welcome to RAPID! We're making your first steps completely free.",
-    discount: 'FREE DELIV.',
-    code: 'RAPIDFREE',
-    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop'
-  }
-]
+import { getPromotions } from '../../../services/promotionService'
 
 export default function Promotions() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('discovery')
   const [filter, setFilter] = useState('All')
+  const [promotions, setPromotions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getPromotions()
+        setPromotions(data.data || [])
+      } catch (err) {
+        console.error('Failed to fetch promotions', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPromotions()
+  }, [])
+
+  const filteredPromotions = promotions.filter(promo => {
+    if (filter === 'All') return true
+    if (filter === 'Food') return promo.category.toLowerCase().includes('food')
+    if (filter === 'Groceries') return promo.category.toLowerCase().includes('grocer')
+    if (filter === 'New Users') return promo.category.toLowerCase().includes('onboarding') || promo.category.toLowerCase().includes('new user')
+    return true
+  })
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
@@ -79,12 +61,13 @@ export default function Promotions() {
             ))}
           </div>
           <div className="flex flex-col gap-4 mt-2">
-            {promotions.map(promo => (
+            {loading && <p className="text-center text-sm text-gray-500 py-4">Loading promotions...</p>}
+            {!loading && filteredPromotions.map(promo => (
               <div key={promo.id} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100">
                 <div className="h-[120px] relative">
                   <img src={promo.img} className="w-full h-full object-cover" />
                   {promo.tag && (
-                    <span className={`absolute top-4 left-4 ${promo.tagColor || 'bg-[#2D2AEE]'} text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm`}>
+                    <span className={`absolute top-4 left-4 ${promo.tag_color || 'bg-[#2D2AEE]'} text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm`}>
                       {promo.tag}
                     </span>
                   )}
@@ -94,7 +77,7 @@ export default function Promotions() {
                   <h3 className="font-bold text-gray-900 text-[16px] mb-2">{promo.title}</h3>
                   <div className="flex items-center justify-between mt-4">
                     <div>
-                      <p className="text-[20px] font-bold text-[#2D2AEE]">{promo.discount} <span className="text-[12px] text-gray-400 font-medium">OFF</span></p>
+                      <p className="text-[20px] font-bold text-[#2D2AEE]">{promo.discount} <span className="text-[12px] text-gray-400 font-medium">{promo.discount.includes('FREE') ? '' : 'OFF'}</span></p>
                       <p className="text-[10px] text-gray-400">CODE: {promo.code}</p>
                     </div>
                     <button className="bg-[#2D2AEE] text-white px-4 py-2 rounded-xl text-[12px] font-bold">Claim</button>
@@ -163,29 +146,27 @@ export default function Promotions() {
               {/* Promotions Grid */}
               <div className="grid grid-cols-2 gap-6 mb-16">
                 
-                {promotions.map((promo, idx) => {
-                  // The design shows the left side with a colored border block. We will simulate this with border-l-4.
+                {loading && <p className="col-span-2 text-center text-sm text-gray-500 py-10">Loading promotions...</p>}
+                {!loading && filteredPromotions.map((promo, idx) => {
                   let borderColor = 'border-l-[#2D2AEE]'
-                  if (idx === 1) borderColor = 'border-l-[#D92D20]'
-                  if (idx === 2) borderColor = 'border-l-[#2D2AEE]'
-                  if (idx === 3) borderColor = 'border-l-[#D92D20]'
+                  if (idx % 2 !== 0) borderColor = 'border-l-[#D92D20]'
                   
                   let claimBg = 'bg-[#2D2AEE]'
                   let claimHover = 'hover:bg-blue-700'
-                  if (idx === 1 || idx === 3) {
+                  if (idx % 2 !== 0) {
                     claimBg = 'bg-[#D92D20]'
                     claimHover = 'hover:bg-red-700'
                   }
 
                   let colorText = 'text-[#2D2AEE]'
-                  if (idx === 1 || idx === 3) colorText = 'text-[#D92D20]'
+                  if (idx % 2 !== 0) colorText = 'text-[#D92D20]'
 
                   return (
                     <div key={promo.id} className={`bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex gap-6 border-l-8 ${borderColor} relative`}>
                       <div className="w-[180px] h-[180px] rounded-2xl overflow-hidden shrink-0 relative shadow-sm">
                         <img src={promo.img} className="w-full h-full object-cover" />
                         {promo.tag && (
-                          <span className={`absolute top-4 left-4 ${promo.tagColor || 'bg-[#2D2AEE]'} text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-sm`}>
+                          <span className={`absolute top-4 left-4 ${promo.tag_color || 'bg-[#2D2AEE]'} text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-sm`}>
                             {promo.tag}
                           </span>
                         )}

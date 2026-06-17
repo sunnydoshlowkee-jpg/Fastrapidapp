@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search as SearchIcon, X, Clock, Heart, Plus, ArrowUpRight, Flame, Sparkles, MapPin, ShoppingCart, ChevronDown, Home, Wallet, User } from 'lucide-react'
+import { trackEvent } from '../../../services/analyticsService'
+
+import { getDiscovery } from '../../../services/discoveryService'
 
 // Mock Data
 const recentSearchesMobile = ['Jollof Rice', 'Burger King near me', 'Pharmacy 24/7']
@@ -13,51 +16,46 @@ const recentSearchesDesktop = [
 ]
 const popularTagsDesktop = ['Studio Lighting', 'Noise Cancelling', 'Smart Home Hub', 'Wireless Charger']
 
-const productsResults = [
-  {
-    id: 1,
-    name: 'Jollof Rice Special',
-    description: 'Smoky party jollof served with 2 pieces of grilled chicken and...',
-    price: '₦4,500',
-    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Beef Suya Platter',
-    description: 'Authentic Hausa-style spicy beef skewers with cabbage and...',
-    price: '₦3,500',
-    img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop'
-  }
-]
-
-const vendorsResults = [
-  {
-    id: 1,
-    name: 'Burger Shop Deluxe',
-    tags: 'Burgers • American • Fast Food',
-    time: '15-25 min',
-    rating: '4.8 ★',
-    isOpen: true,
-    img: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&h=500&fit=crop'
-  },
-  {
-    id: 2,
-    name: "Mama's Kitchen Yaba",
-    tags: 'Nigerian • Local • Rice',
-    time: '15-25 min',
-    rating: '4.8 ★',
-    isOpen: false,
-    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&h=500&fit=crop'
-  }
-]
-
 export default function Search() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [activeTabMobile, setActiveTabMobile] = useState('Products')
   const [activeTabDesktop] = useState('discovery')
+  
+  const [products, setProducts] = useState([])
+  const [vendors, setVendors] = useState([])
+  const [loading, setLoading] = useState(false)
 
   const isSearching = query.trim().length > 0
+
+  useEffect(() => {
+    if (!isSearching) {
+      setProducts([])
+      setVendors([])
+      return
+    }
+    
+    const timeout = setTimeout(async () => {
+      trackEvent('search', null, null, { query: query.trim() })
+      try {
+        setLoading(true)
+        const res = await getDiscovery({
+          latitude: 6.5244,
+          longitude: 3.3792,
+          search: query.trim()
+        })
+        const data = res.data.data
+        setProducts([...(data.trending_food || []), ...(data.trending_grocery || [])])
+        setVendors([...(data.food || []), ...(data.grocery || [])])
+      } catch (err) {
+        console.error('Search failed', err)
+      } finally {
+        setLoading(false)
+      }
+    }, 500)
+    
+    return () => clearTimeout(timeout)
+  }, [query, isSearching])
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
@@ -146,8 +144,9 @@ export default function Search() {
               </div>
 
               <div className="flex flex-col gap-4">
-                {activeTabMobile === 'Products' && productsResults.map(item => (
-                  <div key={item.id} className="bg-white rounded-[24px] p-4 flex justify-between items-center shadow-sm border border-gray-100">
+                {loading && <div className="text-center text-sm text-gray-500 py-4">Searching...</div>}
+                {!loading && activeTabMobile === 'Products' && products.map(item => (
+                  <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-[24px] p-4 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer">
                     <div className="flex-1 pr-4">
                       <h3 className="font-bold text-gray-900 text-[13px] mb-1">{item.name}</h3>
                       <p className="text-[11px] text-gray-500 mb-2 line-clamp-2 leading-relaxed">{item.description}</p>
@@ -162,17 +161,17 @@ export default function Search() {
                   </div>
                 ))}
 
-                {activeTabMobile === 'Vendors' && vendorsResults.map(vendor => (
-                  <div key={vendor.id} className="bg-white rounded-[24px] p-4 flex justify-between items-center shadow-sm border border-gray-100">
+                {!loading && activeTabMobile === 'Vendors' && vendors.map(vendor => (
+                  <div key={vendor.id} onClick={() => navigate(`/app/vendor/${vendor.id}`)} className="bg-white rounded-[24px] p-4 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer">
                     <div className="flex-1 pr-4">
                       <h3 className="font-bold text-gray-900 text-[13px] mb-1">{vendor.name}</h3>
                       <p className="text-[10px] text-gray-500 mb-3">{vendor.tags}</p>
                       <div className="flex items-center gap-2">
                         <span className="bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded-full text-[10px] font-bold">{vendor.time}</span>
                         <span className="bg-white border border-gray-200 text-gray-600 px-2 py-1 rounded-full text-[10px] font-bold flex items-center gap-0.5">
-                          <span className="text-yellow-500 text-[10px]">★</span> {vendor.rating.split(' ')[0]}
+                          <span className="text-yellow-500 text-[10px]">★</span> {vendor.rating || '4.8'}
                         </span>
-                        {vendor.isOpen ? (
+                        {vendor.isOpen !== false ? (
                           <span className="bg-white border border-green-500 text-green-500 px-2.5 py-1 rounded-full text-[10px] font-bold">Open</span>
                         ) : (
                           <span className="bg-red-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold border border-red-500">Closed</span>

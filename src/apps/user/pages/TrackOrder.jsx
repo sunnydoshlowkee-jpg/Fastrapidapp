@@ -1,25 +1,76 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Clock, Check, Phone, MessageSquare, Star, Plus, Minus, Crosshair, MapPin, ShoppingCart } from 'lucide-react'
+import { getOrder } from '../../../services/orderService'
+import { useCart } from '../../../context/CartContext'
 
 export default function TrackOrder() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const { cartItems } = useCart()
   const [view, setView] = useState('tracking') // 'tracking' | 'rating'
+  const [order, setOrder] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        setLoading(true)
+        const { data } = await getOrder(id)
+        setOrder(data.data)
+      } catch (err) {
+        console.error('Failed to fetch order', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchOrder()
+  }, [id])
+
+  // Derive status index: 0=pending, 1=preparing, 2=en_route/in_transit, 3=delivered
+  const statusIndex = (() => {
+    if (!order) return 0
+    switch (order.status) {
+      case 'pending': return 0
+      case 'preparing': return 1
+      case 'in_transit': return 2
+      case 'delivered': return 3
+      default: return 0
+    }
+  })()
 
   const steps = [
-    { id: 1, title: 'Order Placed', subtitle: '12:40 PM', status: 'done' },
-    { id: 2, title: 'Vendor Accepted', subtitle: '12:45 PM', status: 'done' },
-    { id: 3, title: 'Preparing', subtitle: 'Your order is being cooked', status: 'active' },
-    { id: 4, title: 'En Route', subtitle: '', status: 'pending' },
-    { id: 5, title: 'Delivered', subtitle: '', status: 'pending' },
+    { id: 1, title: 'Order Placed', subtitle: order ? new Date(order.created_at).toLocaleTimeString() : '', status: statusIndex >= 0 ? (statusIndex === 0 ? 'active' : 'done') : 'pending' },
+    { id: 2, title: 'Preparing', subtitle: 'Vendor is preparing your order', status: statusIndex >= 1 ? (statusIndex === 1 ? 'active' : 'done') : 'pending' },
+    { id: 3, title: 'En Route', subtitle: 'Driver is on the way', status: statusIndex >= 2 ? (statusIndex === 2 ? 'active' : 'done') : 'pending' },
+    { id: 4, title: 'Delivered', subtitle: '', status: statusIndex >= 3 ? 'done' : 'pending' },
   ]
 
-  const desktopSteps = [
-    { id: 1, title: 'Order Received', subtitle: '12:10 PM • Restaurant confirmed', status: 'done' },
-    { id: 2, title: 'Meal is being prepared', subtitle: '12:15 PM • Almost ready for pickup', status: 'done' },
-    { id: 3, title: 'Driver is on the way', subtitle: 'Heading to your location', status: 'active' },
-    { id: 4, title: 'Delivered', subtitle: 'Arriving shortly', status: 'pending' },
-  ]
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const getOrderVendor = () => {
+    if (!order?.items || order.items.length === 0) return 'Unknown Vendor'
+    return order.items[0]?.product?.merchant?.business_name || 'Vendor'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Loading tracking information...</p>
+      </div>
+    )
+  }
+
+  if (!order) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500">Order not found.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
@@ -32,7 +83,7 @@ export default function TrackOrder() {
         <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white md:border md:border-gray-200 md:rounded-full hover:bg-gray-50 transition-colors shadow-sm md:w-10 md:h-10 md:flex md:items-center md:justify-center">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-[17px] font-bold text-gray-900">Track Order</h1>
+        <h1 className="text-[17px] font-bold text-gray-900">Track Order #{order.id}</h1>
       </div>
 
       <div className="md:hidden flex-1 w-full max-w-md mx-auto flex flex-col pt-2">
@@ -146,15 +197,16 @@ export default function TrackOrder() {
           <ArrowLeft size={24} />
         </button>
         <div className="flex-1">
-          <h1 className="text-[20px] font-bold text-gray-900 leading-tight">Order #RD-92841</h1>
+          <h1 className="text-[20px] font-bold text-gray-900 leading-tight">Order #{order.id}</h1>
           <p className="text-[14px] text-gray-500 font-medium">Tracking Live Status</p>
         </div>
         <div className="flex items-center gap-6 shrink-0">
           <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
             <MapPin size={20} className="text-gray-500" strokeWidth={2} />
           </div>
-          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
             <ShoppingCart size={24} className="text-gray-700" />
+            {cartItems?.length > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{cartItems.length}</span>}
           </div>
         </div>
       </div>
@@ -212,8 +264,7 @@ export default function TrackOrder() {
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-100 rounded-full blur-2xl opacity-60"></div>
             <p className="text-[13px] font-bold text-gray-500 mb-1">Estimated Arrival</p>
             <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-[42px] font-bold text-gray-900 leading-none">12:45</span>
-              <span className="text-[20px] font-bold text-[#2D2AEE]">PM</span>
+              <span className="text-[42px] font-bold text-gray-900 leading-none">ASAP</span>
             </div>
             <div className="flex items-center gap-1.5 text-gray-700 font-medium text-[14px]">
               <MapPin size={16} className="text-[#2D2AEE]" /> 2.4 km away
@@ -249,9 +300,9 @@ export default function TrackOrder() {
           {/* Order Progress */}
           <h3 className="text-[12px] font-bold text-gray-400 tracking-widest uppercase mb-6">Order Progress</h3>
           <div className="flex flex-col mb-10">
-            {desktopSteps.map((step, i) => (
+            {steps.map((step, i) => (
               <div key={step.id} className="flex items-start gap-5 relative">
-                {i < desktopSteps.length - 1 && (
+                {i < steps.length - 1 && (
                   <div className={`absolute left-[13px] top-8 w-[2px] h-[calc(100%-8px)] ${
                     step.status === 'done' ? 'bg-[#2D2AEE]' : 'bg-gray-100'
                   }`} />
@@ -271,7 +322,7 @@ export default function TrackOrder() {
                   )}
                 </div>
 
-                <div className={`pb-8 ${i === desktopSteps.length - 1 ? 'pb-0' : ''}`}>
+                <div className={`pb-8 ${i === steps.length - 1 ? 'pb-0' : ''}`}>
                   <h4 className={`font-bold text-[15px] leading-tight mb-1 ${
                     step.status === 'active' ? 'text-[#2D2AEE]' : step.status === 'done' ? 'text-gray-900' : 'text-gray-400'
                   }`}>{step.title}</h4>
@@ -286,15 +337,15 @@ export default function TrackOrder() {
           {/* Receipt Card */}
           <div className="bg-[#FAFAFA] rounded-2xl p-4 border border-gray-100 flex items-center justify-between mt-auto">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center text-red-500">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+              <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center text-red-500 font-bold text-lg uppercase">
+                {getOrderVendor().charAt(0)}
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-[14px]">The Lagos Bistro</h4>
-                <p className="text-[12px] text-gray-500 font-medium">2 items • ₦42.50</p>
+                <h4 className="font-bold text-gray-900 text-[14px]">{getOrderVendor()}</h4>
+                <p className="text-[12px] text-gray-500 font-medium">{order.items?.length || 0} items • {formatCurrency(order.total_amount)}</p>
               </div>
             </div>
-            <button className="text-[13px] font-bold text-[#2D2AEE] hover:text-blue-700 transition-colors">
+            <button onClick={() => navigate(`/app/order/${order.id}`)} className="text-[13px] font-bold text-[#2D2AEE] hover:text-blue-700 transition-colors">
               View Receipt
             </button>
           </div>

@@ -74,20 +74,16 @@ export default function Slider() {
     <div className="flex flex-col md:flex-row min-h-screen bg-[#F8F9FA] md:bg-white">
       
       {/* Left Panel (Desktop Only) */}
-      <div className="hidden md:flex md:w-1/2 bg-[#4342FF] relative flex-col items-center justify-center p-12 overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 bg-[#FEFDFD] relative flex-col items-center justify-center overflow-hidden border-r border-gray-100">
         {/* Brand Logo */}
-        <div className="absolute top-10 left-12">
-          <Logo variant="white" height={36} />
+        <div className="absolute top-10 left-12 z-20">
+          <Logo variant="blue" height={36} />
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-white opacity-5 blur-[100px]"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-indigo-900 opacity-20 blur-[80px]"></div>
 
         {/* Hero Image */}
-        <div className="relative z-10 w-full max-w-lg flex justify-center">
+        <div className="absolute inset-0 z-10 w-full h-full flex justify-center items-center p-12">
           {slide.img ? (
-            <img src={slide.img} alt={slide.title} className="w-full h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700" />
+            <img src={slide.img} alt={slide.title} className="w-full h-full object-contain hover:scale-105 transition-transform duration-700" />
           ) : (
             <div className="relative inline-block">
               <span className="text-[200px] animate-[bounce_3s_ease-in-out_infinite] block drop-shadow-2xl">

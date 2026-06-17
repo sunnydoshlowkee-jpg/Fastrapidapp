@@ -37,6 +37,7 @@ export default function Home() {
     ? (discovery.trending_food ?? [])
     : (discovery.trending_grocery ?? [])
   const desktopPopular = discovery.food ?? []
+  const recommended = discovery.recommended_for_you ?? []
   const areaLabel = location?.location_label || 'your area'
   const radiusLabel = discovery.radius_km ? `${discovery.radius_km}km` : '20km'
 
@@ -140,6 +141,37 @@ export default function Home() {
               <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
                 <ChevronRight size={16} className="text-gray-400" />
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile: Recommended for You */}
+        {recommended.length > 0 && (
+          <div className="mb-7">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[15px] font-bold text-gray-900">Recommended for You</h3>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+              {recommended.map((store, i) => (
+                <div key={store.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 cursor-pointer group flex-shrink-0 w-[190px] transition-shadow" onClick={() => navigate(`/app/vendor/${store.id}`)}>
+                  <div className="w-full h-[120px] bg-gray-100 overflow-hidden relative">
+                    <img src={store.img} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm">{store.time}</div>
+                    <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
+                      <Heart size={14} className="fill-[#4F46E5] text-[#4F46E5]" />
+                    </button>
+                  </div>
+                  <div className="p-3.5">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h4 className="font-bold text-gray-900 text-[13px] truncate">{store.name}</h4>
+                      <div className="flex items-center gap-1 bg-gray-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-700 shrink-0">
+                        <Star size={10} className="text-yellow-500 fill-yellow-500" /> {store.rating}
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-500 font-medium mb-3 truncate">{store.tags}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -331,6 +363,41 @@ export default function Home() {
                     )}
                   </div>
                   <span className="font-bold text-[13px] text-gray-900 text-center leading-tight whitespace-pre-line truncate max-w-[85px]">{item.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Recommended for You */}
+        {recommended.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-[22px] font-bold text-gray-900 mb-1">Recommended for You</h3>
+                <p className="text-gray-500 text-[14px]">
+                  Based on your recent activity
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-6">
+              {recommended.map(item => (
+                <div
+                  key={item.id}
+                  className="flex flex-col cursor-pointer group"
+                  onClick={() => navigate(`/app/vendor/${item.id}`)}
+                >
+                  <div className="w-full aspect-[4/3] rounded-[24px] overflow-hidden mb-4 relative shadow-sm">
+                    <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm">
+                      <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                      <span className="text-[12px] font-bold text-gray-900">{item.rating}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="font-bold text-gray-900 text-[18px]">{item.name}</h4>
+                  </div>
+                  <p className="text-[13px] text-gray-500 font-medium">{item.tags}</p>
                 </div>
               ))}
             </div>

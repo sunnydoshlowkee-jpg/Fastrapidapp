@@ -14,6 +14,9 @@ export default function UserLayout() {
   const location = useLocation();
   const isHome = location.pathname === '/app';
   
+  const topLevelPaths = ['/app', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile'];
+  const showMobileNav = topLevelPaths.includes(location.pathname);
+  
   return (
     <div className="flex min-h-screen bg-gray-50 w-full relative overflow-hidden">
       
@@ -78,7 +81,8 @@ export default function UserLayout() {
       </main>
 
       {/* --- MOBILE BOTTOM NAV --- */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center h-[72px] pb-safe z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+      {showMobileNav && (
+        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center h-[72px] pb-safe z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -98,7 +102,8 @@ export default function UserLayout() {
             )}
           </NavLink>
         ))}
-      </nav>
+        </nav>
+      )}
       
     </div>
   )
