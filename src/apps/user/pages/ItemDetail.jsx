@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Star, Minus, Plus } from 'lucide-react'
+import { ArrowLeft, Star, Minus, Plus, ShoppingCart, MapPin } from 'lucide-react'
 import { useCart } from '../../../context/CartContext'
 import { getDiscoveryItem } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
@@ -8,7 +8,7 @@ import { trackEvent } from '../../../services/analyticsService'
 export default function ItemDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { add } = useCart()
+  const { add, cartItems } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [hasAddon, setHasAddon] = useState(false)
   const [notes, setNotes] = useState('')
@@ -72,10 +72,14 @@ export default function ItemDetail() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
       
-      {/* Header Image */}
-      <div className="relative h-64 md:h-80 w-full">
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                 MOBILE LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      {/* Mobile Header Image */}
+      <div className="md:hidden relative h-64 w-full">
         <img src={itemData.img} alt="Item Cover" className="w-full h-full object-cover" />
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
@@ -84,7 +88,7 @@ export default function ItemDetail() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 w-full max-w-md mx-auto pt-6">
+      <div className="md:hidden flex-1 px-6 w-full max-w-md mx-auto pt-6">
         
         {/* Item Info */}
         <div className="flex justify-between items-start mb-1">
@@ -134,7 +138,6 @@ export default function ItemDetail() {
               {hasAddon && <div className="w-2 h-2 bg-white rounded-full" />}
             </div>
           </div>
-          {/* Hidden input to make it accessible */}
           <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
         </label>
 
@@ -149,8 +152,8 @@ export default function ItemDetail() {
 
       </div>
 
-      {/* Floating Add to Cart Button */}
-      <div className="fixed bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-white via-white to-transparent pb-safe z-40">
+      {/* Mobile Floating Add to Cart Button */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-white via-white to-transparent pb-safe z-40">
         <div className="w-full max-w-md mx-auto">
           <button 
             onClick={handleAddToCart} 
@@ -159,6 +162,115 @@ export default function ItemDetail() {
             Add to cart — {formatCurrency(total)}
           </button>
         </div>
+      </div>
+
+      {/* -------------------------------------------------------------------------------- */}
+      {/*                                DESKTOP LAYOUT                                      */}
+      {/* -------------------------------------------------------------------------------- */}
+
+      {/* Desktop Top Bar */}
+      <div className="hidden md:flex w-full px-10 pt-8 pb-6 items-center border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-40">
+        <button onClick={() => navigate(-1)} className="mr-6 p-2 text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </button>
+        <div className="flex-1">
+          <h1 className="text-[20px] font-bold text-gray-900 leading-tight">Item Details</h1>
+        </div>
+        <div className="flex items-center gap-6 shrink-0">
+          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
+            <ShoppingCart size={24} className="text-gray-700" />
+            {cartItems?.length > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{cartItems.length}</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Content */}
+      <div className="hidden md:flex flex-1 w-full max-w-[1100px] mx-auto px-10 py-12 gap-14">
+        
+        {/* Left: Image */}
+        <div className="w-1/2 shrink-0">
+          <div className="w-full aspect-square rounded-[32px] overflow-hidden shadow-xl shadow-gray-200/50">
+            <img src={itemData.img} alt={itemData.name} className="w-full h-full object-cover" />
+          </div>
+        </div>
+
+        {/* Right: Details */}
+        <div className="flex-1 flex flex-col">
+          
+          {/* Name & Rating */}
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <h1 className="text-[40px] font-bold text-gray-900 leading-tight">{itemData.name}</h1>
+            <div className="flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-xl text-gray-800 font-bold shrink-0 mt-2">
+              <Star size={18} className="fill-yellow-500 text-yellow-500" /> 
+              <span className="text-[18px]">{itemData.merchant?.rating || 4.8}</span>
+            </div>
+          </div>
+
+          {/* Merchant */}
+          <p className="text-[18px] text-gray-500 mb-4">{itemData.merchant?.name}</p>
+          
+          {/* Price */}
+          <p className="text-[36px] font-bold text-[#2D2AEE] mb-8">{formatCurrency(basePrice)}</p>
+
+          {/* Description */}
+          <h3 className="text-[16px] font-bold text-gray-900 mb-3">Description</h3>
+          <p className="text-[16px] text-gray-500 leading-relaxed mb-10">
+            {itemData.description || 'No description available.'}
+          </p>
+
+          {/* Quantity */}
+          <div className="flex items-center gap-8 mb-10">
+            <p className="text-[14px] font-bold text-gray-400 uppercase tracking-widest">Quantity</p>
+            <div className="flex items-center gap-5">
+              <button 
+                onClick={() => quantity > 1 && setQuantity(q => q - 1)}
+                className="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-300 transition-colors"
+              >
+                <Minus size={20} />
+              </button>
+              <span className="text-[24px] font-bold text-gray-900 w-8 text-center">{quantity}</span>
+              <button 
+                onClick={() => setQuantity(q => q + 1)}
+                className="w-12 h-12 rounded-full bg-[#2D2AEE] flex items-center justify-center text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Addons */}
+          <label className="flex items-center justify-between p-6 bg-indigo-50/50 rounded-2xl mb-10 cursor-pointer border-2 border-transparent hover:border-indigo-100 transition-colors">
+            <div className="flex items-center gap-4">
+              <span className="text-2xl">🍴</span>
+              <span className="text-[17px] font-semibold text-gray-900">Extra Grilled Chicken</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-[17px] font-bold text-[#2D2AEE]">+₦1,200</span>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#2D2AEE] border-[#2D2AEE]' : 'border-gray-300'}`}>
+                {hasAddon && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+              </div>
+            </div>
+            <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
+          </label>
+
+          {/* Special Instructions */}
+          <h3 className="text-[16px] font-bold text-gray-900 mb-3">Special Instructions</h3>
+          <textarea 
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add a note (e.g. no onions, extra spicy...)"
+            className="w-full bg-[#F4F5F7] rounded-2xl p-5 text-[16px] text-gray-900 outline-none focus:ring-2 focus:ring-[#2D2AEE] resize-none h-32 mb-10 border border-transparent"
+          ></textarea>
+
+          {/* Add to Cart Button */}
+          <button 
+            onClick={handleAddToCart} 
+            className="w-full bg-[#2D2AEE] text-white py-5 rounded-xl font-bold text-[20px] shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors"
+          >
+            Add to cart — {formatCurrency(total)}
+          </button>
+        </div>
+
       </div>
 
     </div>

@@ -1,8 +1,9 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Check, Clock, Truck, Star } from 'lucide-react'
 
 export default function OrderSuccess() {
   const navigate = useNavigate()
+  const { id } = useParams()
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
@@ -20,7 +21,7 @@ export default function OrderSuccess() {
         </div>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Order placed!</h1>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-10">Order #RD-4821</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-10">Order #RD-{id}</p>
 
         {/* ETA */}
         <div className="bg-[#F4F5F7] w-full rounded-2xl p-5 flex items-center justify-between mb-4 border border-gray-100">
@@ -54,7 +55,7 @@ export default function OrderSuccess() {
 
         <div className="w-full flex flex-col gap-3">
           <button 
-            onClick={() => navigate('/app/track/RD-4821')} 
+            onClick={() => navigate(`/app/track/${id}`)} 
             className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors text-sm"
           >
             Track my order ↗
@@ -88,7 +89,7 @@ export default function OrderSuccess() {
         <div className="flex gap-4 w-full max-w-[600px] mb-8">
           <div className="flex-1 bg-white rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm border border-gray-100">
             <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2">Order ID</span>
-            <span className="text-[20px] font-bold text-gray-900">#RPD-7729-01X</span>
+            <span className="text-[20px] font-bold text-gray-900">#RD-{id}</span>
           </div>
           <div className="flex-1 bg-white rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm border border-gray-100">
             <span className="text-[11px] font-bold text-red-500 tracking-widest uppercase mb-2">Estimated Arrival</span>
@@ -102,7 +103,7 @@ export default function OrderSuccess() {
         {/* Action Buttons Row */}
         <div className="flex gap-4 w-full max-w-[600px] mb-12">
           <button 
-            onClick={() => navigate('/app/track/RD-7729-01X')}
+            onClick={() => navigate(`/app/track/${id}`)}
             className="flex-1 bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
           >
             <Truck size={18} /> Track Order

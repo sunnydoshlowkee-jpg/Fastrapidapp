@@ -128,7 +128,7 @@ export default function Home() {
         {/* Mobile: Active Order Tracker */}
         {dashboard.active_order && (
           <div className="mb-7">
-            <div className="bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => navigate(`/app/orders/${dashboard.active_order.id}`)}>
+            <div className="bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => navigate(`/app/track/${dashboard.active_order.id}`)}>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 bg-[#F3F4F6] rounded-full flex items-center justify-center">
                   <span className="text-[18px]">🛵</span>
@@ -333,9 +333,9 @@ export default function Home() {
 
         {/* Desktop Services */}
         <div className="mb-14">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[22px] font-bold text-gray-900">Our Services</h3>
-            <span className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">See all &gt;</span>
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-[28px] font-bold text-gray-900">Our Services</h3>
+            <span className="text-[16px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">See all &gt;</span>
           </div>
           <div className="grid grid-cols-5 gap-6">
             {desktopServices.map((service, index) => {
@@ -345,7 +345,7 @@ export default function Home() {
                   <div className="w-full aspect-[4/3] bg-white rounded-3xl border border-gray-100/50 shadow-sm shadow-gray-200/50 flex items-center justify-center group-hover:shadow-md group-hover:border-indigo-100 transition-all">
                     <Icon size={42} className="text-[#2D2AEE] group-hover:scale-110 transition-transform" />
                   </div>
-                  <span className="font-bold text-[15px] text-gray-900">{service.name}</span>
+                  <span className="font-bold text-[17px] text-gray-900">{service.name}</span>
                 </div>
               )
             })}
@@ -355,9 +355,9 @@ export default function Home() {
         {/* Desktop Quick Reorder */}
         {dashboard.quick_reorders?.length > 0 && (
           <div className="mb-14">
-            <div className="mb-6">
-              <h3 className="text-[22px] font-bold text-gray-900 mb-1">Quick reorder</h3>
-              <p className="text-gray-500 text-[14px]">Based on your favorites</p>
+            <div className="mb-8">
+              <h3 className="text-[28px] font-bold text-gray-900 mb-1">Quick reorder</h3>
+              <p className="text-gray-500 text-[16px]">Based on your favorites</p>
             </div>
             <div className="flex gap-10">
               {dashboard.quick_reorders.slice(0, 5).map(item => (
@@ -379,10 +379,10 @@ export default function Home() {
         {/* Desktop Recommended for You */}
         {recommended.length > 0 && (
           <div className="mb-12">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-[22px] font-bold text-gray-900 mb-1">Recommended for You</h3>
-                <p className="text-gray-500 text-[14px]">
+                <h3 className="text-[28px] font-bold text-gray-900 mb-1">Recommended for You</h3>
+                <p className="text-gray-500 text-[16px]">
                   Based on your recent activity
                 </p>
               </div>
@@ -402,9 +402,9 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h4 className="font-bold text-gray-900 text-[18px]">{item.name}</h4>
+                    <h4 className="font-bold text-gray-900 text-[20px]">{item.name}</h4>
                   </div>
-                  <p className="text-[13px] text-gray-500 font-medium">{item.tags}</p>
+                  <p className="text-[15px] text-gray-500 font-medium">{item.tags}</p>
                 </div>
               ))}
             </div>
@@ -413,14 +413,14 @@ export default function Home() {
 
         {/* Desktop Popular Near You */}
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-[22px] font-bold text-gray-900 mb-1">Popular Near You</h3>
-              <p className="text-gray-500 text-[14px]">
+              <h3 className="text-[28px] font-bold text-gray-900 mb-1">Popular Near You</h3>
+              <p className="text-gray-500 text-[16px]">
                 Sorted by distance · within {radiusLabel} of {areaLabel}
               </p>
             </div>
-            <span onClick={() => navigate(`/app/vendors/food`)} className="text-[14px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
+            <span onClick={() => navigate(`/app/vendors/food`)} className="text-[16px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
           </div>
           {discoveryLoading && (
             <p className="text-gray-500 mb-4">Loading nearby restaurants…</p>
@@ -457,14 +457,14 @@ export default function Home() {
                   )}
                 </div>
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="font-bold text-gray-900 text-[18px]">{item.name}</h4>
+                  <h4 className="font-bold text-gray-900 text-[20px]">{item.name}</h4>
                   {item.fee === 'Free Delivery' ? (
-                    <span className="px-2.5 py-1 bg-blue-50 text-[#2D2AEE] rounded text-[11px] font-bold whitespace-nowrap">Free Delivery</span>
+                    <span className="px-3 py-1.5 bg-blue-50 text-[#2D2AEE] rounded text-[12px] font-bold whitespace-nowrap">Free Delivery</span>
                   ) : (
-                    <span className="text-[13px] font-medium text-gray-400 whitespace-nowrap">{item.fee}</span>
+                    <span className="text-[14px] font-medium text-gray-400 whitespace-nowrap">{item.fee}</span>
                   )}
                 </div>
-                <p className="text-[13px] text-gray-500 font-medium">{item.tags}</p>
+                <p className="text-[15px] text-gray-500 font-medium">{item.tags}</p>
               </div>
             ))}
           </div>

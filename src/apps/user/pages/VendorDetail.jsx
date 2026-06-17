@@ -261,21 +261,21 @@ export default function VendorDetail() {
       <div className="hidden md:flex flex-col flex-1 w-full max-w-[1200px] mx-auto pt-6 pb-12">
         
         {/* Desktop Banner */}
-        <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-10 relative h-[280px] flex items-center shadow-md rounded-3xl">
+        <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-12 relative h-[320px] flex items-center shadow-md rounded-3xl">
           {/* Mock Character Image on the right */}
           <img src={merchant.img} alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
           
-          <div className="relative z-10 px-12 w-[65%]">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="px-2.5 py-1 bg-red-600/30 border border-red-500/50 text-white text-[10px] font-bold tracking-wider rounded uppercase">TOP RATED VENDOR</span>
-              <div className="flex items-center gap-1 text-yellow-400 text-[13px] font-bold">
-                <Star size={14} className="fill-yellow-400" /> {merchant.rating}
+          <div className="relative z-10 px-14 w-[65%]">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="px-3 py-1.5 bg-red-600/30 border border-red-500/50 text-white text-[12px] font-bold tracking-wider rounded uppercase">TOP RATED VENDOR</span>
+              <div className="flex items-center gap-1.5 text-yellow-400 text-[16px] font-bold">
+                <Star size={16} className="fill-yellow-400" /> {merchant.rating}
               </div>
             </div>
-            <h1 className="text-white text-[48px] font-bold leading-tight mb-3">
+            <h1 className="text-white text-[52px] font-bold leading-tight mb-4">
               {merchant.name}
             </h1>
-            <p className="text-white/80 text-[16px] leading-relaxed">
+            <p className="text-white/80 text-[18px] leading-relaxed">
               {merchant.description}
             </p>
           </div>
@@ -287,12 +287,12 @@ export default function VendorDetail() {
           {/* Left Column (Menu) */}
           <div className="flex-1">
             {/* Horizontal Tabs */}
-            <div className="flex items-center gap-8 border-b border-gray-200 mb-8 overflow-x-auto hide-scrollbar">
+            <div className="flex items-center gap-10 border-b border-gray-200 mb-10 overflow-x-auto hide-scrollbar">
               {categories.map(tab => (
                 <button
                   key={tab}
                   onClick={() => setDesktopActiveTab(tab)}
-                  className={`pb-4 text-[15px] font-bold transition-colors relative whitespace-nowrap ${
+                  className={`pb-4 text-[18px] font-bold transition-colors relative whitespace-nowrap ${
                     desktopActiveTab === tab ? 'text-[#2D2AEE]' : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
@@ -307,24 +307,24 @@ export default function VendorDetail() {
             {/* Menu Grid */}
             <div className="grid grid-cols-2 gap-6">
               {desktopFilteredProducts.map(item => (
-                <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col group">
-                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-gray-50">
+                <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col group">
+                  <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-5 bg-gray-50">
                     <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-[16px] text-gray-900 group-hover:text-[#2D2AEE] transition-colors">{item.name}</h3>
-                    <span className="font-bold text-[15px] text-[#2D2AEE] shrink-0">{formatCurrency(item.price)}</span>
+                    <h3 className="font-bold text-[20px] text-gray-900 group-hover:text-[#2D2AEE] transition-colors">{item.name}</h3>
+                    <span className="font-bold text-[18px] text-[#2D2AEE] shrink-0">{formatCurrency(item.price)}</span>
                   </div>
-                  <p className="text-[13px] text-gray-500 mb-6 leading-relaxed line-clamp-2 flex-1">{item.description}</p>
+                  <p className="text-[15px] text-gray-500 mb-6 leading-relaxed line-clamp-2 flex-1">{item.description}</p>
                   <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide uppercase text-gray-400">
+                    <div className="flex items-center gap-1.5 text-[13px] font-bold tracking-wide uppercase text-gray-400">
                       {item.category}
                     </div>
                     <button 
                       onClick={(e) => { e.stopPropagation(); add(item); }}
-                      className="w-8 h-8 bg-[#2D2AEE] text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
+                      className="w-10 h-10 bg-[#2D2AEE] text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
                     >
-                      <Plus size={18} />
+                      <Plus size={20} />
                     </button>
                   </div>
                 </div>
@@ -336,33 +336,33 @@ export default function VendorDetail() {
           </div>
 
           {/* Right Column (Sticky Cart) */}
-          <div className="w-[360px] sticky top-[120px] shrink-0">
-            <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-xl shadow-gray-200/50">
+          <div className="w-[380px] sticky top-[120px] shrink-0">
+            <div className="bg-white rounded-[24px] p-7 border border-gray-100 shadow-xl shadow-gray-200/50">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-[20px] font-bold text-gray-900">Your Order</h2>
-                <span className="bg-[#EAE9FE] text-[#2D2AEE] px-3 py-1 rounded-full text-[12px] font-bold">{count} Items</span>
+                <h2 className="text-[24px] font-bold text-gray-900">Your Order</h2>
+                <span className="bg-[#EAE9FE] text-[#2D2AEE] px-3.5 py-1.5 rounded-full text-[14px] font-bold">{count} Items</span>
               </div>
 
               {/* Cart Items */}
               <div className="flex flex-col gap-4 mb-6 max-h-[300px] overflow-y-auto">
                 {cartItems.map(item => (
-                  <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-50">
+                  <div key={item.id} className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-50">
                       <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="font-bold text-[13px] text-gray-900 leading-tight">{item.name}</h4>
-                        <span className="font-bold text-[13px] text-gray-900">{formatCurrency(item.price * item.qty)}</span>
+                        <h4 className="font-bold text-[15px] text-gray-900 leading-tight">{item.name}</h4>
+                        <span className="font-bold text-[15px] text-gray-900">{formatCurrency(item.price * item.qty)}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-gray-500 font-medium">Qty: {item.qty}</span>
+                        <span className="text-[13px] text-gray-500 font-medium">Qty: {item.qty}</span>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => updateQty(item.id, item.qty - 1)} className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
-                            <Minus size={10} />
+                          <button onClick={() => updateQty(item.id, item.qty - 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
+                            <Minus size={12} />
                           </button>
-                          <button onClick={() => updateQty(item.id, item.qty + 1)} className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
-                            <Plus size={10} />
+                          <button onClick={() => updateQty(item.id, item.qty + 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 transition-colors">
+                            <Plus size={12} />
                           </button>
                         </div>
                       </div>
@@ -370,7 +370,7 @@ export default function VendorDetail() {
                   </div>
                 ))}
                 {cartItems.length === 0 && (
-                  <div className="text-center py-6 text-gray-400 text-[13px]">
+                  <div className="text-center py-8 text-gray-400 text-[15px]">
                     Your cart is empty.
                   </div>
                 )}
@@ -379,32 +379,32 @@ export default function VendorDetail() {
               {/* Order Summary */}
               {cartItems.length > 0 && (
                 <>
-                  <div className="border-t border-gray-100 pt-4 flex flex-col gap-3 mb-6">
-                    <div className="flex justify-between items-center text-[13px]">
+                  <div className="border-t border-gray-100 pt-5 flex flex-col gap-3 mb-6">
+                    <div className="flex justify-between items-center text-[15px]">
                       <span className="text-gray-500 font-medium">Subtotal</span>
                       <span className="font-bold text-gray-900">₦{subtotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center text-[13px]">
+                    <div className="flex justify-between items-center text-[15px]">
                       <span className="text-gray-500 font-medium">Delivery Fee</span>
                       <span className="font-bold text-gray-900">₦{deliveryFee.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-[16px] font-bold text-gray-900">Total</span>
-                      <span className="text-[18px] font-bold text-[#2D2AEE]">₦{total.toLocaleString()}</span>
+                    <div className="flex justify-between items-center pt-3">
+                      <span className="text-[18px] font-bold text-gray-900">Total</span>
+                      <span className="text-[22px] font-bold text-[#2D2AEE]">₦{total.toLocaleString()}</span>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => navigate('/app/checkout')}
-                    className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 mb-4"
+                    className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 mb-4"
                   >
-                    Checkout <ArrowRight size={18} />
+                    Checkout <ArrowRight size={20} />
                   </button>
                 </>
               )}
               
               <div className="text-center">
-                <span className="text-[9px] font-bold text-gray-400 tracking-wider uppercase">Secure payment powered by RAPID</span>
+                <span className="text-[11px] font-bold text-gray-400 tracking-wider uppercase">Secure payment powered by RAPID</span>
               </div>
             </div>
           </div>

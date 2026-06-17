@@ -64,7 +64,7 @@ export default function AuthLayout({ children, illustration, showBackButton = fa
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col max-w-md w-full mx-auto md:mx-0">
+        <div className="flex-1 flex flex-col md:justify-center max-w-md w-full mx-auto md:mx-auto">
           {children}
         </div>
         

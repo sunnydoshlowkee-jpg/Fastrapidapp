@@ -1,14 +1,22 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Logo from '../../../../components/brand/Logo'
+import CenteredLayout from '../../../../components/layout/CenteredLayout'
 import { requestPhoneOtp } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
 
-const COUNTRY = 'NG'
+const COUNTRIES = [
+  { code: 'NG', dialCode: '+234' },
+  { code: 'GH', dialCode: '+233' },
+  { code: 'KE', dialCode: '+254' },
+  { code: 'ZA', dialCode: '+27' },
+  { code: 'US', dialCode: '+1' },
+  { code: 'GB', dialCode: '+44' },
+]
 
 export default function Login() {
   const navigate = useNavigate()
   const [phone, setPhone] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0])
   const [phoneError, setPhoneError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,7 +31,7 @@ export default function Login() {
     setLoading(true)
     try {
       const { data } = await requestPhoneOtp({
-        country: COUNTRY,
+        country: selectedCountry.code,
         phone,
         flow: 'login',
       })
@@ -43,80 +51,95 @@ export default function Login() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      
-      <div className="flex justify-center pt-12 pb-8">
-        <Logo variant="full" height={24} />
-      </div>
-
-      <div className="flex-1 flex flex-col px-6 max-w-md mx-auto w-full pt-4">
+    <CenteredLayout 
+      showBackButton={true} 
+      backTo="/onboarding/welcome"
+    >
+      <div className="flex-1 flex flex-col md:items-center pt-4 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-gray-100 md:rounded-3xl md:p-12 md:flex-none">
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome back</h1>
-        <p className="text-gray-500 text-base mb-12">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2 md:mb-4 tracking-tight md:text-center">Welcome back</h1>
+        <p className="text-[#6B7280] text-[16px] md:text-[18px] mb-10 md:mb-12 md:text-center">
           Log in to continue your journey.
         </p>
 
-        <div className="mb-8">
-          <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
-            Phone Number
-          </label>
-          <div
-            className={`flex items-center bg-[#F4F5F7] rounded-2xl p-5 border-2 transition-colors ${
-              phoneError
-                ? 'border-red-500 bg-red-50/30'
-                : 'border-transparent focus-within:border-[#4F46E5]'
-            }`}
-          >
-            <div className="flex items-center gap-2 mr-3 shrink-0">
-              <div className="w-5 h-3.5 bg-white flex overflow-hidden rounded-[2px] shadow-sm">
-                <div className="w-1/3 h-full bg-green-600" />
-                <div className="w-1/3 h-full bg-white" />
-                <div className="w-1/3 h-full bg-green-600" />
-              </div>
-              <span className="text-gray-900 text-base">+234</span>
+        {/* Input Group */}
+        <div className="mb-auto w-full flex gap-3 items-start md:gap-4 md:mb-10">
+          <div className="w-[110px] md:w-[130px] flex-shrink-0">
+            <label className="block text-[11px] md:text-[13px] font-bold text-[#111827] uppercase tracking-wider mb-2">
+              Country
+            </label>
+            <div className="relative flex items-center justify-between bg-[#F3F4F6] rounded-2xl p-4 md:p-5 border-2 border-transparent transition-all shadow-sm focus-within:border-[#4342FF] focus-within:bg-white cursor-pointer">
+              <select
+                value={selectedCountry.code}
+                onChange={(e) => {
+                  const c = COUNTRIES.find(x => x.code === e.target.value)
+                  if (c) setSelectedCountry(c)
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.dialCode} ({c.code})</option>
+                ))}
+              </select>
+              <span className="text-[#111827] font-bold text-[14px] md:text-[18px]">{selectedCountry.dialCode}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 pointer-events-none"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
-            <div className="w-px h-6 bg-gray-300 mr-4" />
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value)
-                if (phoneError) setPhoneError('')
-              }}
-              placeholder="000 000 0000"
-              aria-invalid={phoneError ? 'true' : 'false'}
-              aria-describedby={phoneError ? 'login-phone-error' : undefined}
-              className="bg-transparent text-gray-900 outline-none text-base w-full placeholder:text-gray-500"
-            />
           </div>
-          {phoneError ? (
-            <p id="login-phone-error" className="mt-2 text-sm font-medium text-red-600" role="alert">
-              {phoneError}
-            </p>
-          ) : null}
+
+          <div className="flex-1 w-full">
+            <label className="block text-[11px] md:text-[13px] font-bold text-[#6B7280] md:text-[#111827] uppercase tracking-wider mb-2">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <div
+              className={`flex items-center bg-[#F3F4F6] rounded-2xl p-4 md:p-5 border-2 transition-all shadow-sm h-full ${
+                phoneError
+                  ? 'border-red-500 bg-red-50/30'
+                  : 'border-transparent focus-within:border-[#4342FF] focus-within:bg-white'
+              }`}
+            >
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value)
+                  if (phoneError) setPhoneError('')
+                }}
+                placeholder="0000000000"
+                aria-invalid={phoneError ? 'true' : 'false'}
+                aria-describedby={phoneError ? 'login-phone-error' : undefined}
+                className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
+              />
+            </div>
+            {phoneError ? (
+              <p id="login-phone-error" className="mt-2 text-sm font-medium text-red-600" role="alert">
+                {phoneError}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mb-6">
-          <Link to="/auth/login/email" className="text-[#4F46E5] font-semibold">
+        <p className="text-center text-sm text-[#6B7280] mb-6 w-full">
+          <Link to="/auth/login/email" className="text-[#4342FF] font-bold hover:underline">
             Use email instead
           </Link>
         </p>
 
-        <button 
-          type="button"
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full bg-[#4F46E5] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-xl font-medium text-base shadow-lg shadow-indigo-200 transition-transform active:scale-[0.98] hover:bg-indigo-700 mb-8"
-        >
-          {loading ? 'Please wait…' : 'Log In'}
-        </button>
+        <div className="w-full mt-auto md:mt-0">
+          <button 
+            type="button"
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 mt-2 rounded-xl font-bold text-[16px] md:text-[18px] shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] mb-6"
+          >
+            {loading ? 'Please wait…' : 'Log In'}
+          </button>
 
-        <p className="text-center text-base text-gray-600 mb-8">
-          Don&apos;t have an account?{' '}
-          <Link to="/onboarding/phone" className="text-[#4F46E5] font-semibold">Sign Up</Link>
-        </p>
-
+          <p className="text-center text-[15px] md:text-[16px] text-[#4B5563] mb-8 md:mb-0">
+            Don&apos;t have an account?{' '}
+            <Link to="/onboarding/phone" className="text-[#4342FF] font-bold hover:underline">Sign Up</Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </CenteredLayout>
   )
 }

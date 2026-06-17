@@ -95,7 +95,7 @@ export default function Slider() {
       </div>
 
       {/* Right Panel (Mobile & Desktop) */}
-      <div className="w-full md:w-1/2 flex flex-col items-center px-6 md:px-16 lg:px-24 pb-10 pt-14 md:justify-center">
+      <div className="w-full md:w-1/2 flex flex-col items-center px-6 md:px-16 lg:px-28 pb-10 pt-14 md:justify-center">
         
         {/* Top action (Skip) */}
         <div className="w-full flex justify-end mb-8 md:absolute md:top-10 md:right-12 md:w-auto">
@@ -126,21 +126,21 @@ export default function Slider() {
         </div>
 
         {/* Desktop Title (Shown on Mobile if no image card) */}
-        <div className={`w-full max-w-md mx-auto flex flex-col items-center md:items-start ${!slide.img && 'hidden md:flex'}`}>
-          <h1 className="text-[28px] md:text-4xl font-extrabold text-[#111827] mb-4 text-center md:text-left leading-tight tracking-tight">
+        <div className={`w-full max-w-lg mx-auto flex flex-col items-center md:items-start ${!slide.img && 'hidden md:flex'}`}>
+          <h1 className="text-[28px] md:text-[52px] font-extrabold text-[#111827] mb-4 md:mb-6 text-center md:text-left leading-[1.1] tracking-tight">
             {slide.title}
           </h1>
-          <p className="text-[#4B5563] text-center md:text-left text-[16px] md:text-[18px] leading-relaxed mb-10 md:mb-14">
+          <p className="text-[#4B5563] text-center md:text-left text-[16px] md:text-[20px] leading-relaxed mb-10 md:mb-14">
             {slide.description}
           </p>
 
           {/* Dots */}
-          <div className="flex gap-2 justify-center md:justify-start mb-10 md:mb-12 w-full md:w-auto">
+          <div className="flex gap-2.5 justify-center md:justify-start mb-10 md:mb-14 w-full md:w-auto">
             {slides.map((_, idx) => (
               <span
                 key={idx}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  currentSlide === idx ? 'w-8 bg-[#4342FF]' : 'w-2.5 bg-[#E5E7EB]'
+                className={`h-3 rounded-full transition-all duration-300 ${
+                  currentSlide === idx ? 'w-10 bg-[#4342FF]' : 'w-3 bg-[#E5E7EB]'
                 }`}
               />
             ))}
@@ -149,7 +149,7 @@ export default function Slider() {
           {/* Full-width Button */}
           <button
             onClick={handleNext}
-            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 md:py-4 rounded-xl font-bold text-[16px] md:text-[18px] transition-all shadow-lg shadow-indigo-500/30 active:scale-[0.98]"
+            className="w-full bg-[#4342FF] hover:bg-[#3231d6] text-white py-4 md:py-5 rounded-xl font-bold text-[16px] md:text-[20px] transition-all shadow-lg shadow-indigo-500/30 active:scale-[0.98]"
           >
             {currentSlide === slides.length - 1 ? 'Get Started' : 'Next'}
           </button>

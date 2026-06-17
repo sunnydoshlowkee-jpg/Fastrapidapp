@@ -1,6 +1,8 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Search, ShoppingBag, Wallet, User, Car, ShoppingCart } from 'lucide-react'
 import Logo from '../components/brand/Logo'
+import { getOrders } from '../services/orderService'
 
 const navItems = [
   { to: '/app', icon: Home, label: 'Home', desktopLabel: 'Home' },
@@ -11,30 +13,59 @@ const navItems = [
 ]
 
 export default function UserLayout() {
-  const location = useLocation();
-  const isHome = location.pathname === '/app';
+  const location = useLocation()
+  const navigate = useNavigate()
+  const isHome = location.pathname === '/app'
+  const [activeOrder, setActiveOrder] = useState(null)
+
+  useEffect(() => {
+    const fetchActiveOrder = async () => {
+      try {
+        const { data } = await getOrders()
+        const ongoing = (data.data || []).find(o => o.status !== 'delivered' && o.status !== 'cancelled')
+        setActiveOrder(ongoing || null)
+      } catch (err) {
+        console.error('Failed to fetch active order in layout', err)
+      }
+    }
+    fetchActiveOrder()
+  }, [location.pathname])
   
-  const topLevelPaths = ['/app', '/app/search', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile'];
-  const showMobileNav = topLevelPaths.includes(location.pathname);
-  
+  const topLevelPaths = ['/app', '/app/search', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile']
+  const showMobileNav = topLevelPaths.includes(location.pathname)
+
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case 'pending':
+        return { label: 'Order Placed', progress: 'w-1/4', time: 'Arriving in 25 mins' }
+      case 'preparing':
+        return { label: 'Preparing', progress: 'w-2/4', time: 'Arriving in 15 mins' }
+      case 'in_transit':
+        return { label: 'On the way', progress: 'w-3/4', time: 'Arriving in 8 mins' }
+      default:
+        return { label: 'On the way', progress: 'w-2/3', time: 'Arriving in 8 mins' }
+    }
+  }
+
+  const statusInfo = activeOrder ? getStatusInfo(activeOrder.status) : getStatusInfo('in_transit')
+
   return (
     <div className="flex min-h-screen bg-gray-50 w-full relative overflow-hidden">
       
       {/* --- DESKTOP SIDEBAR --- */}
-      <aside className="hidden md:flex flex-col w-[240px] bg-white border-r border-gray-100 flex-shrink-0 z-10 py-6 h-screen sticky top-0">
-        <div className="px-8 mb-10">
-          <Logo height={24} />
-          <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mt-1 ml-1">Marketplace</div>
+      <aside className="hidden md:flex flex-col w-[300px] bg-white border-r border-gray-100 flex-shrink-0 z-10 py-8 h-screen sticky top-0">
+        <div className="px-9 mb-14">
+          <Logo height={34} />
         </div>
         
-        <nav className="flex-1 flex flex-col gap-2 px-4">
+        <nav className="flex-1 flex flex-col gap-2.5 px-5">
           {navItems.map(({ to, icon: Icon, desktopLabel }) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/app'}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                `flex items-center gap-5 px-5 py-4 rounded-xl transition-all ${
                   isActive 
                     ? 'text-[#1A1AF5] font-semibold border-l-4 border-[#1A1AF5] bg-blue-50/50' 
                     : 'text-gray-500 hover:bg-gray-50 border-l-4 border-transparent'
@@ -43,8 +74,8 @@ export default function UserLayout() {
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={20} className="flex-shrink-0" />
-                  <span className="text-sm">{desktopLabel}</span>
+                  <Icon size={26} className="flex-shrink-0" />
+                  <span className="text-[18px]">{desktopLabel}</span>
                 </>
               )}
             </NavLink>
@@ -52,31 +83,46 @@ export default function UserLayout() {
         </nav>
         
         {/* Active Order Widget (Desktop) */}
-        <div className="px-4 mt-auto">
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-4 relative overflow-hidden">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-bold text-[#1A1AF5] tracking-wider uppercase">On the way</span>
-              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+        <div 
+          onClick={() => {
+            if (activeOrder) {
+              navigate(`/app/track/${activeOrder.id}`)
+            } else {
+              navigate('/app/orders')
+            }
+          }}
+          className="px-5 mt-auto cursor-pointer hover:opacity-90 transition-opacity"
+        >
+          <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-5 relative overflow-hidden">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-[11px] font-bold text-[#1A1AF5] tracking-wider uppercase">
+                {statusInfo.label}
+              </span>
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-[#1A1AF5]">
-                <Car size={18} />
+              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-[#1A1AF5]">
+                <Car size={20} />
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">Order #8821</p>
-                <p className="text-[11px] text-gray-500">Arriving in 8 mins</p>
+                <p className="text-[15px] font-bold text-gray-900">
+                  {activeOrder ? `Order #${activeOrder.id}` : 'Order #8821'}
+                </p>
+                <p className="text-[13px] text-gray-500">
+                  {statusInfo.time}
+                </p>
               </div>
             </div>
             {/* Progress bar */}
-            <div className="mt-3 w-full bg-gray-100 h-1 rounded-full overflow-hidden">
-              <div className="bg-[#1A1AF5] w-2/3 h-full rounded-full"></div>
+            <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+              <div className={`bg-[#1A1AF5] h-full rounded-full ${statusInfo.progress}`}></div>
             </div>
           </div>
         </div>
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 flex flex-col min-h-screen h-screen overflow-y-auto w-full md:w-[calc(100%-240px)]">
+      <main className="flex-1 flex flex-col min-h-screen h-screen overflow-y-auto w-full md:w-[calc(100%-300px)]">
         <Outlet />
       </main>
 

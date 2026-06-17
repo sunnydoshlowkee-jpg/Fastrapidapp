@@ -5,7 +5,7 @@ import AuthLayout from '../../../../components/layout/AuthLayout'
 
 const MERCHANT_LOGIN_PATH = '/merchant/login'
 const MERCHANT_SIGNUP_PATH = '/merchant/signup'
-const CUSTOMER_PHONE_PATH = '/onboarding/phone'
+const CUSTOMER_PHONE_PATH = '/onboarding/location'
 const CUSTOMER_LOGIN_PATH = '/auth/login'
 
 export default function AccountType() {

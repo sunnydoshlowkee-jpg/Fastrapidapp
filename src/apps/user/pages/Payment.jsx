@@ -5,6 +5,7 @@ import { useCart } from '../../../context/CartContext'
 import { getAddresses } from '../../../services/addressService'
 import { createOrder } from '../../../services/orderService'
 import { trackEvent } from '../../../services/analyticsService'
+import { useDashboard } from '../../../hooks/useDashboard'
 
 export default function Payment() {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ export default function Payment() {
   const [selectedAddressId, setSelectedAddressId] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showAddressDropdown, setShowAddressDropdown] = useState(false)
+  const { data: dashboard } = useDashboard()
 
   useEffect(() => {
     // If cart is empty, send back to home
@@ -67,7 +69,7 @@ export default function Payment() {
       })
 
       clear() // clear cart
-      navigate('/app/order-success') // Or pass ID if needed: `/app/order-success/${data.data.order.id}`
+      navigate(`/app/order-success/${data.data.id}`) // Navigate to success page with ID
     } catch (err) {
       alert(err.response?.data?.message || 'Checkout failed')
     } finally {
@@ -198,7 +200,7 @@ export default function Payment() {
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">RAPID Wallet</h4>
-                <p className="text-[11px] text-gray-500">Available balance: <span className="text-[#4F46E5] font-bold">₦24,500.00</span></p>
+                <p className="text-[11px] text-gray-500">Available balance: <span className="text-[#4F46E5] font-bold">₦{(dashboard?.wallet_balance || 0).toLocaleString()}</span></p>
               </div>
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                 paymentMethod === 'wallet' ? 'border-[#4F46E5]' : 'border-gray-300'
@@ -342,7 +344,7 @@ export default function Payment() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold text-gray-900 text-[16px] mb-1">RAPID Wallet</h4>
-                  <p className="text-[14px] text-gray-500">Available balance: <span className="text-[#2D2AEE] font-bold">₦24,500.00</span></p>
+                  <p className="text-[14px] text-gray-500">Available balance: <span className="text-[#2D2AEE] font-bold">₦{(dashboard?.wallet_balance || 0).toLocaleString()}</span></p>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                   paymentMethod === 'wallet' ? 'border-[#2D2AEE]' : 'border-gray-300 bg-white'

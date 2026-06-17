@@ -59,7 +59,7 @@ export default function PhoneEntry() {
 
         {/* Input Group */}
         <div className="mb-auto w-full flex gap-3 items-start md:gap-4 md:mb-10">
-          <div className="w-[110px] md:w-1/3 flex-shrink-0">
+          <div className="w-[110px] md:w-[130px] flex-shrink-0">
             <label className="block text-[11px] md:text-[13px] font-bold text-[#111827] uppercase tracking-wider mb-2">
               Country
             </label>
