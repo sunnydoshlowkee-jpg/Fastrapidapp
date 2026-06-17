@@ -98,7 +98,7 @@ export default function EmailSignup() {
 
           <p className="text-center text-[15px] md:text-[16px] text-[#4B5563] mb-8 md:mb-0">
             Already have an account?{' '}
-            <Link to="/auth/login/email" className="text-[#4342FF] font-bold hover:underline">
+            <Link to="/auth/login" className="text-[#4342FF] font-bold hover:underline">
               Log In
             </Link>
           </p>

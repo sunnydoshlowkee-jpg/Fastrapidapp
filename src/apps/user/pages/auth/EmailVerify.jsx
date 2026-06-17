@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { requestEmailOtp, verifyEmailOtp } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
@@ -11,13 +11,14 @@ export default function EmailVerify() {
   const email = location.state?.email
   const flow = location.state?.flow ?? 'login'
   const isRegister = flow === 'register'
-  const backPath = isRegister ? '/onboarding/email' : '/auth/login/email'
+  const backPath = isRegister ? '/onboarding/email' : '/auth/login'
 
   const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
   const [codeError, setCodeError] = useState('')
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [timer, setTimer] = useState(45)
+  const submittingRef = useRef(false)
 
   useEffect(() => {
     if (!email) {
@@ -32,6 +33,44 @@ export default function EmailVerify() {
     }
   }, [timer])
 
+  const submitCode = useCallback(async (otp) => {
+    if (submittingRef.current || !email) return
+
+    if (otp.length !== OTP_LENGTH) {
+      if (otp.length === 0) {
+        setCodeError('Enter the verification code.')
+      } else {
+        setCodeError(`Enter the ${OTP_LENGTH}-digit verification code.`)
+      }
+      return
+    }
+
+    submittingRef.current = true
+    setCodeError('')
+    setLoading(true)
+    try {
+      const { data } = await verifyEmailOtp({ email, code: otp, flow })
+      const token = data?.data?.token
+      const user = data?.data?.user
+
+      if (token) {
+        localStorage.setItem('rapid_token', token)
+      }
+
+      if (user?.status === 'pending_profile') {
+        navigate('/onboarding/profile', { state: { signupMethod: 'email' } })
+        return
+      }
+
+      navigate('/app')
+    } catch (err) {
+      setCodeError(getApiFieldError(err, 'code') || getApiFieldError(err, 'email'))
+    } finally {
+      setLoading(false)
+      submittingRef.current = false
+    }
+  }, [email, flow, navigate])
+
   const handleInput = (index, value) => {
     const digit = value.replace(/\D/g, '').slice(-1)
     const newCode = [...code]
@@ -43,6 +82,31 @@ export default function EmailVerify() {
       const nextInput = document.getElementById(`email-verify-otp-${index + 1}`)
       if (nextInput) nextInput.focus()
     }
+
+    if (digit && newCode.every((d) => d !== '')) {
+      submitCode(newCode.join(''))
+    }
+  }
+
+  const handlePaste = (e) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH)
+    if (!pasted) return
+
+    const newCode = Array(OTP_LENGTH).fill('')
+    for (let i = 0; i < pasted.length; i++) {
+      newCode[i] = pasted[i]
+    }
+    setCode(newCode)
+    if (codeError) setCodeError('')
+
+    if (pasted.length === OTP_LENGTH) {
+      submitCode(pasted)
+      return
+    }
+
+    const focusIndex = Math.min(pasted.length, OTP_LENGTH - 1)
+    document.getElementById(`email-verify-otp-${focusIndex}`)?.focus()
   }
 
   const handleKeyDown = (index, event) => {
@@ -68,45 +132,12 @@ export default function EmailVerify() {
     }
   }
 
-  const handleVerify = async () => {
-    setCodeError('')
-
-    const otp = code.join('')
-    if (otp.length === 0) {
-      setCodeError('Enter the verification code.')
-      return
-    }
-    if (otp.length < OTP_LENGTH) {
-      setCodeError(`Enter the ${OTP_LENGTH}-digit verification code.`)
-      return
-    }
-
+  const handleVerify = () => {
     if (!email) {
       navigate(backPath, { replace: true })
       return
     }
-
-    setLoading(true)
-    try {
-      const { data } = await verifyEmailOtp({ email, code: otp, flow })
-      const token = data?.data?.token
-      const user = data?.data?.user
-
-      if (token) {
-        localStorage.setItem('rapid_token', token)
-      }
-
-      if (user?.status === 'pending_profile') {
-        navigate('/onboarding/profile', { state: { signupMethod: 'email' } })
-        return
-      }
-
-      navigate('/app')
-    } catch (err) {
-      setCodeError(getApiFieldError(err, 'code') || getApiFieldError(err, 'email'))
-    } finally {
-      setLoading(false)
-    }
+    submitCode(code.join(''))
   }
 
   return (
@@ -135,8 +166,10 @@ export default function EmailVerify() {
               autoComplete="one-time-code"
               maxLength={1}
               value={digit}
+              disabled={loading}
               onChange={(e) => handleInput(idx, e.target.value)}
               onKeyDown={(e) => handleKeyDown(idx, e)}
+              onPaste={handlePaste}
               aria-label={`Digit ${idx + 1} of ${OTP_LENGTH}`}
               className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-2xl outline-none transition-colors ${
                 codeError

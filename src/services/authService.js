@@ -8,9 +8,7 @@ export const uploadProfileAvatar = (file) => {
   const formData = new FormData()
   formData.append('avatar', file)
 
-  return api.post('/auth/profile/avatar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  return api.post('/auth/profile/avatar', formData)
 }
 export const requestEmailOtp = (data) => api.post('/auth/email', data)
 export const verifyEmailOtp = (data) => api.post('/auth/email/verify', data)

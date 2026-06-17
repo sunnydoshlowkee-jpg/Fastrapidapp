@@ -1,70 +1,34 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera, CheckCircle2, User } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, User } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
-import { updateProfile, uploadProfileAvatar } from '../../../services/authService'
+import { updateProfile } from '../../../services/authService'
 import { getApiFieldError } from '../../../utils/apiErrors'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
-
-const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024
-const ACCEPTED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+import { useProfileAvatarUpload } from '../../../hooks/useProfileAvatarUpload'
+import ProfileAvatar from '../../../components/profile/ProfileAvatar'
 
 const fieldClass = (hasError) =>
   `w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] md:text-[15px] text-gray-900 font-medium outline-none transition-all ${
     hasError ? 'ring-2 ring-red-500 bg-red-50/30' : 'focus:ring-2 focus:ring-[#4F46E5]'
   }`
 
-function ProfileAvatar({
-  avatarUrl,
-  fallbackLetter,
-  sizeClass,
-  buttonSizeClass,
-  iconSize,
-  uploading,
-  onPickPhoto,
-}) {
-  return (
-    <div className={`relative ${sizeClass}`}>
-      <button
-        type="button"
-        onClick={onPickPhoto}
-        disabled={uploading}
-        className={`${sizeClass} rounded-full overflow-hidden border-4 border-white shadow-sm flex items-center justify-center bg-[#4F46E5] disabled:opacity-70`}
-        aria-label="Upload profile photo"
-      >
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span className="text-3xl md:text-5xl font-bold text-white">
-            {fallbackLetter}
-          </span>
-        )}
-      </button>
-      <button
-        type="button"
-        onClick={onPickPhoto}
-        disabled={uploading}
-        className={`absolute ${buttonSizeClass} bg-[#4F46E5] rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm disabled:opacity-70`}
-        aria-label="Upload profile photo"
-      >
-        <Camera size={iconSize} />
-      </button>
-    </div>
-  )
-}
-
 export default function EditProfile() {
   const navigate = useNavigate()
-  const fileInputRef = useRef(null)
-  const previewUrlRef = useRef(null)
   const { user, loading, refreshUser, setUser } = useAuth()
+  const {
+    avatarUrl,
+    uploading: uploadingAvatar,
+    error: avatarError,
+    fileInputRef,
+    openFilePicker,
+    handleFileChange,
+  } = useProfileAvatarUpload()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState(null)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useEffect(() => {
     if (!loading && !localStorage.getItem('rapid_token')) {
@@ -77,14 +41,7 @@ export default function EditProfile() {
     setFirstName(user.first_name || '')
     setLastName(user.last_name || '')
     setEmail(user.email || '')
-    setAvatarUrl(user.avatar_url || null)
   }, [user])
-
-  useEffect(() => () => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-    }
-  }, [])
 
   const clearError = (field) => {
     if (errors[field]) {
@@ -93,70 +50,6 @@ export default function EditProfile() {
         delete next[field]
         return next
       })
-    }
-  }
-
-  const openFilePicker = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleAvatarChange = async (event) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-
-    if (!file) return
-
-    clearError('avatar')
-
-    if (!ACCEPTED_AVATAR_TYPES.includes(file.type)) {
-      setErrors((prev) => ({
-        ...prev,
-        avatar: 'Profile photo must be a JPG, GIF, or PNG file.',
-      }))
-      return
-    }
-
-    if (file.size > MAX_AVATAR_SIZE_BYTES) {
-      setErrors((prev) => ({
-        ...prev,
-        avatar: 'Profile photo must be 2 MB or smaller.',
-      }))
-      return
-    }
-
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-    }
-
-    const preview = URL.createObjectURL(file)
-    previewUrlRef.current = preview
-    setAvatarUrl(preview)
-
-    setUploadingAvatar(true)
-    try {
-      const { data } = await uploadProfileAvatar(file)
-      const updatedUser = data?.data?.user
-      if (updatedUser) {
-        setUser(updatedUser)
-        setAvatarUrl(updatedUser.avatar_url || null)
-      }
-      await refreshUser()
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-        previewUrlRef.current = null
-      }
-    } catch (err) {
-      setAvatarUrl(user?.avatar_url || null)
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-        previewUrlRef.current = null
-      }
-      setErrors((prev) => ({
-        ...prev,
-        avatar: getApiFieldError(err, 'avatar') || 'Could not upload profile photo. Try again.',
-      }))
-    } finally {
-      setUploadingAvatar(false)
     }
   }
 
@@ -220,7 +113,7 @@ export default function EditProfile() {
         type="file"
         accept="image/jpeg,image/png,image/gif"
         className="hidden"
-        onChange={handleAvatarChange}
+        onChange={handleFileChange}
       />
 
       <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
@@ -237,17 +130,15 @@ export default function EditProfile() {
           <ProfileAvatar
             avatarUrl={avatarUrl}
             fallbackLetter={fallbackLetter}
-            sizeClass="w-24 h-24"
-            buttonSizeClass="w-8 h-8 bottom-0 right-0"
-            iconSize={14}
             uploading={uploadingAvatar}
             onPickPhoto={openFilePicker}
+            variant="mobile"
           />
           <p className="mt-3 text-center text-[11px] text-gray-500">
             {uploadingAvatar ? 'Uploading photo…' : 'JPG, GIF or PNG. Max size 2MB'}
           </p>
-          {errors.avatar ? (
-            <p className="mt-2 text-center text-sm text-red-600" role="alert">{errors.avatar}</p>
+          {avatarError ? (
+            <p className="mt-2 text-center text-sm text-red-600" role="alert">{avatarError}</p>
           ) : null}
         </div>
 
@@ -344,18 +235,16 @@ export default function EditProfile() {
               <ProfileAvatar
                 avatarUrl={avatarUrl}
                 fallbackLetter={fallbackLetter}
-                sizeClass="w-32 h-32"
-                buttonSizeClass="w-10 h-10 bottom-2 right-2 border-[3px]"
-                iconSize={18}
                 uploading={uploadingAvatar}
                 onPickPhoto={openFilePicker}
+                variant="desktop"
               />
               <h3 className="font-bold text-gray-900 text-[18px] mb-1 mt-4">{getDisplayName(user) || 'Your profile'}</h3>
               <p className="text-[13px] text-gray-500">
                 {uploadingAvatar ? 'Uploading photo…' : 'JPG, GIF or PNG. Max size 2MB'}
               </p>
-              {errors.avatar ? (
-                <p className="mt-2 text-sm text-red-600" role="alert">{errors.avatar}</p>
+              {avatarError ? (
+                <p className="mt-2 text-sm text-red-600" role="alert">{avatarError}</p>
               ) : null}
             </div>
 

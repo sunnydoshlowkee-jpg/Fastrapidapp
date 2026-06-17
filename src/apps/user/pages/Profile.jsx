@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bell, MapPin, CreditCard, Gift, HelpCircle, LogOut, ChevronRight, CheckCircle2, Shield, Camera, Edit2 } from 'lucide-react'
+import { ArrowLeft, Bell, MapPin, CreditCard, Gift, HelpCircle, LogOut, ChevronRight, Shield, Edit2 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
+import { useProfileAvatarUpload } from '../../../hooks/useProfileAvatarUpload'
+import ProfileAvatar from '../../../components/profile/ProfileAvatar'
 
 export default function Profile() {
   const navigate = useNavigate()
   const { user, loading, logout, refreshUser } = useAuth()
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const {
+    avatarUrl,
+    uploading: uploadingAvatar,
+    error: avatarError,
+    fileInputRef,
+    openFilePicker,
+    handleFileChange,
+  } = useProfileAvatarUpload()
 
   useEffect(() => {
     refreshUser()
@@ -23,6 +33,7 @@ export default function Profile() {
   const displayPhone = formatPhoneDisplay(user?.phone) || '—'
   const membershipLabel = user?.membership_label || 'Member'
   const ordersCount = user?.orders_count ?? 0
+  const fallbackLetter = (user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()
 
   const handleLogout = async () => {
     setShowLogoutModal(false)
@@ -40,6 +51,13 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12 relative">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <button type="button" onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
@@ -54,18 +72,21 @@ export default function Profile() {
 
       <div className="md:hidden px-6 w-full max-w-md mx-auto pt-4 flex flex-col items-center">
         <div className="bg-white w-full rounded-[32px] p-8 shadow-sm border border-gray-100 flex flex-col items-center mb-6">
-          <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-white shadow-md bg-[#3B82F6] flex items-center justify-center">
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-3xl font-bold text-[#FEF38D]">
-                {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
-              </span>
-            )}
-            <div className="absolute bottom-1 right-1 bg-white rounded-full p-0.5">
-              <CheckCircle2 size={18} className="text-[#4F46E5] fill-white" strokeWidth={3} />
-            </div>
+          <div className="mb-4">
+            <ProfileAvatar
+              avatarUrl={avatarUrl}
+              fallbackLetter={fallbackLetter}
+              uploading={uploadingAvatar}
+              onPickPhoto={openFilePicker}
+              variant="mobile"
+            />
           </div>
+          {uploadingAvatar ? (
+            <p className="text-xs text-gray-500 mb-2">Uploading photo…</p>
+          ) : null}
+          {avatarError ? (
+            <p className="text-xs text-red-600 mb-2 text-center" role="alert">{avatarError}</p>
+          ) : null}
 
           <h2 className="text-lg font-bold text-gray-900 mb-0.5">{displayName}</h2>
           <p className="text-xs font-semibold text-gray-400 mb-6">{displayPhone}</p>
@@ -125,18 +146,13 @@ export default function Profile() {
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex items-center justify-between mb-10 relative overflow-hidden border-t-[6px] border-t-red-600">
             <div className="flex items-center gap-6">
-              <div className="relative w-28 h-28 bg-[#2C3440] rounded-2xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-4xl font-bold text-[#FCD34D]">
-                    {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
-                  </span>
-                )}
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#2D2AEE] rounded-full flex items-center justify-center text-white border-[3px] border-white cursor-pointer z-10 hover:bg-blue-700 transition-colors">
-                  <Camera size={14} />
-                </div>
-              </div>
+              <ProfileAvatar
+                avatarUrl={avatarUrl}
+                fallbackLetter={fallbackLetter}
+                uploading={uploadingAvatar}
+                onPickPhoto={openFilePicker}
+                variant="desktop"
+              />
 
               <div>
                 <div className="bg-indigo-50 text-[#2D2AEE] text-[10px] font-bold px-3 py-1.5 rounded-full w-max tracking-widest uppercase mb-2">
@@ -148,6 +164,12 @@ export default function Profile() {
                 </p>
                 {user?.email ? (
                   <p className="text-[14px] text-gray-400 mt-1">{user.email}</p>
+                ) : null}
+                {uploadingAvatar ? (
+                  <p className="text-[13px] text-gray-500 mt-2">Uploading photo…</p>
+                ) : null}
+                {avatarError ? (
+                  <p className="text-[13px] text-red-600 mt-2" role="alert">{avatarError}</p>
                 ) : null}
               </div>
             </div>

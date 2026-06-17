@@ -28,7 +28,7 @@ export default function OnboardingRoutes() {
       <Route path="onboarding/profile" element={<ProfileSetup />} />
       <Route path="onboarding/preferences" element={<ServicePreference />} />
       <Route path="auth/login" element={<Login />} />
-      <Route path="auth/login/email" element={<EmailLogin />} />
+      <Route path="auth/login/phone" element={<EmailLogin />} />
       <Route path="auth/verify-email" element={<EmailVerify />} />
       <Route path="auth/verify" element={<VerifyIdentity />} />
     </Routes>
