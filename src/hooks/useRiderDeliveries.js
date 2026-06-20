@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
-import { getAvailableDeliveries, acceptDelivery as acceptDeliveryService, updateDeliveryStatus as updateDeliveryStatusService } from '../services/riderDeliveryService';
+import { getAvailableDeliveries, getDeliveryDetails, acceptDelivery as acceptDeliveryService, updateDeliveryStatus as updateDeliveryStatusService } from '../services/riderDeliveryService';
 
 export const useRiderDeliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
+  const [deliveryDetails, setDeliveryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,9 +12,25 @@ export const useRiderDeliveries = () => {
     setError(null);
     try {
       const response = await getAvailableDeliveries(lat, lng);
-      setDeliveries(response.data || response);
+      setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch deliveries');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchDetails = useCallback(async (id) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getDeliveryDetails(id);
+      const data = response.data?.delivery || response.delivery || response.data || response;
+      setDeliveryDetails(data);
+      return data;
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to fetch delivery details');
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -39,5 +56,5 @@ export const useRiderDeliveries = () => {
     }
   };
 
-  return { deliveries, loading, error, refresh, accept, updateStatus };
+  return { deliveries, deliveryDetails, loading, error, refresh, fetchDetails, accept, updateStatus };
 };

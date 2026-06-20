@@ -8,6 +8,7 @@ export default function RiderPhone() {
 
   const handleContinue = () => {
     if (phone.trim().length >= 7) {
+      sessionStorage.setItem('rider_reg_phone', phone)
       navigate('/dispatch/onboarding/verify', { state: { phone } })
     }
   }

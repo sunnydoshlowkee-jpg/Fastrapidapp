@@ -4,11 +4,18 @@ import { ArrowLeft, Calendar } from 'lucide-react'
 
 export default function RiderPersonalInfo() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', dob: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', dob: '', password: '' })
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
-  const isValid = form.firstName.trim() && form.lastName.trim() && form.dob.trim()
+  const isValid = form.firstName.trim() && form.lastName.trim() && form.email.trim() && form.dob.trim() && form.password.trim().length >= 8
+
+  const handleContinue = () => {
+    if (isValid) {
+      sessionStorage.setItem('rider_reg_personal', JSON.stringify(form))
+      navigate('/dispatch/onboarding/identity')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
@@ -52,7 +59,7 @@ export default function RiderPersonalInfo() {
             type="text"
             value={form.firstName}
             onChange={e => set('firstName', e.target.value)}
-            placeholder="e.g. Adebayo Chioma"
+            placeholder="e.g. Adebayo"
             className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
             style={{ '--tw-ring-color': '#5B5BFF40' }}
           />
@@ -72,19 +79,30 @@ export default function RiderPersonalInfo() {
           />
         </div>
 
-        {/* Email — optional */}
+        {/* Email */}
         <div>
-          <div className="flex justify-between mb-2">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-              Email Address
-            </label>
-            <span className="text-[10px] text-gray-400 italic">Optional</span>
-          </div>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+            Email Address
+          </label>
           <input
             type="email"
             value={form.email}
             onChange={e => set('email', e.target.value)}
             placeholder="name@example.com"
+            className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+            Password (Min 8 characters)
+          </label>
+          <input
+            type="password"
+            value={form.password}
+            onChange={e => set('password', e.target.value)}
+            placeholder="••••••••"
             className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
           />
         </div>
@@ -110,7 +128,7 @@ export default function RiderPersonalInfo() {
       {/* Continue */}
       <div className="mt-8">
         <button
-          onClick={() => navigate('/dispatch/onboarding/identity')}
+          onClick={handleContinue}
           disabled={!isValid}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-40"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}

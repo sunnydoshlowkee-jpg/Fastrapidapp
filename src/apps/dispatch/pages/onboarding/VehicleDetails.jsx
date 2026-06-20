@@ -53,6 +53,13 @@ export default function RiderVehicle() {
 
   const isValid = make.trim() && plate.trim() && year.trim()
 
+  const handleContinue = () => {
+    if (isValid) {
+      sessionStorage.setItem('rider_reg_vehicle', JSON.stringify({ vehicleType, plate }))
+      navigate('/dispatch/onboarding/payment')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
 
@@ -176,7 +183,7 @@ export default function RiderVehicle() {
 
       {/* Continue */}
       <button
-        onClick={() => navigate('/dispatch/onboarding/payment')}
+        onClick={handleContinue}
         disabled={!isValid}
         className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-40"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}

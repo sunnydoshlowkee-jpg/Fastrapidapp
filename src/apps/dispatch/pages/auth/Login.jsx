@@ -1,17 +1,45 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown } from 'lucide-react'
+import { Mail, Lock } from 'lucide-react'
 import Logo from '../../../../components/brand/Logo'
+import { login } from '../../../../services/riderAuthService'
 
 export default function RiderLogin() {
   const navigate = useNavigate()
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    if (!email.trim() || !password.trim()) return
+
+    setLoading(true)
+    setError('')
+    try {
+      const response = await login({ email, password })
+      const token = response.data?.token || response.token
+      const user = response.data?.user || response.user
+
+      localStorage.setItem('rapid_token', token)
+      localStorage.setItem('rider_user', JSON.stringify(user))
+
+      // Redirect to rider dashboard index
+      navigate('/dispatch')
+    } catch (err) {
+      console.error(err)
+      setError(err.response?.data?.message || 'Invalid email or password. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center max-w-md mx-auto px-6 pt-16 pb-10">
+    <form onSubmit={handleLogin} className="min-h-screen bg-white flex flex-col items-center max-w-md mx-auto px-6 pt-16 pb-10">
 
       {/* Logo */}
-      <div className="flex flex-col items-center gap-3 mb-12">
+      <div className="flex flex-col items-center gap-3 mb-10">
         <Logo variant="icon" height={40} />
         <p className="text-gray-900 text-xl">
           <span className="font-black">Rapid</span>
@@ -29,35 +57,57 @@ export default function RiderLogin() {
         </p>
       </div>
 
-      {/* Phone input */}
-      <div className="w-full mb-6">
+      {/* Error message */}
+      {error && (
+        <div className="w-full bg-red-50 text-red-600 rounded-2xl p-4 mb-6 text-sm font-semibold">
+          {error}
+        </div>
+      )}
+
+      {/* Email input */}
+      <div className="w-full mb-5">
         <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
-          Phone Number
+          Email Address
         </label>
-        <div className="flex items-center bg-gray-100 rounded-2xl overflow-hidden">
-          <button className="flex items-center gap-1.5 pl-4 pr-3 py-4 border-r border-gray-200 shrink-0">
-            <span className="text-base">🇳🇬</span>
-            <span className="font-bold text-gray-700 text-sm">+234</span>
-          </button>
+        <div className="flex items-center bg-gray-100 rounded-2xl overflow-hidden px-4">
+          <Mail size={18} className="text-gray-400 mr-2 shrink-0" />
           <input
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            maxLength={11}
-            placeholder="000 000 0000"
-            className="flex-1 bg-transparent pl-3 pr-4 py-4 text-base text-gray-900 font-medium placeholder-gray-400 focus:outline-none"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="rider@example.com"
+            className="flex-1 bg-transparent py-4 text-sm text-gray-900 font-medium placeholder-gray-400 focus:outline-none"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Password input */}
+      <div className="w-full mb-8">
+        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+          Password
+        </label>
+        <div className="flex items-center bg-gray-100 rounded-2xl overflow-hidden px-4">
+          <Lock size={18} className="text-gray-400 mr-2 shrink-0" />
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="flex-1 bg-transparent py-4 text-sm text-gray-900 font-medium placeholder-gray-400 focus:outline-none"
+            required
           />
         </div>
       </div>
 
       {/* Log in button */}
       <button
-        onClick={() => navigate('/dispatch/onboarding/verify', { state: { phone } })}
-        disabled={phone.trim().length < 7}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base mb-8 transition-all active:opacity-80 disabled:opacity-50"
+        type="submit"
+        disabled={loading || !email.trim() || !password.trim()}
+        className="w-full py-4 rounded-2xl text-white font-bold text-base mb-8 transition-all active:scale-[0.98] disabled:opacity-50"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #3B3BF0)' }}
       >
-        Log In
+        {loading ? 'Logging In...' : 'Log In'}
       </button>
 
       {/* Divider */}
@@ -69,12 +119,13 @@ export default function RiderLogin() {
 
       {/* Register link */}
       <button
+        type="button"
         onClick={() => navigate('/dispatch/welcome')}
-        className="font-bold text-base"
+        className="font-bold text-base hover:underline"
         style={{ color: '#5B5BFF' }}
       >
         Register as a Rider
       </button>
-    </div>
+    </form>
   )
 }

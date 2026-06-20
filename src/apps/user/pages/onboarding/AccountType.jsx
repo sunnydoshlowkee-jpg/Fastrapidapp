@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { User, Store } from 'lucide-react'
+import { User, Store, Bike } from 'lucide-react'
 import AuthLayout from '../../../../components/layout/AuthLayout'
 
 const MERCHANT_LOGIN_PATH = '/merchant/login'
 const MERCHANT_SIGNUP_PATH = '/merchant/signup'
 const CUSTOMER_PHONE_PATH = '/onboarding/location'
 const CUSTOMER_LOGIN_PATH = '/auth/login'
+const RIDER_WELCOME_PATH = '/dispatch/welcome'
+const RIDER_LOGIN_PATH = '/dispatch/login'
 
 export default function AccountType() {
   const navigate = useNavigate()
@@ -17,10 +19,14 @@ export default function AccountType() {
       navigate(MERCHANT_LOGIN_PATH)
       return
     }
+    if (type === 'rider') {
+      navigate(RIDER_WELCOME_PATH)
+      return
+    }
     navigate(CUSTOMER_PHONE_PATH)
   }
 
-  const loginPath = type === 'merchant' ? MERCHANT_LOGIN_PATH : CUSTOMER_LOGIN_PATH
+  const loginPath = type === 'rider' ? RIDER_LOGIN_PATH : type === 'merchant' ? MERCHANT_LOGIN_PATH : CUSTOMER_LOGIN_PATH
 
   return (
     <AuthLayout 
@@ -80,6 +86,29 @@ export default function AccountType() {
               type === 'merchant' ? 'border-[#4342FF] bg-[#4342FF]' : 'border-gray-300 bg-white'
             }`} />
           </button>
+
+          {/* Rider Option */}
+          <button
+            onClick={() => setType('rider')}
+            className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
+              type === 'rider'
+                ? 'bg-indigo-50/50 border-[#4342FF] shadow-sm'
+                : 'bg-[#F3F4F6] border-transparent hover:bg-gray-200'
+            }`}
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                type === 'rider' ? 'bg-[#4342FF] text-white' : 'bg-transparent text-[#4342FF]'
+              }`}>
+                <Bike size={24} strokeWidth={2.5} />
+              </div>
+              <span className="font-bold text-[18px] text-[#111827]">Rider / Dispatch</span>
+            </div>
+            {/* Radio circle */}
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+              type === 'rider' ? 'border-[#4342FF] bg-[#4342FF]' : 'border-gray-300 bg-white'
+            }`} />
+          </button>
         </div>
 
         <button
@@ -102,7 +131,7 @@ export default function AccountType() {
             <>
               Already have an account?{' '}
               <Link to={loginPath} className="text-[#4342FF] font-bold hover:underline">
-                Log In
+                {type === 'rider' ? 'Rider Log In' : 'Log In'}
               </Link>
             </>
           )}

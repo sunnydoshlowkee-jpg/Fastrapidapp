@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, CheckCircle, Info, ShieldCheck } from 'lucide-react'
+import { register } from '../../../../services/riderAuthService'
 
 const BANKS = ['GTBank', 'Access Bank', 'First Bank', 'Zenith Bank', 'UBA', 'Kuda Bank', 'Opay', 'Palmpay']
 
@@ -10,8 +11,40 @@ export default function RiderPayment() {
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName] = useState('CHUKWUMA KELVIN OKORO')
   const [showBanks, setShowBanks] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const isResolved = accountNumber.length >= 10
+
+  const handleSubmit = async () => {
+    const phone = sessionStorage.getItem('rider_reg_phone') || ''
+    const personal = JSON.parse(sessionStorage.getItem('rider_reg_personal') || '{}')
+    const vehicle = JSON.parse(sessionStorage.getItem('rider_reg_vehicle') || '{}')
+
+    const registerData = {
+      name: `${personal.firstName} ${personal.lastName}`,
+      email: personal.email,
+      password: personal.password,
+      vehicle_type: vehicle.vehicleType || 'motorcycle',
+      plate_number: vehicle.plate || 'ABC-1234',
+    }
+
+    setLoading(true)
+    try {
+      const response = await register(registerData)
+      const token = response.data?.token || response.token
+      const user = response.data?.user || response.user
+
+      localStorage.setItem('rapid_token', token)
+      localStorage.setItem('rider_user', JSON.stringify(user))
+
+      navigate('/dispatch/onboarding/success')
+    } catch (err) {
+      console.error(err)
+      alert(err.response?.data?.message || 'Registration failed. Try using a unique email address.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
@@ -140,11 +173,12 @@ export default function RiderPayment() {
 
       {/* Submit */}
       <button
-        onClick={() => navigate('/dispatch/onboarding/success')}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 mt-6"
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 mt-6 disabled:opacity-40"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >
-        Submit Application
+        {loading ? 'Submitting...' : 'Submit Application'}
       </button>
     </div>
   )

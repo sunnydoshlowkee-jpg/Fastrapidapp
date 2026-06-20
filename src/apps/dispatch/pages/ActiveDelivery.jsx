@@ -58,7 +58,7 @@ function MapFabs() {
 }
 
 // ─── Shared order header bar ──────────────────────────────────────
-function OrderHeader({ onBack }) {
+function OrderHeader({ onBack, orderId }) {
   return (
     <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-12 pb-3"
       style={{ background: 'linear-gradient(to bottom, rgba(10,22,40,0.95) 60%, transparent)' }}>
@@ -66,7 +66,7 @@ function OrderHeader({ onBack }) {
         <ArrowLeft size={20} className="text-white" />
       </button>
       <div className="flex flex-col items-center gap-1">
-        <span className="text-white font-bold text-sm">Order #KAB-00421</span>
+        <span className="text-white font-bold text-sm">Order #{orderId || 'Rapid'}</span>
         <span className="bg-[#5B5BFF] text-white text-[10px] font-bold px-3 py-0.5 rounded-full">Food Order</span>
       </div>
       <button className="w-9 h-9 flex items-center justify-center">
@@ -94,12 +94,37 @@ function CheckItem({ label, checked, onToggle }) {
 export default function ActiveDelivery() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { accept, updateStatus, loading } = useRiderDeliveries()
+  const { fetchDetails, accept, updateStatus } = useRiderDeliveries()
   
+  const [delivery, setDelivery] = useState(null)
   const [step, setStep] = useState(STEPS.NEW_ORDER)
-  const [checks, setChecks] = useState({ collected: true, sealed: true, matches: true })
+  const [checks, setChecks] = useState({ collected: false, sealed: false, matches: false })
   const [photoTaken, setPhotoTaken] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (id) {
+      setLoading(true)
+      fetchDetails(id).then(data => {
+        setDelivery(data)
+        if (data.status === 'pending' || !data.status) {
+          setStep(STEPS.NEW_ORDER)
+        } else if (data.status === 'accepted') {
+          setStep(STEPS.HEADING_PICKUP)
+        } else if (data.status === 'picked_up') {
+          setStep(STEPS.EN_ROUTE)
+          setChecks({ collected: true, sealed: true, matches: true })
+        } else if (data.status === 'delivered') {
+          navigate(`/dispatch/delivery/${id}/success`)
+        }
+      }).catch(err => {
+        console.error("Error loading delivery details", err)
+      }).finally(() => {
+        setLoading(false)
+      })
+    }
+  }, [id, fetchDetails, navigate])
 
   const toggleCheck = key => setChecks(c => ({ ...c, [key]: !c[key] }))
   const allChecked = Object.values(checks).every(Boolean)
@@ -111,7 +136,7 @@ export default function ActiveDelivery() {
       setStep(STEPS.HEADING_PICKUP)
     } catch (e) {
       console.error(e)
-      alert("Failed to accept delivery")
+      alert(e.response?.data?.message || "Failed to accept delivery")
     } finally {
       setIsProcessing(false)
     }
@@ -124,11 +149,28 @@ export default function ActiveDelivery() {
       if (nextStep) setStep(nextStep)
     } catch (e) {
       console.error(e)
-      alert("Failed to update status")
+      alert(e.response?.data?.message || "Failed to update status")
     } finally {
       setIsProcessing(false)
     }
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-md mx-auto">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-[#5B5BFF] animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 font-bold text-sm">Loading task details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const merchant = delivery?.order?.items?.[0]?.product?.merchant
+  const customer = delivery?.order?.user
+  const address = delivery?.order?.delivery_address
+  const deliveryFee = delivery?.order?.delivery_fee || 650
+  const itemsCount = delivery?.order?.items?.length || 1
 
   // ── NEW ORDER MODAL ────────────────────────────────────────────
   if (step === STEPS.NEW_ORDER) {
@@ -158,7 +200,7 @@ export default function ActiveDelivery() {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400 mb-0.5">Estimated Fee</p>
-              <p className="text-2xl font-black" style={{ color: '#22c55e' }}>₦650.00</p>
+              <p className="text-2xl font-black" style={{ color: '#22c55e' }}>₦{Number(deliveryFee).toLocaleString()}</p>
             </div>
           </div>
 
@@ -168,8 +210,8 @@ export default function ActiveDelivery() {
               <span className="text-3xl">🍔</span>
             </div>
             <div>
-              <p className="font-bold text-gray-900">The Burger Joint</p>
-              <p className="text-sm text-gray-400">Victoria Island, Phase 1</p>
+              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
+              <p className="text-sm text-gray-400">{merchant?.city || 'Victoria Island'}</p>
             </div>
           </div>
 
@@ -184,13 +226,13 @@ export default function ActiveDelivery() {
             <div className="flex flex-col gap-4 flex-1">
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pickup</p>
-                <p className="font-bold text-gray-900 text-sm">12B Admiralty Way, Lekki</p>
-                <p className="text-xs text-gray-400">2.4 km away • 6 mins</p>
+                <p className="font-bold text-gray-900 text-sm">{merchant?.address_line1 || 'Merchant Address'}</p>
+                <p className="text-xs text-gray-400">{delivery?.distance ? `${delivery.distance}km` : '1.5km'} away • 5 mins</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Dropoff</p>
-                <p className="font-bold text-gray-900 text-sm">Eko Atlantic City Towers</p>
-                <p className="text-xs text-gray-400">8.1 km trip • 18 mins</p>
+                <p className="font-bold text-gray-900 text-sm">{address?.address_line1 || 'Customer Address'}</p>
+                <p className="text-xs text-gray-400">{itemsCount} items</p>
               </div>
             </div>
           </div>
@@ -218,7 +260,7 @@ export default function ActiveDelivery() {
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         <div className="relative" style={{ height: '55vh' }}>
           <MapBg height="100%">
-            <OrderHeader onBack={() => setStep(STEPS.NEW_ORDER)} />
+            <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
             <MapFabs />
           </MapBg>
         </div>
@@ -227,11 +269,11 @@ export default function ActiveDelivery() {
         <div className="grid grid-cols-2 gap-3 px-4 py-3 bg-gray-50">
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimated Arrival</p>
-            <p className="text-xl font-black text-gray-900">8 mins</p>
+            <p className="text-xl font-black text-gray-900">5 mins</p>
           </div>
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Distance</p>
-            <p className="text-xl font-black text-gray-900">2.4 km</p>
+            <p className="text-xl font-black text-gray-900">{delivery?.distance ? `${delivery.distance}km` : '1.5km'}</p>
           </div>
         </div>
 
@@ -263,12 +305,12 @@ export default function ActiveDelivery() {
               <span className="text-2xl">🍔</span>
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900">The Burger Joint</p>
-              <p className="text-xs text-gray-400">42 Admiralty Way, Lekki Phase 1,...</p>
+              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
+              <p className="text-xs text-gray-400">{merchant?.address_line1 || 'Merchant Address'}</p>
             </div>
-            <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+            <a href={`tel:${merchant?.phone || '000'}`} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
               <Phone size={16} style={{ color: '#5B5BFF' }} />
-            </button>
+            </a>
             <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
               <Navigation size={16} style={{ color: '#5B5BFF' }} />
             </button>
@@ -278,16 +320,16 @@ export default function ActiveDelivery() {
           <div className="flex items-center justify-between bg-gray-50 rounded-2xl px-4 py-3 mb-5">
             <div className="flex items-center gap-3">
               <Package size={18} className="text-gray-400" />
-              <span className="text-sm font-semibold text-gray-700">3 Items • Ready for pickup</span>
+              <span className="text-sm font-semibold text-gray-700">{itemsCount} Items • Ready for pickup</span>
             </div>
-            <button className="text-xs font-bold" style={{ color: '#5B5BFF' }}>Details</button>
+            <button onClick={() => setStep(STEPS.CONFIRM_PICKUP)} className="text-xs font-bold" style={{ color: '#5B5BFF' }}>Checklist</button>
           </div>
 
           {/* CTA */}
-          <button onClick={() => handleStatusUpdate('arrived', STEPS.CONFIRM_PICKUP)} disabled={isProcessing}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
+          <button onClick={() => setStep(STEPS.CONFIRM_PICKUP)}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
             style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-            {isProcessing ? 'Updating...' : 'Arrived at Pickup'}
+            Arrived at Pickup
           </button>
         </div>
       </div>
@@ -301,7 +343,7 @@ export default function ActiveDelivery() {
         {/* Map */}
         <div className="relative" style={{ height: '28vh' }}>
           <MapBg height="100%">
-            <OrderHeader onBack={() => setStep(STEPS.HEADING_PICKUP)} />
+            <OrderHeader onBack={() => setStep(STEPS.HEADING_PICKUP)} orderId={delivery?.order_id || id} />
           </MapBg>
         </div>
 
@@ -320,31 +362,28 @@ export default function ActiveDelivery() {
             </div>
             <div className="flex-1">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Delivering To</p>
-              <p className="font-bold text-gray-900">Adaeze O.</p>
+              <p className="font-bold text-gray-900">{customer?.full_name || 'Customer'}</p>
             </div>
             <button className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
               <MessageSquare size={14} className="text-white" />
             </button>
-            <button className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center ml-1">
+            <a href={`tel:${customer?.phone || '000'}`} className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center ml-1">
               <Phone size={14} className="text-white" />
-            </button>
+            </a>
           </div>
 
           {/* Order summary */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Order Summary</p>
-            <p className="text-[10px] font-bold" style={{ color: '#5B5BFF' }}>ID: #88219</p>
+            <p className="text-[10px] font-bold" style={{ color: '#5B5BFF' }}>ID: #{delivery?.order_id || id}</p>
           </div>
           <div className="flex flex-col gap-3 mb-5">
-            {[
-              { qty: '2×', name: 'Jollof Rice & Grilled Chicken', note: 'Extra Spice, Side Salad' },
-              { qty: '1×', name: 'Fresh Zobo Drink (500ml)', note: 'No Sugar Added' },
-            ].map(item => (
-              <div key={item.name} className="flex gap-3 items-start">
-                <span className="text-xs font-black text-gray-400 w-6 flex-shrink-0 mt-0.5">{item.qty}</span>
+            {(delivery?.order?.items || []).map((item, idx) => (
+              <div key={idx} className="flex gap-3 items-start">
+                <span className="text-xs font-black text-gray-400 w-6 flex-shrink-0 mt-0.5">{item.quantity}×</span>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                  <p className="text-xs text-gray-400">{item.note}</p>
+                  <p className="text-sm font-bold text-gray-900">{item.product?.name || 'Item'}</p>
+                  <p className="text-xs text-gray-400">{item.product?.description || ''}</p>
                 </div>
               </div>
             ))}
@@ -376,7 +415,7 @@ export default function ActiveDelivery() {
         {/* Map full top */}
         <div className="relative flex-1" style={{ minHeight: '50vh' }}>
           <MapBg height="100%">
-            <OrderHeader onBack={() => setStep(STEPS.CONFIRM_PICKUP)} />
+            <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
 
             {/* Floating turn card */}
             <div className="absolute left-4 right-4 z-20" style={{ top: '90px' }}>
@@ -417,13 +456,13 @@ export default function ActiveDelivery() {
           {/* Customer info */}
           <div className="flex items-start justify-between mb-5">
             <div>
-              <p className="text-xl font-black text-gray-900">Adaeze O.</p>
-              <p className="text-sm text-gray-400 mt-0.5">Lekki Phase 1, Block 12, Apt 4B</p>
+              <p className="text-xl font-black text-gray-900">{customer?.full_name || 'Customer'}</p>
+              <p className="text-sm text-gray-400 mt-0.5">{address?.address_line1 || 'Customer Address'}</p>
             </div>
             <div className="flex gap-2">
-              <button className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
+              <a href={`tel:${customer?.phone || '000'}`} className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
                 <Phone size={16} className="text-gray-600" />
-              </button>
+              </a>
               <button className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
                 <MessageSquare size={16} className="text-gray-600" />
               </button>
@@ -434,18 +473,18 @@ export default function ActiveDelivery() {
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-gray-50 rounded-2xl px-4 py-3">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Time to Dropoff</p>
-              <p className="text-xl font-black text-gray-900">8 mins</p>
+              <p className="text-xl font-black text-gray-900">12 mins</p>
             </div>
             <div className="bg-gray-50 rounded-2xl px-4 py-3">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Earnings</p>
-              <p className="text-xl font-black text-gray-900">₦1,450.00</p>
+              <p className="text-xl font-black text-gray-900">₦{Number(deliveryFee).toLocaleString()}</p>
             </div>
           </div>
 
-          <button onClick={() => handleStatusUpdate('arrived_dropoff', STEPS.CONFIRM_DELIVERY)} disabled={isProcessing}
-            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
+          <button onClick={() => setStep(STEPS.CONFIRM_DELIVERY)}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
             style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-            {isProcessing ? 'Updating...' : 'Confirm Arrival'}
+            Confirm Arrival
           </button>
         </div>
       </div>
@@ -481,8 +520,8 @@ export default function ActiveDelivery() {
             <Package size={18} style={{ color: '#5B5BFF' }} />
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-sm">Order #KB-8829</p>
-            <p className="text-xs text-gray-400">2 Items • Jollof Rice & Wings</p>
+            <p className="font-bold text-gray-900 text-sm">Order #{delivery?.order_id || id}</p>
+            <p className="text-xs text-gray-400">{itemsCount} Items • {merchant?.name || 'Merchant'}</p>
           </div>
         </div>
 
@@ -492,7 +531,7 @@ export default function ActiveDelivery() {
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
             <span className="text-white text-lg">💰</span>
           </div>
-          <p className="text-white font-bold text-sm">You earned ₦650 for this delivery</p>
+          <p className="text-white font-bold text-sm">You earned ₦{Number(deliveryFee).toLocaleString()} for this delivery</p>
         </div>
 
         {/* Photo upload */}

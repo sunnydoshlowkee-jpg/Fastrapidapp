@@ -1,33 +1,75 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Star, Calendar, BarChart2, Gift, ChevronRight, MapPin, Utensils, ShoppingBasket } from 'lucide-react'
-
-const DELIVERIES = [
-  {
-    id: 1,
-    name: 'Gourmet Burger Kitchen',
-    distance: '2.4km',
-    eta: 'Pickup in 5 mins',
-    amount: '₦1,200',
-    icon: <Utensils size={20} className="text-gray-500" />,
-    status: 'new',
-  },
-  {
-    id: 2,
-    name: 'Fresh Mart Express',
-    distance: '0.8km',
-    eta: 'On the way',
-    amount: '₦850',
-    icon: <ShoppingBasket size={20} className="text-gray-500" />,
-    status: 'active',
-  },
-]
+import { getMe } from '../../../services/authService'
+import { toggleStatus } from '../../../services/riderAuthService'
+import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
+import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 
 export default function RiderDashboard() {
   const navigate = useNavigate()
+  const [riderName, setRiderName] = useState('Chidi')
   const [online, setOnline] = useState(false)
+  const { deliveries, refresh: refreshDeliveries, accept } = useRiderDeliveries()
+  const { earnings, refresh: refreshEarnings } = useRiderEarnings()
 
-  const toggle = () => setOnline(o => !o)
+  useEffect(() => {
+    getMe().then(res => {
+      const u = res.data?.user || res.user || res.data
+      if (u) {
+        setRiderName(u.first_name || u.name?.split(' ')[0] || 'Rider')
+      }
+      
+      const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+      setOnline(riderInfo.is_online || false)
+    }).catch(err => {
+      console.error('Error fetching rider user', err)
+      setRiderName('Rider')
+    })
+  }, [])
+
+  const toggle = async () => {
+    try {
+      const response = await toggleStatus()
+      const newStatus = response.data?.is_online ?? !online
+      setOnline(newStatus)
+      
+      const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+      riderInfo.is_online = newStatus
+      localStorage.setItem('rider_user', JSON.stringify(riderInfo))
+    } catch (err) {
+      console.error('Error toggling rider status', err)
+      alert('Failed to update online status')
+    }
+  }
+
+  useEffect(() => {
+    if (online) {
+      refreshDeliveries(6.5244, 3.3792)
+      const interval = setInterval(() => {
+        refreshDeliveries(6.5244, 3.3792)
+      }, 10000)
+      return () => clearInterval(interval)
+    }
+  }, [online, refreshDeliveries])
+
+  useEffect(() => {
+    refreshEarnings()
+  }, [refreshEarnings])
+
+  const handleAccept = async (deliveryId) => {
+    try {
+      await accept(deliveryId)
+      navigate(`/dispatch/delivery/${deliveryId}`)
+    } catch (err) {
+      console.error(err)
+      alert(err.response?.data?.message || 'Failed to accept delivery. It may have been assigned to another rider.')
+    }
+  }
+
+  const walletBalance = earnings?.wallet?.balance || 0
+  const totalEarnings = earnings?.earnings?.total || 0
+  const totalOrders = earnings?.earnings?.recent?.length || 0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-4">
@@ -36,7 +78,7 @@ export default function RiderDashboard() {
       <div className="sticky top-0 z-50 bg-gray-50 px-5 pt-12 pb-4 flex items-center justify-between">
         <div>
           <p className="text-[17px] font-bold" style={{ color: '#5B5BFF' }}>
-            Good morning, Chidi 👋
+            Good morning, {riderName} 👋
           </p>
         </div>
         <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
@@ -94,8 +136,8 @@ export default function RiderDashboard() {
         {/* ── Today / Orders / Rating ── */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'TODAY', value: online ? '₦1,000' : '₦0.00' },
-            { label: 'ORDERS', value: '0' },
+            { label: 'WALLET', value: `₦${Number(walletBalance).toLocaleString()}` },
+            { label: 'ORDERS', value: String(totalOrders) },
             { label: 'RATING', value: '4.8', star: true },
           ].map(({ label, value, star }) => (
             <div key={label} className="bg-white rounded-2xl px-4 py-4 shadow-sm">
@@ -113,18 +155,18 @@ export default function RiderDashboard() {
           <div className="bg-white rounded-2xl px-4 py-4 shadow-sm">
             <div className="flex items-center gap-1.5 mb-2">
               <Calendar size={13} className="text-gray-400" />
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Weekly</p>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Earnings</p>
             </div>
-            <p className="text-xs text-gray-500 mb-0.5">This Week</p>
-            <p className="text-base font-black text-gray-900">₦42,500</p>
+            <p className="text-xs text-gray-500 mb-0.5">Total Earnings</p>
+            <p className="text-base font-black text-gray-900">₦{Number(totalEarnings).toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-2xl px-4 py-4 shadow-sm">
             <div className="flex items-center gap-1.5 mb-2">
               <BarChart2 size={13} className="text-gray-400" />
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Monthly</p>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Active Task</p>
             </div>
-            <p className="text-xs text-gray-500 mb-0.5">This Month</p>
-            <p className="text-base font-black text-gray-900">₦168,200</p>
+            <p className="text-xs text-gray-500 mb-0.5">Status</p>
+            <p className="text-sm font-black text-green-600">{online ? 'Available' : 'Offline'}</p>
           </div>
         </div>
 
@@ -174,7 +216,7 @@ export default function RiderDashboard() {
         {/* ── Active Deliveries ── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="font-black text-base" style={{ color: '#5B5BFF' }}>Active Deliveries</p>
+            <p className="font-black text-base" style={{ color: '#5B5BFF' }}>Available Deliveries</p>
             <button onClick={() => navigate('/dispatch/deliveries')}
               className="text-xs font-bold text-gray-400 uppercase tracking-wider">
               VIEW ALL
@@ -182,36 +224,58 @@ export default function RiderDashboard() {
           </div>
 
           <div className="space-y-3">
-            {DELIVERIES.map(d => (
-              <div key={d.id} className="bg-white rounded-2xl px-4 py-4 shadow-sm">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                      {d.icon}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm">{d.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{d.distance} • {d.eta}</p>
-                    </div>
-                  </div>
-                  <p className="font-black text-gray-900 text-sm">{d.amount}</p>
-                </div>
-
-                {d.status === 'new' && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => navigate(`/dispatch/delivery/${d.id}`)}
-                      className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold transition-opacity active:opacity-80"
-                      style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
-                      Accept Task
-                    </button>
-                    <button className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold">
-                      Details
-                    </button>
-                  </div>
-                )}
+            {!online ? (
+              <div className="bg-white rounded-2xl px-4 py-8 shadow-sm text-center text-gray-500 text-sm font-semibold">
+                Go online to start receiving orders nearby.
               </div>
-            ))}
+            ) : deliveries.length === 0 ? (
+              <div className="bg-white rounded-2xl px-4 py-8 shadow-sm text-center text-gray-500 text-sm font-semibold">
+                No available deliveries in your area.
+              </div>
+            ) : (
+              deliveries.map(d => {
+                const merchantName = d.order?.items?.[0]?.product?.merchant?.name || 'Food Order'
+                const isGroceries = d.order?.items?.[0]?.product?.category?.name?.toLowerCase().includes('grocery') || false
+                return (
+                  <div key={d.id} className="bg-white rounded-2xl px-4 py-4 shadow-sm">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                          {isGroceries ? (
+                            <ShoppingBasket size={20} className="text-gray-500" />
+                          ) : (
+                            <Utensils size={20} className="text-gray-500" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900 text-sm">{merchantName}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {d.distance ? `${d.distance}km` : '1.5km'} • {d.order?.items?.length || 1} items
+                          </p>
+                        </div>
+                      </div>
+                      <p className="font-black text-gray-900 text-sm">
+                        ₦{Number(d.order?.delivery_fee || 650).toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAccept(d.id)}
+                        className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold transition-opacity active:opacity-80"
+                        style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
+                        Accept Task
+                      </button>
+                      <button 
+                        onClick={() => navigate(`/dispatch/delivery/${d.id}`)}
+                        className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold">
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         </div>
 
