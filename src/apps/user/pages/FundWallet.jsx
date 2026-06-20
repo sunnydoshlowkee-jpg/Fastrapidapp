@@ -1,11 +1,33 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, CreditCard, Building2 } from 'lucide-react'
+import { fundWallet } from '../../../services/walletService'
 
 export default function FundWallet() {
   const navigate = useNavigate()
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('card')
+  const [loading, setLoading] = useState(false)
+
+  const handleFund = async () => {
+    const parsedAmount = Number(amount)
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      alert('Please enter a valid amount to fund.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await fundWallet({ amount: parsedAmount })
+      alert('Wallet funded successfully!')
+      navigate('/app/wallet')
+    } catch (err) {
+      console.error(err)
+      alert(err.response?.data?.message || 'Failed to fund wallet')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
@@ -98,8 +120,12 @@ export default function FundWallet() {
 
           {/* Proceed Button */}
           <div className="mt-auto pb-6 md:pb-0 md:mt-4">
-            <button className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98]">
-              Proceed
+            <button 
+              onClick={handleFund}
+              disabled={loading}
+              className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              {loading ? 'Processing...' : 'Proceed'}
             </button>
           </div>
 
