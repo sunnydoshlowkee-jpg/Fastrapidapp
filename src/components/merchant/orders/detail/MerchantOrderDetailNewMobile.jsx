@@ -1,49 +1,64 @@
-import { useNavigate, useParams } from 'react-router-dom'
-import {
-  getMerchantOrderDetail,
-  orderDetailPreparingPath,
-} from '../../../../services/data/merchantOrderDetail.mock'
+import { useNavigate } from 'react-router-dom'
 import MerchantOrderDetailMobileActionBar from './MerchantOrderDetailMobileActionBar'
 import MerchantOrderDetailMobileCustomerCard from './MerchantOrderDetailMobileCustomerCard'
 import MerchantOrderDetailMobileHeader from './MerchantOrderDetailMobileHeader'
 import MerchantOrderDetailMobileItemsCard from './MerchantOrderDetailMobileItemsCard'
 import MerchantOrderDetailMobilePricingCard from './MerchantOrderDetailMobilePricingCard'
 import MerchantOrderDetailMobileUrgencyBanner from './MerchantOrderDetailMobileUrgencyBanner'
+import MerchantOrderDetailState from './MerchantOrderDetailState'
+import useMerchantOrderDetail from './useMerchantOrderDetail'
 
 export default function MerchantOrderDetailNewMobile() {
-  const { orderId } = useParams()
   const navigate = useNavigate()
-  const order = getMerchantOrderDetail(orderId, 'new')
-  const { mobile } = order
+  const { order, loading, error, actionLoading, acceptOrder, rejectOrder } = useMerchantOrderDetail()
+  const mobile = order?.mobile
 
-  const handleAccept = () => navigate(orderDetailPreparingPath(order.id))
-  const handleReject = () => navigate('/merchant/orders')
+  const handleAccept = async () => {
+    const ok = await acceptOrder()
+    if (ok) {
+      navigate(`/merchant/orders/${order.id}`)
+    }
+  }
+
+  const handleReject = async () => {
+    const ok = await rejectOrder()
+    if (ok) {
+      navigate('/merchant/orders')
+    }
+  }
 
   return (
-    <>
-      <MerchantOrderDetailMobileHeader
-        displayId={order.displayId}
-        statusBadge={order.statusBadge}
-      />
-
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-44 pt-3">
-        <MerchantOrderDetailMobileUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
-
-        <MerchantOrderDetailMobileCustomerCard customer={order.customer} />
-
-        <MerchantOrderDetailMobileItemsCard
-          lineItems={mobile.lineItems}
-          totalValue={mobile.totalValue}
+    <MerchantOrderDetailState loading={loading} error={error} order={order}>
+      <>
+        <MerchantOrderDetailMobileHeader
+          displayId={order.displayId}
+          statusBadge={order.statusBadge}
         />
 
-        <MerchantOrderDetailMobilePricingCard pricing={mobile.pricing} />
-      </div>
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-44 pt-3">
+          {order.dbStatus === 'pending' ? (
+            <MerchantOrderDetailMobileUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
+          ) : null}
 
-      <MerchantOrderDetailMobileActionBar
-        disclaimer={order.acceptDisclaimer}
-        onAccept={handleAccept}
-        onReject={handleReject}
-      />
-    </>
+          <MerchantOrderDetailMobileCustomerCard customer={order.customer} />
+
+          <MerchantOrderDetailMobileItemsCard
+            lineItems={mobile.lineItems}
+            totalValue={mobile.totalValue}
+          />
+
+          <MerchantOrderDetailMobilePricingCard pricing={mobile.pricing} />
+        </div>
+
+        {order.dbStatus === 'pending' ? (
+          <MerchantOrderDetailMobileActionBar
+            disclaimer={order.acceptDisclaimer}
+            onAccept={handleAccept}
+            onReject={handleReject}
+            disabled={actionLoading}
+          />
+        ) : null}
+      </>
+    </MerchantOrderDetailState>
   )
 }

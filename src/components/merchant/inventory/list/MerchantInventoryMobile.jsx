@@ -23,6 +23,10 @@ export default function MerchantInventoryMobile() {
     setPage,
     loading,
     error,
+    toggleAvailability,
+    editProduct,
+    deleteProduct,
+    duplicateProduct,
   } = useMerchantInventoryPage()
 
   return (
@@ -60,7 +64,13 @@ export default function MerchantInventoryMobile() {
       {loading ? (
         <p className="text-sm text-merchant-muted">Loading inventory…</p>
       ) : (
-        <MerchantInventoryMobileProductList products={products} />
+        <MerchantInventoryMobileProductList
+          products={products}
+          onEdit={editProduct}
+          onDelete={deleteProduct}
+          onDuplicate={duplicateProduct}
+          onToggleAvailability={toggleAvailability}
+        />
       )}
 
       <MerchantInventoryMobilePagination

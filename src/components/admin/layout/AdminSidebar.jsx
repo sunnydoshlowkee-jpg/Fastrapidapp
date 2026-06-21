@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { LogOut, X } from 'lucide-react'
 import Logo from '../../brand/Logo'
-import { ADMIN_NAV_SECTIONS } from '../../../services/data/adminNav.mock'
+import { ADMIN_NAV_SECTIONS, buildAdminNavSections } from '../../../services/data/adminNav.mock'
 import { ADMIN_LOGIN_PATH } from '../../../services/data/adminAuth.mock'
 import { clearAdminSession } from '../../../services/adminAuthService'
 
@@ -18,9 +18,10 @@ function NavBadge({ count, tone }) {
   )
 }
 
-export default function AdminSidebar({ sidebar, variant = 'static', onClose }) {
+export default function AdminSidebar({ sidebar, navCounts, variant = 'static', onClose }) {
   const navigate = useNavigate()
   const isDrawer = variant === 'drawer'
+  const navSections = buildAdminNavSections(navCounts)
 
   const handleLogout = () => {
     clearAdminSession()
@@ -79,7 +80,7 @@ export default function AdminSidebar({ sidebar, variant = 'static', onClose }) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-        {ADMIN_NAV_SECTIONS.map((section) => (
+        {navSections.map((section) => (
           <div key={section.id} className="mb-2">
             <p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-gray-400">
               {section.label}

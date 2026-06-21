@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import AdminMobileMenuButton from '../components/admin/layout/AdminMobileMenuButton'
 import AdminSidebar from '../components/admin/layout/AdminSidebar'
 import AdminTopHeader from '../components/admin/layout/AdminTopHeader'
 import { ADMIN_DASHBOARD } from '../services/data/adminDashboard.mock'
+import { fetchAdminNavCounts } from '../services/adminDashboardService'
+import { getAdminAuthToken } from '../services/adminAuthService'
+import api from '../services/api'
 import { ADMIN_AUDIT_LOG_PATH } from '../services/data/adminAuditLog.mock'
 import { ADMIN_DISPUTES_PATH } from '../services/data/adminDisputes.mock'
 import { ADMIN_ORDERS_PATH } from '../services/data/adminOrders.mock'
@@ -29,6 +32,53 @@ import {
 export default function AdminLayout() {
   const { pathname } = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [navCounts, setNavCounts] = useState({})
+  const [sidebarUser, setSidebarUser] = useState(ADMIN_DASHBOARD.sidebar.user)
+
+  useEffect(() => {
+    const load = async () => {
+      if (!getAdminAuthToken()) return
+
+      try {
+        const [{ data: meData }, counts] = await Promise.all([
+          api.get('/admin/me'),
+          fetchAdminNavCounts(),
+        ])
+
+        const user = meData?.data?.user
+        if (user?.name) {
+          const initials = user.name
+            .split(' ')
+            .filter(Boolean)
+            .map((part) => part[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase()
+
+          setSidebarUser({
+            name: user.name,
+            role: 'Super Admin',
+            initials: initials || 'AD',
+            showRolePill: true,
+          })
+        }
+
+        setNavCounts(counts)
+      } catch {
+        setNavCounts({})
+      }
+    }
+
+    load()
+  }, [])
+
+  const sidebar = useMemo(
+    () => ({
+      ...ADMIN_DASHBOARD.sidebar,
+      user: sidebarUser,
+    }),
+    [sidebarUser],
+  )
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -153,7 +203,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-[#F5F6F8] font-sans text-gray-900">
       <div className="hidden lg:flex">
-        <AdminSidebar sidebar={ADMIN_DASHBOARD.sidebar} />
+        <AdminSidebar sidebar={sidebar} navCounts={navCounts} />
       </div>
 
       {drawerOpen ? (
@@ -166,7 +216,8 @@ export default function AdminLayout() {
           />
           <div className="relative z-10 flex max-h-full max-w-[18rem]">
             <AdminSidebar
-              sidebar={ADMIN_DASHBOARD.sidebar}
+              sidebar={sidebar}
+              navCounts={navCounts}
               variant="drawer"
               onClose={() => setDrawerOpen(false)}
             />

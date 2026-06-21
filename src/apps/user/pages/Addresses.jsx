@@ -12,6 +12,45 @@ export default function Addresses() {
   
   const [showAddModal, setShowAddModal] = useState(false)
   const [newAddress, setNewAddress] = useState({ type: 'home', address: '', is_default: false })
+  const [formErrors, setFormErrors] = useState({})
+  const [submitError, setSubmitError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const resetAddForm = () => {
+    setNewAddress({ type: 'home', address: '', is_default: false })
+    setFormErrors({})
+    setSubmitError('')
+  }
+
+  const openAddModal = () => {
+    resetAddForm()
+    setShowAddModal(true)
+  }
+
+  const closeAddModal = () => {
+    setShowAddModal(false)
+    resetAddForm()
+  }
+
+  const validateAddressForm = () => {
+    const errors = {}
+    const trimmedAddress = newAddress.address.trim()
+
+    if (!trimmedAddress) {
+      errors.address = 'Full address is required.'
+    } else if (trimmedAddress.length < 10) {
+      errors.address = 'Please enter a complete address (at least 10 characters).'
+    } else if (trimmedAddress.length > 500) {
+      errors.address = 'Address is too long (maximum 500 characters).'
+    }
+
+    if (!['home', 'work', 'other'].includes(newAddress.type)) {
+      errors.type = 'Please select a valid address type.'
+    }
+
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
 
   const fetchAddresses = async () => {
     try {
@@ -20,6 +59,7 @@ export default function Addresses() {
       setAddresses(data.data || [])
     } catch (err) {
       console.error(err)
+      setSubmitError(err?.message || 'Could not load addresses.')
     } finally {
       setLoading(false)
     }
@@ -31,14 +71,23 @@ export default function Addresses() {
 
   const handleAddAddress = async (e) => {
     e.preventDefault()
+    setSubmitError('')
+
+    if (!validateAddressForm()) return
+
+    setSaving(true)
     try {
-      await createAddress(newAddress)
-      setShowAddModal(false)
-      setNewAddress({ type: 'home', address: '', is_default: false })
-      fetchAddresses()
+      await createAddress({
+        type: newAddress.type,
+        address: newAddress.address.trim(),
+        is_default: newAddress.is_default,
+      })
+      closeAddModal()
+      await fetchAddresses()
     } catch (err) {
-      console.error(err)
-      alert(err.response?.data?.message || 'Failed to add address')
+      setSubmitError(err?.message || 'Failed to add address.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -46,18 +95,18 @@ export default function Addresses() {
     if (!window.confirm('Are you sure you want to delete this address?')) return
     try {
       await deleteAddress(id)
-      fetchAddresses()
+      await fetchAddresses()
     } catch (err) {
-      console.error(err)
+      setSubmitError(err?.message || 'Could not delete address.')
     }
   }
 
   const handleSetDefault = async (id) => {
     try {
       await setDefaultAddress(id)
-      fetchAddresses()
+      await fetchAddresses()
     } catch (err) {
-      console.error(err)
+      setSubmitError(err?.message || 'Could not update default address.')
     }
   }
 
@@ -89,7 +138,7 @@ export default function Addresses() {
       <div className="md:hidden flex-1 px-6 w-full max-w-md mx-auto pt-2">
         {/* Add Address Mobile Button */}
         <button 
-          onClick={() => setShowAddModal(true)}
+          onClick={openAddModal}
           className="w-full bg-white text-[#4F46E5] border border-[#4F46E5] py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors text-[13px] mb-8"
         >
           <Plus size={16} strokeWidth={3} /> Add New Address
@@ -199,7 +248,7 @@ export default function Addresses() {
           <div className="flex items-center justify-between mb-8 pb-8 border-b border-gray-100">
             <h2 className="text-[24px] font-bold text-gray-900">Saved Addresses</h2>
             <button 
-              onClick={() => setShowAddModal(true)}
+              onClick={openAddModal}
               className="bg-[#2D2AEE] hover:bg-blue-700 text-white font-bold px-6 py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-500/20 text-[15px] flex items-center gap-2"
             >
               <Plus size={18} strokeWidth={3} /> Add New Address
@@ -277,39 +326,59 @@ export default function Addresses() {
       {/* Add Address Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeAddModal}></div>
           <div className="bg-white w-full max-w-lg rounded-[32px] p-8 relative z-10 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-[22px] font-bold text-gray-900">Add New Address</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-700">
+              <button type="button" onClick={closeAddModal} className="text-gray-400 hover:text-gray-700">
                 <X size={24} />
               </button>
             </div>
+
+            {submitError ? (
+              <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</p>
+            ) : null}
             
-            <form onSubmit={handleAddAddress} className="flex flex-col gap-5">
+            <form onSubmit={handleAddAddress} noValidate className="flex flex-col gap-5">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Address Type</label>
+                <label htmlFor="address-type" className="block text-sm font-bold text-gray-700 mb-2">Address Type</label>
                 <select 
+                  id="address-type"
                   value={newAddress.type}
-                  onChange={(e) => setNewAddress({...newAddress, type: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#4F46E5]"
-                  required
+                  onChange={(e) => {
+                    setNewAddress({ ...newAddress, type: e.target.value })
+                    if (formErrors.type) setFormErrors((prev) => ({ ...prev, type: '' }))
+                  }}
+                  className={`w-full bg-gray-50 border text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none ${
+                    formErrors.type ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#4F46E5]'
+                  }`}
                 >
                   <option value="home">Home</option>
                   <option value="work">Work</option>
                   <option value="other">Other</option>
                 </select>
+                {formErrors.type ? <p className="mt-1.5 text-sm text-red-600">{formErrors.type}</p> : null}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Full Address</label>
+                <label htmlFor="full-address" className="block text-sm font-bold text-gray-700 mb-2">Full Address</label>
                 <textarea 
+                  id="full-address"
                   value={newAddress.address}
-                  onChange={(e) => setNewAddress({...newAddress, address: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none focus:border-[#4F46E5] resize-none h-24"
+                  onChange={(e) => {
+                    setNewAddress({ ...newAddress, address: e.target.value })
+                    if (formErrors.address) setFormErrors((prev) => ({ ...prev, address: '' }))
+                  }}
+                  className={`w-full bg-gray-50 border text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none resize-none h-24 ${
+                    formErrors.address ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-[#4F46E5]'
+                  }`}
                   placeholder="e.g. Block 4, Flat 12, Admiralty Way, Lekki Phase 1, Lagos"
-                  required
                 />
+                {formErrors.address ? (
+                  <p className="mt-1.5 text-sm text-red-600">{formErrors.address}</p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-gray-500">Enter your street, area, and city.</p>
+                )}
               </div>
 
               <div className="flex items-center gap-3">
@@ -317,7 +386,7 @@ export default function Addresses() {
                   type="checkbox" 
                   id="is_default"
                   checked={newAddress.is_default}
-                  onChange={(e) => setNewAddress({...newAddress, is_default: e.target.checked})}
+                  onChange={(e) => setNewAddress({ ...newAddress, is_default: e.target.checked })}
                   className="w-5 h-5 accent-[#4F46E5]"
                 />
                 <label htmlFor="is_default" className="text-sm font-medium text-gray-700">Set as default address</label>
@@ -325,9 +394,10 @@ export default function Addresses() {
 
               <button 
                 type="submit"
-                className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors text-[15px] mt-2"
+                disabled={saving}
+                className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-colors text-[15px] mt-2 disabled:opacity-60"
               >
-                Save Address
+                {saving ? 'Saving…' : 'Save Address'}
               </button>
             </form>
           </div>

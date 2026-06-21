@@ -1,59 +1,67 @@
-import { useMemo, useState } from 'react'
-import {
-  MERCHANT_ORDERS_LIST,
-  MERCHANT_ORDERS_PAGINATION,
-} from '../../../services/data/merchantOrders.mock'
-
-function filterOrders(orders, activeFilter, searchQuery) {
-  let result = orders
-
-  if (activeFilter !== 'all') {
-    result = result.filter((o) => o.status === activeFilter)
-  }
-
-  const q = searchQuery.trim().toLowerCase()
-  if (q) {
-    result = result.filter(
-      (o) =>
-        o.displayId.toLowerCase().includes(q) ||
-        o.customer.name.toLowerCase().includes(q) ||
-        o.itemsSummary.toLowerCase().includes(q)
-    )
-  }
-
-  return result
-}
+import { useEffect, useMemo, useState } from 'react'
+import { getMerchantOrders } from '../../../services/merchantOrdersService'
+import { MERCHANT_ORDERS_PAGINATION } from '../../../services/data/merchantOrders.mock'
 
 export default function useMerchantOrdersPage() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [orders, setOrders] = useState([])
+  const [filterCounts, setFilterCounts] = useState({})
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: MERCHANT_ORDERS_PAGINATION.pageSize,
+    total: 0,
+    lastPage: 1,
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const filterCounts = useMemo(() => {
-    const counts = {}
-    MERCHANT_ORDERS_LIST.forEach((o) => {
-      counts[o.status] = (counts[o.status] || 0) + 1
-    })
-    return counts
-  }, [])
+  useEffect(() => {
+    let cancelled = false
 
-  const filteredOrders = useMemo(
-    () => filterOrders(MERCHANT_ORDERS_LIST, activeFilter, searchQuery),
-    [activeFilter, searchQuery]
-  )
+    const loadOrders = async () => {
+      setLoading(true)
+      setError('')
 
-  const pageSize = MERCHANT_ORDERS_PAGINATION.pageSize
-  const total =
-    searchQuery || activeFilter !== 'all'
-      ? filteredOrders.length
-      : MERCHANT_ORDERS_PAGINATION.total
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const safePage = Math.min(page, totalPages)
+      try {
+        const result = await getMerchantOrders({
+          status: activeFilter,
+          search: searchQuery,
+          page,
+          perPage: MERCHANT_ORDERS_PAGINATION.pageSize,
+        })
 
-  const paginatedOrders = useMemo(() => {
-    const start = (safePage - 1) * pageSize
-    return filteredOrders.slice(start, start + pageSize)
-  }, [filteredOrders, safePage, pageSize])
+        if (!cancelled) {
+          setOrders(result.orders)
+          setFilterCounts(result.filterCounts)
+          setPagination({
+            page: result.meta.current_page,
+            pageSize: result.meta.per_page,
+            total: result.meta.total,
+            lastPage: result.meta.last_page,
+          })
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.message || 'Could not load orders.')
+          setOrders([])
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadOrders()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeFilter, searchQuery, page])
+
+  const paginatedOrders = useMemo(() => orders, [orders])
 
   const handleFilterChange = (id) => {
     setActiveFilter(id)
@@ -70,12 +78,14 @@ export default function useMerchantOrdersPage() {
     filterCounts,
     paginatedOrders,
     searchQuery,
+    loading,
+    error,
     handleFilterChange,
     handleSearchChange,
     pagination: {
-      page: safePage,
-      pageSize,
-      total,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      total: pagination.total,
     },
     setPage,
   }

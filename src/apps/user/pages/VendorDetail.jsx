@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, ShoppingCart, Star, Plus, Search, MapPin, Minus, Arro
 import { useCart } from '../../../context/CartContext'
 import { getVendor } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
+import { resolveStorageUrl } from '../../../utils/mediaUrl'
 
 export default function VendorDetail() {
   const navigate = useNavigate()
@@ -35,6 +36,8 @@ export default function VendorDetail() {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
   }
+
+  const productImage = (url) => resolveStorageUrl(url) || url
 
   const { merchant, products } = vendorData || {}
 
@@ -81,18 +84,18 @@ export default function VendorDetail() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-32 md:pb-12">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-28 md:pb-12">
       
       {/* -------------------------------------------------------------------------------- */}
       {/*                                 MOBILE LAYOUT                                      */}
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Header Image & Top Nav */}
-      <div className="relative h-60 w-full rounded-b-3xl md:rounded-3xl overflow-hidden md:h-80 md:mb-6 shadow-sm">
-        <img src={merchant.img} alt="Vendor Cover" className="w-full h-full object-cover" />
+      <div className="relative h-56 w-full shrink-0 overflow-hidden rounded-b-3xl shadow-sm md:hidden">
+        <img src={productImage(merchant.img)} alt="Vendor Cover" className="h-full w-full object-cover" />
         
         {/* Top actions */}
-        <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />
           </button>
@@ -109,8 +112,8 @@ export default function VendorDetail() {
       </div>
 
       {/* Vendor Info Card */}
-      <div className="md:hidden w-full max-w-md mx-auto px-6 -mt-10 relative z-10">
-        <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100">
+      <div className="relative z-10 mx-auto -mt-8 w-full max-w-md px-4 md:hidden">
+        <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-lg">
           <h1 className="text-xl font-bold text-gray-900 mb-1.5 tracking-tight">{merchant.name}</h1>
           <p className="text-[11px] text-gray-500 font-medium mb-4 leading-relaxed">
             {merchant.description}
@@ -132,7 +135,7 @@ export default function VendorDetail() {
       </div>
 
       {/* Content Area */}
-      <div className="md:hidden w-full max-w-md mx-auto px-6 mt-6 flex flex-col">
+      <div className="mx-auto mt-4 flex w-full max-w-md flex-col px-4 pb-6 md:hidden">
         
         {/* Main Tabs (Menu, Info, Reviews) */}
         <div className="flex bg-[#F4F5F7] p-1.5 rounded-2xl mb-6">
@@ -193,7 +196,7 @@ export default function VendorDetail() {
                     </div>
                   </div>
                   <div className="w-[88px] h-[88px] rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img src={productImage(item.img)} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
                 </div>
               ))}
@@ -214,10 +217,10 @@ export default function VendorDetail() {
 
       {/* Floating View Cart Button */}
       {count > 0 && (
-        <div className="md:hidden fixed bottom-6 left-0 right-0 px-6 z-40">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-40 px-4 md:hidden">
           <button 
             onClick={() => navigate('/app/cart')}
-            className="w-full max-w-md mx-auto bg-[#4F46E5] text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-colors flex items-center justify-between px-6"
+            className="mx-auto flex w-full max-w-md items-center justify-between rounded-2xl bg-[#4F46E5] px-6 py-4 font-bold text-white shadow-xl shadow-indigo-200 transition-colors hover:bg-indigo-700"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -263,7 +266,7 @@ export default function VendorDetail() {
         {/* Desktop Banner */}
         <div className="w-full bg-gradient-to-r from-[#8B2A2A] to-[#D64B29] overflow-hidden mb-12 relative h-[320px] flex items-center shadow-md rounded-3xl">
           {/* Mock Character Image on the right */}
-          <img src={merchant.img} alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
+          <img src={productImage(merchant.img)} alt="Character" className="absolute right-0 bottom-0 h-[110%] object-cover translate-x-10 mix-blend-overlay opacity-60" />
           
           <div className="relative z-10 px-14 w-[65%]">
             <div className="flex items-center gap-3 mb-5">
@@ -309,7 +312,7 @@ export default function VendorDetail() {
               {desktopFilteredProducts.map(item => (
                 <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col group">
                   <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-5 bg-gray-50">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={productImage(item.img)} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-bold text-[20px] text-gray-900 group-hover:text-[#2D2AEE] transition-colors">{item.name}</h3>
@@ -348,7 +351,7 @@ export default function VendorDetail() {
                 {cartItems.map(item => (
                   <div key={item.id} className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-50">
-                      <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={productImage(item.img)} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-1">

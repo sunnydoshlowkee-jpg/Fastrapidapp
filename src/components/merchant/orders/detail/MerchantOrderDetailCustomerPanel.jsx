@@ -15,10 +15,12 @@ export default function MerchantOrderDetailCustomerPanel({ customer }) {
           <div className="min-w-0 flex-1">
             <p className="text-base font-bold text-merchant-ink">{customer.name}</p>
             <p className="mt-0.5 text-xs text-merchant-muted">{customer.memberSince}</p>
-            <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#E67E22]">
-              <Star size={14} className="fill-[#E67E22] text-[#E67E22]" aria-hidden />
-              {customer.rating}
-            </p>
+            {customer.rating ? (
+              <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#E67E22]">
+                <Star size={14} className="fill-[#E67E22] text-[#E67E22]" aria-hidden />
+                {customer.rating}
+              </p>
+            ) : null}
           </div>
         </div>
 

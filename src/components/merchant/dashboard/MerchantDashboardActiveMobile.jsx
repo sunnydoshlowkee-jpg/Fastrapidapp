@@ -1,56 +1,39 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { orderDetailPreparingPath } from '../../../services/data/merchantOrderDetail.mock'
+import { useEffect, useState } from 'react'
 import MerchantMobileHeader from './MerchantMobileHeader'
 import MerchantMobileStatCard from './MerchantMobileStatCard'
 import MerchantLiveOrdersMobilePanel from './MerchantLiveOrdersMobilePanel'
 import MerchantStockAlertsMobilePanel from './MerchantStockAlertsMobilePanel'
-import MerchantIncomingOrderDrawer from './MerchantIncomingOrderDrawer'
-import { MERCHANT_DASHBOARD_ACTIVE_MOBILE } from '../../../services/data/merchantDashboard.mock'
-import { MERCHANT_INCOMING_ORDER } from '../../../services/data/merchantIncomingOrder.mock'
+import { MERCHANT_DASHBOARD_ACTIVE } from '../../../services/data/merchantDashboard.mock'
 
-export default function MerchantDashboardActiveMobile() {
-  const navigate = useNavigate()
-  const { stats, liveOrders: initialLiveOrders, stockAlerts } = MERCHANT_DASHBOARD_ACTIVE_MOBILE
+export default function MerchantDashboardActiveMobile({
+  stats,
+  liveOrders: initialLiveOrders,
+  onOrderAction,
+}) {
   const [liveOrders, setLiveOrders] = useState(initialLiveOrders)
-  const [incomingOpen, setIncomingOpen] = useState(false)
-  const [incomingOrderId, setIncomingOrderId] = useState(null)
+  const stockAlerts = MERCHANT_DASHBOARD_ACTIVE.stockAlerts
 
-  const openIncomingForOrder = (orderId) => {
-    setIncomingOrderId(orderId)
-    setIncomingOpen(true)
-  }
+  useEffect(() => {
+    setLiveOrders(initialLiveOrders)
+  }, [initialLiveOrders])
 
-  const closeIncoming = () => {
-    setIncomingOpen(false)
-    setIncomingOrderId(null)
-  }
-
-  const handleRowReject = (orderId) => {
+  const handleRowReject = async (orderId) => {
+    const numericId = String(orderId).replace(/\D+/g, '')
+    await onOrderAction?.(numericId, 'reject')
     setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
   }
 
-  const handleDrawerAccept = () => {
-    if (!incomingOrderId) return
+  const handleAccept = async (orderId) => {
+    const numericId = String(orderId).replace(/\D+/g, '')
+    await onOrderAction?.(numericId, 'accept')
     setLiveOrders((prev) =>
-      prev.map((o) =>
-        o.id === incomingOrderId && o.status === 'pending'
-          ? { ...o, status: 'ready', badge: 'Ready' }
-          : o
-      )
+      prev.map((o) => (o.id === orderId ? { ...o, status: 'ready', badge: 'Ready' } : o))
     )
-    closeIncoming()
-    navigate(orderDetailPreparingPath('KA-8921'))
   }
 
-  const handleDrawerReject = () => {
-    if (incomingOrderId) {
-      setLiveOrders((prev) => prev.filter((o) => o.id !== incomingOrderId))
-    }
-    closeIncoming()
-  }
-
-  const handleDelivered = (orderId) => {
+  const handleDelivered = async (orderId) => {
+    const numericId = String(orderId).replace(/\D+/g, '')
+    await onOrderAction?.(numericId, 'ready')
     setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
   }
 
@@ -72,19 +55,11 @@ export default function MerchantDashboardActiveMobile() {
 
       <MerchantLiveOrdersMobilePanel
         orders={liveOrders}
-        onAccept={openIncomingForOrder}
+        onAccept={handleAccept}
         onReject={handleRowReject}
         onDelivered={handleDelivered}
       />
       <MerchantStockAlertsMobilePanel stockAlerts={stockAlerts} />
-
-      <MerchantIncomingOrderDrawer
-        isOpen={incomingOpen}
-        order={MERCHANT_INCOMING_ORDER}
-        onClose={closeIncoming}
-        onAccept={handleDrawerAccept}
-        onReject={handleDrawerReject}
-      />
     </div>
   )
 }

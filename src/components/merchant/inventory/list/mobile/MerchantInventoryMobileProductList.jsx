@@ -1,4 +1,5 @@
-import { AlertTriangle, MoreHorizontal } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
+import MerchantInventoryRowActions from '../MerchantInventoryRowActions'
 
 function StatusBadge({ stockWarning }) {
   if (stockWarning) {
@@ -17,7 +18,13 @@ function StatusBadge({ stockWarning }) {
   )
 }
 
-export default function MerchantInventoryMobileProductList({ products }) {
+export default function MerchantInventoryMobileProductList({
+  products,
+  onEdit,
+  onDelete,
+  onDuplicate,
+  onToggleAvailability,
+}) {
   if (!products.length) {
     return (
       <p className="rounded-merchant-stat bg-merchant-surface px-4 py-8 text-center text-sm text-merchant-muted shadow-merchant-stat">
@@ -50,13 +57,14 @@ export default function MerchantInventoryMobileProductList({ products }) {
                   <StatusBadge stockWarning={product.stockWarning} />
                 </div>
               </div>
-              <button
-                type="button"
-                className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-full bg-merchant-icon-tile text-merchant-muted"
-                aria-label={`Actions for ${product.name}`}
-              >
-                <MoreHorizontal size={16} strokeWidth={2} />
-              </button>
+              <MerchantInventoryRowActions
+                product={product}
+                icon="horizontal"
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onDuplicate={onDuplicate}
+                onToggleAvailability={(item) => onToggleAvailability(item.id)}
+              />
             </div>
           </article>
         </li>

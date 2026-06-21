@@ -4,6 +4,7 @@ export default function MerchantOrderDetailPreparingBanner({
   title,
   targetCompletion,
   onMarkReady,
+  disabled = false,
 }) {
   return (
     <article className="flex flex-col gap-4 rounded-merchant-stat border-l-4 border-merchant-primary bg-merchant-surface p-4 shadow-merchant-stat sm:flex-row sm:items-center sm:justify-between sm:p-5">
@@ -21,7 +22,8 @@ export default function MerchantOrderDetailPreparingBanner({
       <button
         type="button"
         onClick={onMarkReady}
-        className="w-full shrink-0 rounded-lg bg-merchant-primary px-5 py-3 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] sm:w-auto"
+        disabled={disabled}
+        className="w-full shrink-0 rounded-lg bg-merchant-primary px-5 py-3 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
         Mark Ready for Pickup
       </button>

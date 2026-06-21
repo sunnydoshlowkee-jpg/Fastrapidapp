@@ -1,4 +1,10 @@
-import { ADMIN_DASHBOARD } from '../../../services/data/adminDashboard.mock'
+import { useEffect, useState } from 'react'
+import {
+  fetchAdminDashboard,
+  mapAdminDashboardFromApi,
+} from '../../../services/adminDashboardService'
+import { getAdminAuthToken } from '../../../services/adminAuthService'
+import api from '../../../services/api'
 import AdminDashboardAvailability from './AdminDashboardAvailability'
 import AdminDashboardExceptionAlerts from './AdminDashboardExceptionAlerts'
 import AdminDashboardKpiCards from './AdminDashboardKpiCards'
@@ -6,7 +12,58 @@ import AdminDashboardLiveTelemetry from './AdminDashboardLiveTelemetry'
 import AdminDashboardTopVendors from './AdminDashboardTopVendors'
 
 export default function AdminDashboardPage() {
-  const data = ADMIN_DASHBOARD
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const load = async () => {
+      if (!getAdminAuthToken()) {
+        setError('Please sign in to view the dashboard.')
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError('')
+
+        let adminName = 'Admin'
+        try {
+          const { data: meData } = await api.get('/admin/me')
+          adminName = meData?.data?.user?.name?.split(' ')[0] || adminName
+        } catch {
+          // Keep default greeting name.
+        }
+
+        const payload = await fetchAdminDashboard()
+        setData(mapAdminDashboardFromApi(payload, adminName))
+      } catch (err) {
+        setData(null)
+        setError(err.message || 'Could not load dashboard.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-6 text-sm text-gray-500">
+        Loading dashboard...
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center p-6 text-center text-sm text-gray-500">
+        {error || 'Dashboard unavailable.'}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 p-5 lg:p-6">

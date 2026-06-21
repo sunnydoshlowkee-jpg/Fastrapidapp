@@ -1,50 +1,65 @@
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom'
-import {
-  getMerchantOrderDetail,
-  orderDetailPreparingPath,
-} from '../../../../services/data/merchantOrderDetail.mock'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import MerchantOrderDetailActionBar from './MerchantOrderDetailActionBar'
 import MerchantOrderDetailCustomerPanel from './MerchantOrderDetailCustomerPanel'
 import MerchantOrderDetailHeader from './MerchantOrderDetailHeader'
 import MerchantOrderDetailItemsPanel from './MerchantOrderDetailItemsPanel'
+import MerchantOrderDetailState from './MerchantOrderDetailState'
 import MerchantOrderDetailUrgencyBanner from './MerchantOrderDetailUrgencyBanner'
+import useMerchantOrderDetail from './useMerchantOrderDetail'
 
 export default function MerchantOrderDetailNewDesktop() {
-  const { orderId } = useParams()
   const navigate = useNavigate()
   const { openMobileNav } = useOutletContext()
-  const order = getMerchantOrderDetail(orderId, 'new')
+  const { order, loading, error, actionLoading, acceptOrder, rejectOrder } = useMerchantOrderDetail()
 
-  const handleAccept = () => navigate(orderDetailPreparingPath(order.id))
-  const handleReject = () => navigate('/merchant/orders')
+  const handleAccept = async () => {
+    const ok = await acceptOrder()
+    if (ok) {
+      navigate(`/merchant/orders/${order.id}`)
+    }
+  }
+
+  const handleReject = async () => {
+    const ok = await rejectOrder()
+    if (ok) {
+      navigate('/merchant/orders')
+    }
+  }
 
   return (
-    <>
-      <div className="flex flex-1 flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:gap-6 lg:p-8">
-        <MerchantOrderDetailHeader
-          displayId={order.displayId}
-          statusBadge={order.statusBadge}
-          showMenuButton
-          onMenuClick={openMobileNav}
-        />
-
-        <MerchantOrderDetailUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
-
-        <div className="grid flex-1 grid-cols-1 gap-6 xl:grid-cols-2">
-          <MerchantOrderDetailCustomerPanel customer={order.customer} />
-          <MerchantOrderDetailItemsPanel
-            itemsHeader={order.itemsHeader}
-            lineItems={order.lineItems}
-            pricing={order.pricing}
+    <MerchantOrderDetailState loading={loading} error={error} order={order}>
+      <>
+        <div className="flex flex-1 flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:gap-6 lg:p-8">
+          <MerchantOrderDetailHeader
+            displayId={order.displayId}
+            statusBadge={order.statusBadge}
+            showMenuButton
+            onMenuClick={openMobileNav}
           />
-        </div>
-      </div>
 
-      <MerchantOrderDetailActionBar
-        disclaimer={order.acceptDisclaimer}
-        onAccept={handleAccept}
-        onReject={handleReject}
-      />
-    </>
+          {order.dbStatus === 'pending' ? (
+            <MerchantOrderDetailUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
+          ) : null}
+
+          <div className="grid flex-1 grid-cols-1 gap-6 xl:grid-cols-2">
+            <MerchantOrderDetailCustomerPanel customer={order.customer} />
+            <MerchantOrderDetailItemsPanel
+              itemsHeader={order.itemsHeader}
+              lineItems={order.lineItems}
+              pricing={order.pricing}
+            />
+          </div>
+        </div>
+
+        {order.dbStatus === 'pending' ? (
+          <MerchantOrderDetailActionBar
+            disclaimer={order.acceptDisclaimer}
+            onAccept={handleAccept}
+            onReject={handleReject}
+            disabled={actionLoading}
+          />
+        ) : null}
+      </>
+    </MerchantOrderDetailState>
   )
 }

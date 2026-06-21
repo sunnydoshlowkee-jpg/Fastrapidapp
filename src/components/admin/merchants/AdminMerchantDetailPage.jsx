@@ -4,6 +4,7 @@ import AdminApproveMerchantModal from './AdminApproveMerchantModal'
 import AdminRejectMerchantModal from './AdminRejectMerchantModal'
 import AdminMerchantDocumentsPanel from './AdminMerchantDocumentsPanel'
 import AdminMerchantInfoPanel from './AdminMerchantInfoPanel'
+import AdminMerchantOrdersPanel from './AdminMerchantOrdersPanel'
 import AdminMerchantKpiCard from './AdminMerchantKpiCard'
 import AdminMerchantLogoTile from './AdminMerchantLogoTile'
 import {
@@ -172,6 +173,8 @@ export default function AdminMerchantDetailPage({
             merchantId={merchant.numericId}
             onDocumentUpdated={handleDocumentUpdated}
           />
+        ) : activeTab === 'orders' ? (
+          <AdminMerchantOrdersPanel merchantId={merchant.numericId} />
         ) : (
           <EmptyTab label={merchant.tabs.find((t) => t.id === activeTab)?.label ?? ''} />
         )}

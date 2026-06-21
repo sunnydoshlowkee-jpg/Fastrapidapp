@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { MERCHANT_MENU_NEW_PATH, merchantMenuItemEditPath } from '../../../../services/data/merchantMenuItemCreate.mock'
 import {
+  deleteMerchantProduct,
   fetchMerchantInventory,
   updateMerchantProductAvailability,
 } from '../../../../services/merchantProductsService'
@@ -14,6 +17,7 @@ const EMPTY_SUMMARY = [
 ]
 
 export default function useMerchantInventoryPage() {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [summary, setSummary] = useState(EMPTY_SUMMARY)
   const [insights, setInsights] = useState([])
@@ -93,6 +97,37 @@ export default function useMerchantInventoryPage() {
     setPage(1)
   }
 
+  const editProduct = (product) => {
+    navigate(merchantMenuItemEditPath(product.id))
+  }
+
+  const deleteProduct = async (product) => {
+    const confirmed = window.confirm(`Delete "${product.name}" from your menu? This cannot be undone.`)
+    if (!confirmed) return
+
+    setError(null)
+
+    try {
+      await deleteMerchantProduct(product.id)
+      await loadInventory()
+    } catch (err) {
+      setError(err?.message || 'Could not delete product.')
+    }
+  }
+
+  const duplicateProduct = (product) => {
+    navigate(MERCHANT_MENU_NEW_PATH, {
+      state: {
+        duplicateFrom: {
+          productName: `${product.name} (Copy)`,
+          category: product.category,
+          stockQuantity: product.stockQty,
+          price: product.price,
+        },
+      },
+    })
+  }
+
   return {
     products,
     summary,
@@ -100,6 +135,9 @@ export default function useMerchantInventoryPage() {
     searchQuery,
     handleSearchChange,
     toggleAvailability,
+    editProduct,
+    deleteProduct,
+    duplicateProduct,
     pagination,
     setPage,
     loading,

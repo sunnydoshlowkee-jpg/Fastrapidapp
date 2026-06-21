@@ -1,6 +1,10 @@
 /** Desktop [272:7115](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-7115) · Mobile [622:1641](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1641) */
 export const MERCHANT_MENU_NEW_PATH = '/merchant/menu/new'
 
+export function merchantMenuItemEditPath(productId) {
+  return `/merchant/menu/${productId}/edit`
+}
+
 export const MERCHANT_MENU_ITEM_CREATE = {
   headerTitle: 'Menu Upload',
   pageTitle: 'Create Menu Item',

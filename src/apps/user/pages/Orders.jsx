@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Search, PhoneCall, MapPin, ShoppingCart, Home, Clock, Wallet, User, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Search, PhoneCall, MapPin, ShoppingCart, Home, Clock, Wallet, User, ChevronDown, Minus, Plus, Trash2, ArrowRight } from 'lucide-react'
 import { getOrders } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
 
 export default function Orders() {
   const navigate = useNavigate()
-  const { items: cartItems = [], total } = useCart()
+  const { items: cartItems = [], total, count, subtotal, deliveryFee, serviceCharge, updateQty, remove } = useCart()
   const [activeTab, setActiveTab] = useState('Ongoing') // Cart | Ongoing | Completed
   const [activeTabDesktop, setActiveTabDesktop] = useState('Orders') // Just for sidebar
   
@@ -133,7 +133,7 @@ export default function Orders() {
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900 text-sm mb-0.5">Your Cart</h3>
-                        <p className="text-[11px] font-medium text-gray-500">{cartItems.length} items • {formatCurrency(total)}</p>
+                        <p className="text-[11px] font-medium text-gray-500">{count} items • {formatCurrency(total)}</p>
                       </div>
                     </div>
                     <button onClick={() => navigate('/app/cart')} className="text-[#4F46E5] text-[11px] font-bold">
@@ -260,7 +260,7 @@ export default function Orders() {
               </div>
               <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors" onClick={() => navigate('/app/cart')}>
                 <ShoppingCart size={20} className="text-gray-700" strokeWidth={2} />
-                {cartItems.length > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{cartItems.length}</span>}
+                {cartItems.length > 0 && <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{count}</span>}
               </div>
             </div>
           </div>
@@ -284,6 +284,89 @@ export default function Orders() {
                   </button>
                 ))}
               </div>
+
+              {/* DESKTOP CART TAB */}
+              {activeTab === 'Cart' && (
+                <div className="flex gap-10 items-start">
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="text-[18px] font-bold text-gray-900">Items ({count})</span>
+                      {cartItems.length > 0 && (
+                        <button onClick={() => navigate('/app/cart')} className="text-[14px] font-bold text-[#2D2AEE] hover:text-blue-700 transition-colors">
+                          Open full cart
+                        </button>
+                      )}
+                    </div>
+
+                    {cartItems.length > 0 ? (
+                      <div className="flex flex-col gap-4">
+                        {cartItems.map((item) => (
+                          <div key={item.id} className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm flex items-center gap-6">
+                            <div className="w-[88px] h-[88px] rounded-xl overflow-hidden bg-gray-50 shrink-0">
+                              <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-[17px] text-gray-900 mb-1">{item.name}</h3>
+                              <p className="text-[13px] text-gray-500 truncate">{item.desc || 'Menu item'}</p>
+                              <div className="flex items-center gap-5 mt-4">
+                                <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200">
+                                  <button onClick={() => updateQty(item.id, item.qty - 1)} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-gray-900">
+                                    <Minus size={14} />
+                                  </button>
+                                  <span className="text-[14px] font-bold text-gray-900 w-4 text-center">{item.qty}</span>
+                                  <button onClick={() => updateQty(item.id, item.qty + 1)} className="w-6 h-6 flex items-center justify-center text-gray-600 hover:text-gray-900">
+                                    <Plus size={14} />
+                                  </button>
+                                </div>
+                                <button onClick={() => remove(item.id)} className="text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="shrink-0 font-bold text-[18px] text-gray-900">{item.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-20 bg-white rounded-[24px] border border-gray-100 text-gray-500 text-sm">
+                        Your cart is empty.
+                      </div>
+                    )}
+                  </div>
+
+                  {cartItems.length > 0 && (
+                    <div className="w-[360px] shrink-0 sticky top-[120px]">
+                      <div className="bg-white rounded-[24px] p-8 border border-gray-100 shadow-xl shadow-gray-200/50">
+                        <h2 className="text-[20px] font-bold text-gray-900 mb-6">Order Summary</h2>
+                        <div className="flex flex-col gap-4 mb-6">
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-gray-500">Subtotal</span>
+                            <span className="font-bold text-gray-900">{formatCurrency(subtotal)}</span>
+                          </div>
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-gray-500">Delivery Fee</span>
+                            <span className="font-bold text-gray-900">{formatCurrency(deliveryFee)}</span>
+                          </div>
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-gray-500">Service Charge</span>
+                            <span className="font-bold text-gray-900">{formatCurrency(serviceCharge)}</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center py-5 border-y border-gray-100 mb-6">
+                          <span className="text-[18px] font-bold text-gray-900">Total</span>
+                          <span className="text-[22px] font-bold text-[#2D2AEE]">{formatCurrency(total)}</span>
+                        </div>
+                        <button
+                          onClick={() => navigate('/app/checkout')}
+                          className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[16px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                          Checkout <ArrowRight size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* DESKTOP ONGOING TAB */}
               {activeTab === 'Ongoing' && (

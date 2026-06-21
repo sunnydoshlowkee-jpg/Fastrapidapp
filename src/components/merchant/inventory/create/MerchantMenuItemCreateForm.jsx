@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, ChevronDown } from 'lucide-react'
+import { resolveStorageUrl } from '../../../../utils/mediaUrl'
 import MerchantMenuItemCreateCardIntro from './MerchantMenuItemCreateCardIntro'
 import MerchantMenuItemCreateField from './MerchantMenuItemCreateField'
 import MerchantMenuItemCreateMediaUpload, { inputClassName } from './MerchantMenuItemCreateMediaUpload'
@@ -37,22 +38,34 @@ export default function MerchantMenuItemCreateForm({
   onSubmit,
   submitting = false,
   variant = 'desktop',
+  initialForm = null,
+  initialImageUrl = null,
 }) {
   const isMobile = variant === 'mobile'
   const { fields, proTip } = resolveFormCopy(copy, variant)
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState(initialForm ?? emptyForm)
   const [mediaFile, setMediaFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
 
   useEffect(() => {
+    if (initialForm) {
+      setForm(initialForm)
+    }
+  }, [initialForm])
+
+  useEffect(() => {
     if (!mediaFile) {
-      setPreviewUrl(null)
+      if (initialImageUrl) {
+        setPreviewUrl(resolveStorageUrl(initialImageUrl) || initialImageUrl)
+      } else {
+        setPreviewUrl(null)
+      }
       return undefined
     }
     const url = URL.createObjectURL(mediaFile)
     setPreviewUrl(url)
     return () => URL.revokeObjectURL(url)
-  }, [mediaFile])
+  }, [mediaFile, initialImageUrl])
 
   const updateField = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }))

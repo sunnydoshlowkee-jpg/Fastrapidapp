@@ -1,21 +1,30 @@
+import { useState, useEffect } from 'react'
 import MerchantMobileHeader from './MerchantMobileHeader'
 import MerchantMobileStatCard from './MerchantMobileStatCard'
 import MerchantMobileEmptyState from './MerchantMobileEmptyState'
 import MerchantGettingStartedCard from './MerchantGettingStartedCard'
 import { MERCHANT_DASHBOARD_MOBILE } from '../../../services/data/merchantDashboard.mock'
 
-export default function MerchantDashboardMobileEmpty() {
-  const { overview, stats, emptyState, gettingStarted } = MERCHANT_DASHBOARD_MOBILE
-
-  const handleViewCustomerLink = () => {
-    window.open(emptyState.customerLink, '_blank', 'noopener,noreferrer')
-  }
+export default function MerchantDashboardMobileEmpty({
+  merchantId,
+  storeStatus,
+  stats = [],
+  error = '',
+}) {
+  const { overview, emptyState, gettingStarted } = MERCHANT_DASHBOARD_MOBILE
+  const customerLink = `${window.location.origin}/app/vendor/${merchantId}`
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas lg:hidden">
       <MerchantMobileHeader variant="bar" />
 
       <div className="flex flex-col gap-8 px-6 pb-8 pt-6">
+        {error ? (
+          <div className="rounded-merchant-stat border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <section aria-labelledby="overview-heading">
           <h2
             id="overview-heading"
@@ -35,12 +44,13 @@ export default function MerchantDashboardMobileEmpty() {
         </section>
 
         <MerchantMobileEmptyState
+          storeStatus={storeStatus}
           title={emptyState.title}
           description={emptyState.description}
           primaryAction={emptyState.primaryAction}
           secondaryAction={emptyState.secondaryAction}
           onPrimaryClick={() => {}}
-          onSecondaryClick={handleViewCustomerLink}
+          onSecondaryClick={() => window.open(customerLink, '_blank', 'noopener,noreferrer')}
         />
 
         <section aria-labelledby="getting-started-heading">

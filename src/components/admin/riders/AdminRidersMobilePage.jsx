@@ -168,7 +168,7 @@ function RiderCard({ rider }) {
   )
 }
 
-export default function AdminRidersMobilePage({ data }) {
+export default function AdminRidersMobilePage({ data, loading = false, error = '' }) {
   const mobile = data.mobile
   const [activeFilter, setActiveFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -236,7 +236,13 @@ export default function AdminRidersMobilePage({ data }) {
       </div>
 
       <div className="flex-1 overflow-y-auto bg-[#F3F4F5] px-4 pb-40 pt-4">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
+            Loading riders...
+          </p>
+        ) : error ? (
+          <p className="rounded-lg bg-white p-6 text-center text-sm text-red-600">{error}</p>
+        ) : filtered.length === 0 ? (
           <p className="rounded-lg bg-white p-6 text-center text-sm text-[#454557]">
             No riders match this filter.
           </p>

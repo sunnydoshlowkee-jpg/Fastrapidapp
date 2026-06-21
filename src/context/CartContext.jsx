@@ -1,12 +1,22 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import { resolveStorageUrl } from '../utils/mediaUrl'
 
 const CartContext = createContext(null)
+
+function normalizeCartItem(item) {
+  if (!item) return item
+  return {
+    ...item,
+    img: resolveStorageUrl(item.img) || item.img,
+  }
+}
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
       const local = localStorage.getItem('rapid_cart')
-      return local ? JSON.parse(local) : []
+      const parsed = local ? JSON.parse(local) : []
+      return Array.isArray(parsed) ? parsed.map(normalizeCartItem) : []
     } catch (e) {
       return []
     }
@@ -20,12 +30,13 @@ export function CartProvider({ children }) {
   }, [items])
 
   const add = (item, qty = 1) => {
+    const nextItem = normalizeCartItem(item)
     setItems(prev => {
-      const existing = prev.find(i => i.id === item.id)
+      const existing = prev.find(i => i.id === nextItem.id)
       if (existing) {
-        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + qty } : i)
+        return prev.map(i => i.id === nextItem.id ? { ...i, qty: i.qty + qty } : i)
       }
-      return [...prev, { ...item, qty }]
+      return [...prev, { ...nextItem, qty }]
     })
   }
 

@@ -4,6 +4,7 @@ export default function MerchantOrderDetailMobilePreparingFooter({
   title,
   targetCompletion,
   onMarkReady,
+  disabled = false,
 }) {
   return (
     <div className="fixed bottom-[5.75rem] left-0 right-0 z-30 border-t border-merchant-divider bg-merchant-surface px-4 py-4 shadow-[0_-4px_24px_rgba(25,28,29,0.08)] lg:hidden">
@@ -22,7 +23,8 @@ export default function MerchantOrderDetailMobilePreparingFooter({
       <button
         type="button"
         onClick={onMarkReady}
-        className="mt-3 w-full rounded-xl bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6]"
+        disabled={disabled}
+        className="mt-3 w-full rounded-xl bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] disabled:cursor-not-allowed disabled:opacity-50"
       >
         Mark Ready for Pickup
       </button>

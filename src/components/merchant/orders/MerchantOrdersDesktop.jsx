@@ -17,6 +17,8 @@ export default function MerchantOrdersDesktop() {
     filterCounts,
     paginatedOrders,
     searchQuery,
+    loading,
+    error,
     handleFilterChange,
     handleSearchChange,
     pagination,
@@ -40,6 +42,15 @@ export default function MerchantOrdersDesktop() {
 
       <MerchantOrdersSummaryCards summary={MERCHANT_ORDERS_SUMMARY} />
 
+      {error ? (
+        <div className="rounded-merchant-stat border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div className="py-12 text-center text-sm text-merchant-muted">Loading orders...</div>
+      ) : (
       <MerchantOrdersTable
         orders={paginatedOrders}
         searchQuery={searchQuery}
@@ -48,6 +59,7 @@ export default function MerchantOrdersDesktop() {
         onPageChange={setPage}
         onViewOrder={(id) => navigate(`/merchant/orders/${id}`)}
       />
+      )}
     </div>
   )
 }

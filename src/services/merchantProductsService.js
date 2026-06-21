@@ -24,6 +24,26 @@ export function mapInventoryProductFromApi(product) {
   }
 }
 
+export function mapMerchantProductForForm(product) {
+  if (!product) return null
+
+  return {
+    productName: product.name ?? '',
+    category: product.category ?? '',
+    stockQuantity: product.stock != null ? String(product.stock) : '',
+    price: product.price != null ? String(product.price) : '',
+    description: product.description ?? '',
+  }
+}
+
+export async function fetchMerchantProduct(productId) {
+  try {
+    const { data } = await api.get(`/merchant/products/${productId}`)
+    return data?.data?.product ?? null
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
 export async function fetchMerchantInventory({ search = '', page = 1, perPage = 4 } = {}) {
   try {
     const { data } = await api.get('/merchant/products', {
@@ -64,7 +84,34 @@ export async function updateMerchantProductAvailability(productId, isAvailable) 
   }
 }
 
+export async function deleteMerchantProduct(productId) {
+  try {
+    await api.delete(`/merchant/products/${productId}`)
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export async function createMerchantProduct({ productName, category, stockQuantity, price, description, mediaFile }) {
+  const formData = buildMerchantProductFormData({ productName, category, stockQuantity, price, description, mediaFile })
+
+  try {
+    const { data } = await api.post('/merchant/products', formData)
+
+    return data?.data?.product ?? null
+  } catch (err) {
+    const message =
+      getApiFieldError(err, 'name') ||
+      getApiFieldError(err, 'category') ||
+      getApiFieldError(err, 'price') ||
+      getApiFieldError(err, 'stock_quantity') ||
+      getApiFieldError(err, 'image') ||
+      getApiFieldError(err, 'form')
+    throw new Error(message)
+  }
+}
+
+function buildMerchantProductFormData({ productName, category, stockQuantity, price, description, mediaFile }) {
   const formData = new FormData()
   formData.append('name', productName.trim())
   formData.append('category', category)
@@ -76,11 +123,16 @@ export async function createMerchantProduct({ productName, category, stockQuanti
   if (mediaFile) {
     formData.append('image', mediaFile)
   }
+  return formData
+}
+
+export async function updateMerchantProduct(productId, formValues) {
+  const formData = buildMerchantProductFormData(formValues)
+  // PHP does not parse multipart bodies on PUT; Laravel expects POST + _method for file uploads.
+  formData.append('_method', 'PUT')
 
   try {
-    const { data } = await api.post('/merchant/products', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const { data } = await api.post(`/merchant/products/${productId}`, formData)
 
     return data?.data?.product ?? null
   } catch (err) {

@@ -4,22 +4,49 @@ import MerchantStatCard from './MerchantStatCard'
 import MerchantEmptyState from './MerchantEmptyState'
 import MerchantTipCard from './MerchantTipCard'
 import MerchantDashboardActiveDesktop from './MerchantDashboardActiveDesktop'
-import {
-  MERCHANT_DASHBOARD_MODE,
-  MERCHANT_DASHBOARD_OVERVIEW,
-} from '../../../services/data/merchantDashboard.mock'
+import useMerchantDashboard from './useMerchantDashboard'
+import { MERCHANT_DASHBOARD_OVERVIEW } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardDesktop() {
   const { openMobileNav } = useOutletContext()
+  const {
+    merchantId,
+    storeStatus,
+    stats,
+    liveOrders,
+    hasLiveOrders,
+    loading,
+    error,
+    handleOrderAction,
+    refresh,
+  } = useMerchantDashboard()
 
-  if (MERCHANT_DASHBOARD_MODE === 'active') {
-    return <MerchantDashboardActiveDesktop />
+  const tips = MERCHANT_DASHBOARD_OVERVIEW.tips
+  const customerLink = `${window.location.origin}/app/vendor/${merchantId}`
+
+  if (loading) {
+    return (
+      <div className="flex min-h-full flex-1 items-center justify-center bg-merchant-canvas p-8 text-sm text-merchant-muted">
+        Loading dashboard...
+      </div>
+    )
   }
 
-  const { merchantId, storeStatus, stats, emptyState, tips } = MERCHANT_DASHBOARD_OVERVIEW
+  if (hasLiveOrders) {
+    return (
+      <MerchantDashboardActiveDesktop
+        merchantId={merchantId}
+        stats={stats}
+        liveOrders={liveOrders}
+        onOrderAction={handleOrderAction}
+        onRefresh={refresh}
+      />
+    )
+  }
 
-  const handleViewCustomerLink = () => {
-    window.open(emptyState.customerLink, '_blank', 'noopener,noreferrer')
+  const emptyState = {
+    ...MERCHANT_DASHBOARD_OVERVIEW.emptyState,
+    customerLink,
   }
 
   return (
@@ -33,6 +60,12 @@ export default function MerchantDashboardDesktop() {
       />
 
       <div className="flex flex-1 flex-col gap-8 px-8 pb-12 pt-8">
+        {error ? (
+          <div className="rounded-merchant-stat border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
         <section
           className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
           aria-label="Dashboard statistics"
@@ -49,7 +82,7 @@ export default function MerchantDashboardDesktop() {
           primaryAction={emptyState.primaryAction}
           secondaryAction={emptyState.secondaryAction}
           onPrimaryClick={() => {}}
-          onSecondaryClick={handleViewCustomerLink}
+          onSecondaryClick={() => window.open(customerLink, '_blank', 'noopener,noreferrer')}
         />
 
         <section

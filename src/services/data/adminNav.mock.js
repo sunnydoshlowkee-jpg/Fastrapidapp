@@ -69,3 +69,26 @@ export const ADMIN_NAV_SECTIONS = [
 ]
 
 export const ADMIN_NAV_ITEMS = ADMIN_NAV_SECTIONS.flatMap((s) => s.items)
+
+const NAV_COUNT_KEYS = {
+  '/admin/orders': 'orders',
+  '/admin/merchants': 'merchants_pending',
+  '/admin/payouts': 'payouts',
+  '/admin/disputes': 'disputes',
+  '/admin/support': 'support',
+}
+
+export function buildAdminNavSections(counts = {}) {
+  return ADMIN_NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.map((item) => {
+      const key = NAV_COUNT_KEYS[item.to]
+      const count = key ? counts[key] : item.count
+
+      return {
+        ...item,
+        count: count > 0 ? count : undefined,
+      }
+    }),
+  }))
+}

@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react'
+import { purchaseAirtime } from '../../../services/walletService'
 
 const providers = [
   { id: 'mtn', name: 'MTN', color: 'bg-yellow-400', textColor: 'text-yellow-900' },
@@ -13,10 +14,54 @@ const recentAmounts = ['₦500', '₦1,000', '₦2,000']
 
 export default function PayBills() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('airtime')
+  const [searchParams] = useSearchParams()
+  const initialTab = searchParams.get('type') === 'data' ? 'data' : 'airtime'
+  const [tab, setTab] = useState(initialTab)
   const [provider, setProvider] = useState('mtn')
   const [phone, setPhone] = useState('')
-  const [amount, setAmount] = useState('3000')
+  const [amount, setAmount] = useState('500')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const type = searchParams.get('type')
+    if (type === 'airtime' || type === 'data') {
+      setTab(type)
+    }
+  }, [searchParams])
+
+  const handlePay = async () => {
+    setError('')
+
+    if (tab === 'data') {
+      setError('Data bundle purchases are coming soon. Use airtime for now.')
+      return
+    }
+
+    const parsedAmount = Number.parseFloat(amount)
+    if (!phone.trim()) {
+      setError('Enter a recipient phone number.')
+      return
+    }
+    if (!Number.isFinite(parsedAmount) || parsedAmount < 50) {
+      setError('Minimum airtime amount is ₦50.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await purchaseAirtime({
+        network: provider,
+        phone: phone.trim(),
+        amount: parsedAmount,
+      })
+      navigate('/app/wallet')
+    } catch (err) {
+      setError(err?.message || 'Could not complete purchase.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
@@ -134,10 +179,17 @@ export default function PayBills() {
             </div>
           </div>
 
+          {error ? <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+
           {/* Pay Button */}
           <div className="mt-auto pb-6 md:pb-0">
-            <button className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98]">
-              Pay ₦{parseInt(amount || 0).toLocaleString()}
+            <button
+              type="button"
+              onClick={handlePay}
+              disabled={loading}
+              className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98] disabled:opacity-60"
+            >
+              {loading ? 'Processing…' : `Pay ₦${parseInt(amount || 0, 10).toLocaleString()}`}
             </button>
           </div>
 

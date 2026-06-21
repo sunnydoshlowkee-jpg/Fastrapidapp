@@ -19,6 +19,9 @@ export default function MerchantInventoryDesktop() {
     searchQuery,
     handleSearchChange,
     toggleAvailability,
+    editProduct,
+    deleteProduct,
+    duplicateProduct,
     pagination,
     setPage,
     loading,
@@ -58,6 +61,9 @@ export default function MerchantInventoryDesktop() {
           pagination={pagination}
           onPageChange={setPage}
           onToggleAvailability={toggleAvailability}
+          onEdit={editProduct}
+          onDelete={deleteProduct}
+          onDuplicate={duplicateProduct}
         />
       )}
 

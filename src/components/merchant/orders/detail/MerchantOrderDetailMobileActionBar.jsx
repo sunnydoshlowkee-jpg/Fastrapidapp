@@ -5,6 +5,7 @@ export default function MerchantOrderDetailMobileActionBar({
   disclaimer,
   onAccept,
   onReject,
+  disabled = false,
 }) {
   const [confirmed, setConfirmed] = useState(false)
 
@@ -29,14 +30,15 @@ export default function MerchantOrderDetailMobileActionBar({
         <button
           type="button"
           onClick={onReject}
-          className="flex-1 rounded-lg bg-merchant-icon-tile py-3 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-input"
+          disabled={disabled}
+          className="flex-1 rounded-lg bg-merchant-icon-tile py-3 text-sm font-semibold text-merchant-ink transition-colors hover:bg-merchant-input disabled:cursor-not-allowed disabled:opacity-50"
         >
           Reject Order
         </button>
         <button
           type="button"
           onClick={handleAccept}
-          disabled={!confirmed}
+          disabled={!confirmed || disabled}
           className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Check size={18} strokeWidth={2.5} aria-hidden />

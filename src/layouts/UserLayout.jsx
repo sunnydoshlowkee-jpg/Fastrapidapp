@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Search, ShoppingBag, Wallet, User, Car, ShoppingCart } from 'lucide-react'
 import Logo from '../components/brand/Logo'
@@ -15,8 +15,13 @@ const navItems = [
 export default function UserLayout() {
   const location = useLocation()
   const navigate = useNavigate()
+  const mainRef = useRef(null)
   const isHome = location.pathname === '/app'
   const [activeOrder, setActiveOrder] = useState(null)
+
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0)
+  }, [location.pathname])
 
   useEffect(() => {
     const fetchActiveOrder = async () => {
@@ -32,7 +37,21 @@ export default function UserLayout() {
   }, [location.pathname])
   
   const topLevelPaths = ['/app', '/app/search', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile']
-  const showMobileNav = topLevelPaths.includes(location.pathname)
+  const browsePaths = [
+    /^\/app\/vendor\/[^/]+$/,
+    /^\/app\/item\/[^/]+$/,
+    /^\/app\/vendors\/[^/]+$/,
+  ]
+  const hideMobileNavPaths = [
+    /^\/app\/cart$/,
+    /^\/app\/checkout$/,
+    /^\/app\/order-success\//,
+    /^\/app\/track\//,
+  ]
+
+  const showMobileNav =
+    (topLevelPaths.includes(location.pathname) || browsePaths.some((pattern) => pattern.test(location.pathname)))
+    && !hideMobileNavPaths.some((pattern) => pattern.test(location.pathname))
 
   const getStatusInfo = (status) => {
     switch (status) {
@@ -50,7 +69,7 @@ export default function UserLayout() {
   const statusInfo = activeOrder ? getStatusInfo(activeOrder.status) : getStatusInfo('in_transit')
 
   return (
-    <div className="flex min-h-screen bg-gray-50 w-full relative overflow-hidden">
+    <div className="flex h-dvh min-h-screen w-full overflow-hidden bg-gray-50 relative">
       
       {/* --- DESKTOP SIDEBAR --- */}
       <aside className="hidden md:flex flex-col w-[300px] bg-white border-r border-gray-100 flex-shrink-0 z-10 py-8 h-screen sticky top-0">
@@ -122,7 +141,7 @@ export default function UserLayout() {
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 flex flex-col min-h-screen h-screen overflow-y-auto w-full md:w-[calc(100%-300px)]">
+      <main ref={mainRef} className="flex-1 flex flex-col min-h-0 h-full overflow-y-auto w-full md:w-[calc(100%-300px)]">
         <Outlet />
       </main>
 

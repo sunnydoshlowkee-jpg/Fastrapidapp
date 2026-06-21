@@ -1,14 +1,19 @@
 import { useOutletContext } from 'react-router-dom'
-import { MERCHANT_MENU_ITEM_CREATE } from '../../../../services/data/merchantMenuItemCreate.mock'
 import MerchantMenuItemCreateForm from './MerchantMenuItemCreateForm'
 import MerchantMenuItemCreateHeader from './MerchantMenuItemCreateHeader'
 import MerchantMenuItemCreateIntro from './MerchantMenuItemCreateIntro'
-import useMerchantMenuItemCreate from './useMerchantMenuItemCreate'
 
-export default function MerchantMenuItemCreateDesktop() {
+export default function MerchantMenuItemCreateDesktop({
+  copy,
+  loading,
+  initialForm,
+  initialImageUrl,
+  submitting,
+  error,
+  handleCancel,
+  handleSubmit,
+}) {
   const { openMobileNav } = useOutletContext()
-  const copy = MERCHANT_MENU_ITEM_CREATE
-  const { submitting, error, handleCancel, handleSubmit } = useMerchantMenuItemCreate()
 
   return (
     <div className="hidden flex-1 flex-col gap-8 p-6 lg:flex lg:p-8">
@@ -26,14 +31,20 @@ export default function MerchantMenuItemCreateDesktop() {
           {error ? (
             <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
           ) : null}
-          <MerchantMenuItemCreateForm
-            copy={copy}
-            categories={copy.categories}
-            variant="desktop"
-            submitting={submitting}
-            onCancel={handleCancel}
-            onSubmit={handleSubmit}
-          />
+          {loading ? (
+            <p className="py-8 text-center text-sm text-merchant-muted">Loading product…</p>
+          ) : (
+            <MerchantMenuItemCreateForm
+              copy={copy}
+              categories={copy.categories}
+              variant="desktop"
+              initialForm={initialForm}
+              initialImageUrl={initialImageUrl}
+              submitting={submitting}
+              onCancel={handleCancel}
+              onSubmit={handleSubmit}
+            />
+          )}
         </article>
       </div>
     </div>

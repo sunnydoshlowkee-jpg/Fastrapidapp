@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Info, Lock, Wallet, CreditCard, Bitcoin, Search, Sho
 import { useCart } from '../../../context/CartContext'
 import { getAddresses } from '../../../services/addressService'
 import { createOrder } from '../../../services/orderService'
+import { initializePaystackCheckout, openPaystackCheckout } from '../../../services/paystackService'
 import { trackEvent } from '../../../services/analyticsService'
 import { useDashboard } from '../../../hooks/useDashboard'
 
@@ -43,35 +44,66 @@ export default function Payment() {
     fetchAddresses()
   }, [])
 
+  const buildCheckoutPayload = () => ({
+    delivery_address_id: selectedAddressId,
+    delivery_fee: deliveryFee,
+    items: items.map((i) => ({
+      product_id: i.id,
+      quantity: i.qty,
+    })),
+  })
+
   const handlePayment = async () => {
     if (!selectedAddressId) {
-      alert("Please select a delivery address.")
+      alert('Please select a delivery address.')
       return
     }
-    
+
+    if (paymentMethod === 'crypto') {
+      alert('Cryptocurrency payments are coming soon.')
+      return
+    }
+
     setLoading(true)
+
     try {
-      const payload = {
-        delivery_address_id: selectedAddressId,
-        payment_method: paymentMethod,
-        delivery_fee: deliveryFee,
-        items: items.map(i => ({
-          product_id: i.id,
-          quantity: i.qty
-        }))
+      const basePayload = buildCheckoutPayload()
+      let orderResponse
+
+      if (paymentMethod === 'card') {
+        const paymentInit = await initializePaystackCheckout(basePayload)
+
+        const paymentResult = await openPaystackCheckout({
+          email: paymentInit.email,
+          amountKobo: paymentInit.amount_kobo,
+          reference: paymentInit.reference,
+          publicKey: paymentInit.public_key,
+          accessCode: paymentInit.access_code,
+        })
+
+        orderResponse = await createOrder({
+          ...basePayload,
+          payment_method: 'card',
+          paystack_reference: paymentResult.reference,
+        })
+      } else {
+        orderResponse = await createOrder({
+          ...basePayload,
+          payment_method: paymentMethod,
+        })
       }
 
-      const { data } = await createOrder(payload)
-      
-      // Track each purchased item
-      items.forEach(item => {
+      items.forEach((item) => {
         trackEvent('purchase', 'product', item.id, { qty: item.qty })
       })
 
-      clear() // clear cart
-      navigate(`/app/order-success/${data.data.id}`) // Navigate to success page with ID
+      clear()
+      navigate(`/app/order-success/${orderResponse.data.data.id}`)
     } catch (err) {
-      alert(err.response?.data?.message || 'Checkout failed')
+      const message = err?.message || err.response?.data?.message || 'Checkout failed'
+      if (message !== 'Payment cancelled.') {
+        alert(message)
+      }
     } finally {
       setLoading(false)
     }

@@ -1,32 +1,72 @@
 import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Send, ArrowDownLeft, PlusSquare, Phone, Globe, Receipt, Zap, ArrowDown, ArrowUpRight, Copy, Eye, EyeOff, QrCode } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { getWalletData } from '../../../services/walletService'
+import { getWalletData, provisionVirtualAccount, walletTransactionLabel } from '../../../services/walletService'
 
 export default function Wallet() {
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
   const [balance, setBalance] = useState(0)
+  const [virtualAccount, setVirtualAccount] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [provisioning, setProvisioning] = useState(false)
+  const [copyMessage, setCopyMessage] = useState('')
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const { data } = await getWalletData()
+      if (data?.data) {
+        setBalance(data.data.balance || 0)
+        setVirtualAccount(data.data.virtual_account || null)
+        setTransactions(data.data.transactions || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch wallet data', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const retryVirtualAccount = async () => {
+    setProvisioning(true)
+    try {
+      const result = await provisionVirtualAccount()
+      if (result?.data) {
+        setBalance(result.data.balance || 0)
+        setVirtualAccount(result.data.virtual_account || null)
+        setTransactions(result.data.transactions || [])
+      } else {
+        await fetchData()
+      }
+    } catch (err) {
+      setVirtualAccount((prev) => ({
+        ...(prev || {}),
+        status: 'failed',
+        error: err?.message || 'Could not create virtual account.',
+      }))
+    } finally {
+      setProvisioning(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const { data } = await getWalletData()
-        if (data?.data) {
-          setBalance(data.data.balance || 0)
-          setTransactions(data.data.transactions || [])
-        }
-      } catch (err) {
-        console.error('Failed to fetch wallet data', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
+    const interval = window.setInterval(fetchData, 15000)
+    return () => window.clearInterval(interval)
   }, [])
+
+  const copyAccountNumber = async () => {
+    if (!virtualAccount?.account_number) return
+    try {
+      await navigator.clipboard.writeText(virtualAccount.account_number)
+      setCopyMessage('Account number copied')
+      window.setTimeout(() => setCopyMessage(''), 2000)
+    } catch {
+      setCopyMessage('Could not copy account number')
+    }
+  }
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
@@ -71,12 +111,39 @@ export default function Wallet() {
               <h2 className="text-[32px] md:text-[48px] font-bold mb-6 md:mb-10 tracking-tight">
                 {showBalance ? formatCurrency(balance) : '₦•••••••'}
               </h2>
-              <div className="bg-white/15 rounded-xl px-3.5 md:px-5 py-2.5 md:py-3 flex items-center justify-between backdrop-blur-sm">
-                <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">Wema Bank • 0123456789</span>
-                <button className="text-indigo-200 hover:text-white transition-colors">
-                  <Copy size={16} />
-                </button>
+              <div className="bg-white/15 rounded-xl px-3.5 md:px-5 py-2.5 md:py-3 backdrop-blur-sm">
+                {virtualAccount?.account_number ? (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">
+                      {`${virtualAccount.bank_name || 'Bank'} • ${virtualAccount.account_number}`}
+                    </span>
+                    <button type="button" onClick={copyAccountNumber} className="text-indigo-200 hover:text-white transition-colors">
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">
+                      {virtualAccount?.status === 'failed'
+                        ? virtualAccount.error || 'Could not create your virtual account.'
+                        : provisioning
+                          ? 'Creating your virtual account…'
+                          : 'Setting up your virtual account…'}
+                    </span>
+                    {virtualAccount?.status === 'failed' ? (
+                      <button
+                        type="button"
+                        onClick={retryVirtualAccount}
+                        disabled={provisioning}
+                        className="self-start rounded-lg bg-white/20 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/30 disabled:opacity-60"
+                      >
+                        {provisioning ? 'Retrying…' : 'Retry'}
+                      </button>
+                    ) : null}
+                  </div>
+                )}
               </div>
+              {copyMessage ? <p className="mt-2 text-xs text-indigo-100">{copyMessage}</p> : null}
               {/* Decorative blob */}
               <div className="absolute -top-10 -right-10 md:-top-20 md:-right-20 w-40 h-40 md:w-80 md:h-80 bg-white/10 rounded-full blur-2xl md:blur-3xl" />
             </div>
@@ -136,13 +203,13 @@ export default function Wallet() {
                 <span className="hidden md:inline">Quick Utilities</span>
               </h3>
               <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                <button onClick={() => navigate('/app/wallet/pay-bills?type=airtime')} className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
                     <Phone size={18} className="md:w-5 md:h-5" />
                   </div>
                   <span className="font-semibold text-gray-900 text-[13px] md:text-[14px]">Airtime</span>
                 </button>
-                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                <button onClick={() => navigate('/app/wallet/pay-bills?type=data')} className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
                     <Globe size={18} className="md:w-5 md:h-5" />
                   </div>
@@ -157,7 +224,7 @@ export default function Wallet() {
                   </div>
                   <span className="font-semibold text-gray-900 text-[13px] md:text-[14px]">Pay Bills</span>
                 </button>
-                <button className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
+                <button onClick={() => navigate('/app/wallet/pay-bills?type=electricity')} className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group">
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">
                     <Zap size={18} className="md:w-5 md:h-5" />
                   </div>
@@ -195,7 +262,7 @@ export default function Wallet() {
                             <TxIcon size={18} className="md:w-5 md:h-5" />
                           </div>
                           <div className="text-left">
-                            <h4 className="font-bold text-gray-900 text-[13px] md:text-[14px] mb-0.5">{tx.reference || 'Wallet Transaction'}</h4>
+                            <h4 className="font-bold text-gray-900 text-[13px] md:text-[14px] mb-0.5">{walletTransactionLabel(tx)}</h4>
                             <p className="text-[11px] md:text-[12px] text-gray-500 font-medium">{new Date(tx.created_at).toLocaleString()}</p>
                           </div>
                         </div>

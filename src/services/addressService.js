@@ -1,7 +1,42 @@
 import api from './api'
+import { getApiFieldError } from '../utils/apiErrors'
 
-export const getAddresses = () => api.get('/user/addresses')
-export const createAddress = (data) => api.post('/user/addresses', data)
-export const updateAddress = (id, data) => api.put(`/user/addresses/${id}`, data)
-export const deleteAddress = (id) => api.delete(`/user/addresses/${id}`)
-export const setDefaultAddress = (id) => api.patch(`/user/addresses/${id}/default`)
+export async function getAddresses() {
+  return api.get('/user/addresses')
+}
+
+export async function createAddress({ type, address, city, state, is_default }) {
+  try {
+    const { data } = await api.post('/user/addresses', {
+      type,
+      address: address?.trim(),
+      city: city?.trim() || undefined,
+      state: state?.trim() || undefined,
+      is_default: Boolean(is_default),
+    })
+    return data
+  } catch (err) {
+    const message =
+      getApiFieldError(err, 'address') ||
+      getApiFieldError(err, 'type') ||
+      getApiFieldError(err, 'form')
+    throw new Error(message)
+  }
+}
+
+export async function deleteAddress(id) {
+  try {
+    await api.delete(`/user/addresses/${id}`)
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function setDefaultAddress(id) {
+  try {
+    const { data } = await api.put(`/user/addresses/${id}`)
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}

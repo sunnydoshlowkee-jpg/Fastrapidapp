@@ -45,6 +45,7 @@ export default function MerchantRoutes() {
             <Route path="menu" element={<Menu />} />
             <Route path="menu/upload" element={<MenuUpload />} />
             <Route path="menu/new" element={<MenuItemCreate />} />
+            <Route path="menu/:productId/edit" element={<MenuItemCreate />} />
             <Route path="menu/import/success" element={<MenuImportSuccess />} />
             <Route path="orders" element={<MerchantOrders />} />
             <Route path="orders/:orderId" element={<OrderDetail />} />

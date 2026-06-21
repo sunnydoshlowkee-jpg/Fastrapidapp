@@ -234,6 +234,33 @@ export async function fetchAdminMerchantDetail(merchantId) {
   return data.data
 }
 
+export async function fetchAdminMerchantOrders(merchantId, { page = 1, perPage = 15 } = {}) {
+  const { data } = await api.get(`/admin/merchants/${merchantId}/orders`, {
+    params: { page, per_page: perPage },
+  })
+
+  return {
+    orders: data?.data || [],
+    pagination: data?.pagination || null,
+  }
+}
+
+export function mapAdminMerchantOrderFromApi(order) {
+  return {
+    id: order.display_id || `#ORD-${order.id}`,
+    numericId: order.id,
+    customer: {
+      name: order.customer?.name || 'Customer',
+      phone: order.customer?.phone || '—',
+    },
+    items: order.items ?? 0,
+    total: order.total || '0',
+    status: order.status,
+    statusLabel: order.status_label,
+    paymentStatusLabel: order.payment_status_label || order.payment_status || '—',
+  }
+}
+
 /**
  * @param {Record<string, unknown>} doc
  */

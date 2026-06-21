@@ -1,7 +1,8 @@
-import { AlertTriangle, MoreVertical } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import MerchantInventoryAvailabilityToggle from './MerchantInventoryAvailabilityToggle'
 import MerchantInventoryCategoryBadge from './MerchantInventoryCategoryBadge'
 import MerchantInventoryPagination from './MerchantInventoryPagination'
+import MerchantInventoryRowActions from './MerchantInventoryRowActions'
 
 const columns = [
   { key: 'image', label: 'Image', className: 'w-[72px]' },
@@ -18,6 +19,9 @@ export default function MerchantInventoryTable({
   pagination,
   onPageChange,
   onToggleAvailability,
+  onEdit,
+  onDelete,
+  onDuplicate,
 }) {
   return (
     <section className="overflow-hidden rounded-merchant-stat bg-merchant-surface shadow-merchant-stat">
@@ -86,13 +90,13 @@ export default function MerchantInventoryTable({
                     />
                   </td>
                   <td className="px-4 py-4 text-right lg:px-6">
-                    <button
-                      type="button"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-merchant-muted transition-colors hover:bg-merchant-icon-tile hover:text-merchant-ink"
-                      aria-label={`Actions for ${product.name}`}
-                    >
-                      <MoreVertical size={18} strokeWidth={1.75} />
-                    </button>
+                    <MerchantInventoryRowActions
+                      product={product}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onDuplicate={onDuplicate}
+                      onToggleAvailability={(item) => onToggleAvailability(item.id)}
+                    />
                   </td>
                 </tr>
               ))

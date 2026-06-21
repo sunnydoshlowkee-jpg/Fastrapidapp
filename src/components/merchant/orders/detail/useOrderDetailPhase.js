@@ -1,7 +1,6 @@
-import { useSearchParams } from 'react-router-dom'
-import { getOrderDetailPhase } from '../../../../services/data/merchantOrderDetail.mock'
+import useMerchantOrderDetail from './useMerchantOrderDetail'
 
 export default function useOrderDetailPhase() {
-  const [searchParams] = useSearchParams()
-  return getOrderDetailPhase(searchParams)
+  const { phase } = useMerchantOrderDetail()
+  return phase
 }
