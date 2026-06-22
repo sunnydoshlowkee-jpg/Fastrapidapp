@@ -12,6 +12,15 @@ export async function getMerchantOnboardingState() {
   }
 }
 
+export async function refreshMerchantOnboardingStatus() {
+  try {
+    const { data } = await api.post('/merchant/onboarding/refresh-status')
+    return data?.data ?? null
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export async function advanceMerchantOnboarding(step) {
   try {
     const { data } = await api.post('/merchant/onboarding/advance', { step })

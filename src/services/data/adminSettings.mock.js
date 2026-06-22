@@ -7,6 +7,7 @@ import {
   ADMIN_SETTINGS_ALERTS_PATH,
   ADMIN_SETTINGS_DELIVERY_ZONES_PATH,
   ADMIN_SETTINGS_EMAIL_PATH,
+  ADMIN_SETTINGS_EMAIL_TEMPLATES_PATH,
   ADMIN_SETTINGS_FEATURE_FLAGS_PATH,
   ADMIN_SETTINGS_FINANCE_PATH,
   ADMIN_SETTINGS_GENERAL_PATH,
@@ -38,6 +39,14 @@ export const ADMIN_SETTINGS = {
           description: 'Email server configuration',
           icon: 'mail',
           path: ADMIN_SETTINGS_EMAIL_PATH,
+        },
+        {
+          id: 'email-templates',
+          label: 'Email Templates',
+          description: 'Create and edit system email designs and content',
+          icon: 'mail',
+          iconTone: 'violet',
+          path: ADMIN_SETTINGS_EMAIL_TEMPLATES_PATH,
         },
         {
           id: 'payment',

@@ -3,6 +3,7 @@ import AdminSettingsPage from '../../../components/admin/settings/AdminSettingsP
 import SettingsFinance from './SettingsFinance'
 import SettingsGeneral from './SettingsGeneral'
 import SettingsEmail from './SettingsEmail'
+import SettingsEmailTemplates from './SettingsEmailTemplates'
 import SettingsPayment from './SettingsPayment'
 import SettingsFeatureFlags from './SettingsFeatureFlags'
 import SettingsDeliveryZones from './SettingsDeliveryZones'
@@ -25,6 +26,7 @@ export default function Settings() {
       <Route index element={<AdminSettingsPage />} />
       <Route path="general" element={<SettingsGeneral />} />
       <Route path="email" element={<SettingsEmail />} />
+      <Route path="email-templates/*" element={<SettingsEmailTemplates />} />
       <Route path="payment" element={<SettingsPayment />} />
       <Route path="feature-flags" element={<SettingsFeatureFlags />} />
       <Route path="delivery-zones" element={<SettingsDeliveryZones />} />
