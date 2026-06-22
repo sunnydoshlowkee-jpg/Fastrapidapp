@@ -1,5 +1,6 @@
 import api from './api'
 import { getApiFieldError } from '../utils/apiErrors'
+import { resolveStorageUrl } from '../utils/mediaUrl'
 
 function parsePrice(value) {
   const normalized = String(value ?? '').replace(/[^\d.]/g, '')
@@ -20,7 +21,7 @@ export function mapInventoryProductFromApi(product) {
     stockQty: product.stock_qty,
     stockWarning: Boolean(product.stock_warning),
     available: Boolean(product.available),
-    imageUrl: product.image_url,
+    imageUrl: resolveStorageUrl(product.image_url) || product.image_url,
   }
 }
 
