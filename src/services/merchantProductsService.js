@@ -92,8 +92,62 @@ export async function deleteMerchantProduct(productId) {
   }
 }
 
-export async function createMerchantProduct({ productName, category, stockQuantity, price, description, mediaFile }) {
-  const formData = buildMerchantProductFormData({ productName, category, stockQuantity, price, description, mediaFile })
+function buildMerchantProductFormData({
+  productName,
+  category,
+  stockQuantity,
+  price,
+  description,
+  mediaFile,
+  mediaFiles = [],
+  allowsMultipleImages = false,
+}) {
+  const formData = new FormData()
+  formData.append('name', productName.trim())
+  formData.append('category', category)
+  formData.append('stock_quantity', String(Number.parseInt(stockQuantity, 10) || 0))
+  formData.append('price', String(parsePrice(price)))
+  if (description?.trim()) {
+    formData.append('description', description.trim())
+  }
+
+  const files = allowsMultipleImages
+    ? (mediaFiles.length > 0 ? mediaFiles : mediaFile ? [mediaFile] : [])
+    : mediaFile
+      ? [mediaFile]
+      : mediaFiles.slice(0, 1)
+
+  if (allowsMultipleImages) {
+    files.forEach((file) => {
+      formData.append('images[]', file)
+    })
+  } else if (files[0]) {
+    formData.append('image', files[0])
+  }
+
+  return formData
+}
+
+export async function createMerchantProduct({
+  productName,
+  category,
+  stockQuantity,
+  price,
+  description,
+  mediaFile,
+  mediaFiles,
+  allowsMultipleImages,
+}) {
+  const formData = buildMerchantProductFormData({
+    productName,
+    category,
+    stockQuantity,
+    price,
+    description,
+    mediaFile,
+    mediaFiles,
+    allowsMultipleImages,
+  })
 
   try {
     const { data } = await api.post('/merchant/products', formData)
@@ -106,24 +160,10 @@ export async function createMerchantProduct({ productName, category, stockQuanti
       getApiFieldError(err, 'price') ||
       getApiFieldError(err, 'stock_quantity') ||
       getApiFieldError(err, 'image') ||
+      getApiFieldError(err, 'images') ||
       getApiFieldError(err, 'form')
     throw new Error(message)
   }
-}
-
-function buildMerchantProductFormData({ productName, category, stockQuantity, price, description, mediaFile }) {
-  const formData = new FormData()
-  formData.append('name', productName.trim())
-  formData.append('category', category)
-  formData.append('stock_quantity', String(Number.parseInt(stockQuantity, 10) || 0))
-  formData.append('price', String(parsePrice(price)))
-  if (description?.trim()) {
-    formData.append('description', description.trim())
-  }
-  if (mediaFile) {
-    formData.append('image', mediaFile)
-  }
-  return formData
 }
 
 export async function updateMerchantProduct(productId, formValues) {
@@ -142,6 +182,7 @@ export async function updateMerchantProduct(productId, formValues) {
       getApiFieldError(err, 'price') ||
       getApiFieldError(err, 'stock_quantity') ||
       getApiFieldError(err, 'image') ||
+      getApiFieldError(err, 'images') ||
       getApiFieldError(err, 'form')
     throw new Error(message)
   }

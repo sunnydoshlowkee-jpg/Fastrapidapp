@@ -5,12 +5,16 @@ import MerchantMenuItemCreateIntro from './MerchantMenuItemCreateIntro'
 
 export default function MerchantMenuItemCreateDesktop({
   copy,
+  categories,
+  allowsMultipleImages,
+  creatingCategory,
   loading,
   initialForm,
-  initialImageUrl,
+  initialImageUrls,
   submitting,
   error,
   handleCancel,
+  handleCreateCategory,
   handleSubmit,
 }) {
   const { openMobileNav } = useOutletContext()
@@ -36,10 +40,13 @@ export default function MerchantMenuItemCreateDesktop({
           ) : (
             <MerchantMenuItemCreateForm
               copy={copy}
-              categories={copy.categories}
+              categories={categories}
+              allowsMultipleImages={allowsMultipleImages}
+              onCreateCategory={handleCreateCategory}
+              creatingCategory={creatingCategory}
               variant="desktop"
               initialForm={initialForm}
-              initialImageUrl={initialImageUrl}
+              initialImageUrls={initialImageUrls}
               submitting={submitting}
               onCancel={handleCancel}
               onSubmit={handleSubmit}

@@ -37,14 +37,7 @@ export const MERCHANT_MENU_ITEM_CREATE = {
       placeholder: 'Tell your customers about the ingredients and flavor profile...',
     },
   },
-  categories: [
-    { value: '', label: 'Select category' },
-    { value: 'mains', label: 'Mains' },
-    { value: 'sides', label: 'Sides' },
-    { value: 'drinks', label: 'Drinks' },
-    { value: 'desserts', label: 'Desserts' },
-    { value: 'combos', label: 'Combos' },
-  ],
+  categories: [],
   actions: {
     cancel: 'Cancel',
     submit: 'Create Menu Item',

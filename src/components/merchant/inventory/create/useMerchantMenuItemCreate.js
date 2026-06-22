@@ -2,29 +2,84 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { MERCHANT_MENU_ITEM_CREATE } from '../../../../services/data/merchantMenuItemCreate.mock'
 import {
+  createMerchantProductCategory,
+  fetchMerchantProductCatalog,
+  isFoodBusinessType,
+} from '../../../../services/merchantProductCategoriesService'
+import {
   createMerchantProduct,
   fetchMerchantProduct,
   mapMerchantProductForForm,
   updateMerchantProduct,
 } from '../../../../services/merchantProductsService'
 
-const CATEGORY_NAME_TO_SLUG = {
-  Mains: 'mains',
-  Sides: 'sides',
-  Drinks: 'drinks',
-  Desserts: 'desserts',
-  Combos: 'combos',
-}
-
-function categoryNameToSlug(name) {
-  if (!name) return ''
-  return CATEGORY_NAME_TO_SLUG[name] ?? String(name).toLowerCase()
-}
-
 function parseInventoryPrice(value) {
   const normalized = String(value ?? '').replace(/[^\d.]/g, '')
   const amount = Number.parseFloat(normalized)
   return Number.isFinite(amount) ? String(amount) : ''
+}
+
+function buildCopy(businessType, isEditMode) {
+  const foodBusiness = isFoodBusinessType(businessType)
+  const base = MERCHANT_MENU_ITEM_CREATE
+
+  const pageTitle = isEditMode ? 'Edit Product' : foodBusiness ? 'Create Menu Item' : 'Create Product'
+  const subtitle = isEditMode
+    ? foodBusiness
+      ? 'Update this item in your digital menu catalogue.'
+      : 'Update this product in your catalogue.'
+    : foodBusiness
+      ? 'Add a new dish to your digital menu catalogue. Focus on high-quality visuals.'
+      : 'Add a new product to your catalogue. Upload multiple photos to showcase every angle.'
+
+  return {
+    ...base,
+    pageTitle,
+    subtitle,
+    fields: {
+      ...base.fields,
+      media: {
+        ...base.fields.media,
+        title: foodBusiness ? 'Upload product photo' : 'Upload product photos',
+        hint: foodBusiness
+          ? '16:9 ratio recommended. High resolution JPG or PNG.'
+          : 'Add up to 6 photos. High resolution JPG, PNG, or WebP.',
+      },
+      description: {
+        ...base.fields.description,
+        placeholder: foodBusiness
+          ? 'Tell your customers about the ingredients and flavor profile...'
+          : 'Describe the product features, specs, and what makes it stand out...',
+      },
+    },
+    actions: {
+      cancel: 'Cancel',
+      submit: isEditMode ? 'Save Changes' : foodBusiness ? 'Create Menu Item' : 'Create Product',
+    },
+    mobile: {
+      ...base.mobile,
+      subtitle: isEditMode
+        ? foodBusiness
+          ? 'Update this menu item.'
+          : 'Update this product.'
+        : foodBusiness
+          ? 'Add a new dish to your digital menu catalogue.'
+          : 'Add a new product with multiple photos.',
+      fields: {
+        ...base.mobile.fields,
+        media: {
+          ...base.mobile.fields.media,
+          hint: foodBusiness ? '16:9 ratio recommended.' : 'Add up to 6 photos.',
+        },
+        description: {
+          ...base.mobile.fields.description,
+          placeholder: foodBusiness
+            ? 'Describe the ingredients and flavor profile...'
+            : 'Describe the product features and specs...',
+        },
+      },
+    },
+  }
 }
 
 export default function useMerchantMenuItemCreate() {
@@ -34,10 +89,40 @@ export default function useMerchantMenuItemCreate() {
   const isEditMode = Boolean(productId)
 
   const [loading, setLoading] = useState(isEditMode)
+  const [catalogLoading, setCatalogLoading] = useState(true)
   const [initialForm, setInitialForm] = useState(null)
-  const [initialImageUrl, setInitialImageUrl] = useState(null)
+  const [initialImageUrls, setInitialImageUrls] = useState([])
+  const [categories, setCategories] = useState([])
+  const [businessType, setBusinessType] = useState(null)
+  const [allowsMultipleImages, setAllowsMultipleImages] = useState(false)
+  const [creatingCategory, setCreatingCategory] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCatalog() {
+      try {
+        setCatalogLoading(true)
+        const catalog = await fetchMerchantProductCatalog()
+        if (cancelled) return
+        setCategories(catalog.categories ?? [])
+        setBusinessType(catalog.business_type ?? null)
+        setAllowsMultipleImages(Boolean(catalog.allows_multiple_images))
+      } catch (err) {
+        if (!cancelled) setError(err?.message || 'Could not load product categories.')
+      } finally {
+        if (!cancelled) setCatalogLoading(false)
+      }
+    }
+
+    loadCatalog()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!isEditMode) {
@@ -45,7 +130,7 @@ export default function useMerchantMenuItemCreate() {
       if (duplicateFrom) {
         setInitialForm({
           productName: duplicateFrom.productName ?? '',
-          category: categoryNameToSlug(duplicateFrom.category) || duplicateFrom.category || '',
+          category: duplicateFrom.category ?? '',
           stockQuantity: String(duplicateFrom.stockQuantity ?? ''),
           price: parseInventoryPrice(duplicateFrom.price),
           description: duplicateFrom.description ?? '',
@@ -62,7 +147,8 @@ export default function useMerchantMenuItemCreate() {
       .then((product) => {
         if (cancelled || !product) return
         setInitialForm(mapMerchantProductForForm(product))
-        setInitialImageUrl(product.image_url ?? null)
+        const urls = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []
+        setInitialImageUrls(urls)
       })
       .catch((err) => {
         if (cancelled) return
@@ -77,26 +163,35 @@ export default function useMerchantMenuItemCreate() {
     }
   }, [isEditMode, productId, location.state])
 
-  const copy = useMemo(() => {
-    if (!isEditMode) return MERCHANT_MENU_ITEM_CREATE
-
-    return {
-      ...MERCHANT_MENU_ITEM_CREATE,
-      pageTitle: 'Edit Menu Item',
-      subtitle: 'Update this item in your digital menu catalogue.',
-      actions: {
-        cancel: 'Cancel',
-        submit: 'Save Changes',
-      },
-      mobile: {
-        ...MERCHANT_MENU_ITEM_CREATE.mobile,
-        subtitle: 'Update this menu item.',
-      },
-    }
-  }, [isEditMode])
+  const copy = useMemo(() => buildCopy(businessType, isEditMode), [businessType, isEditMode])
 
   const handleCancel = () => {
     navigate('/merchant/menu')
+  }
+
+  const handleCreateCategory = async (name) => {
+    setCreatingCategory(true)
+    setError(null)
+
+    try {
+      const created = await createMerchantProductCategory(name)
+      if (created) {
+        setCategories((current) => {
+          if (current.some((category) => category.slug === created.slug)) {
+            return current
+          }
+
+          return [...current, created].sort((a, b) => a.name.localeCompare(b.name))
+        })
+      }
+
+      return created
+    } catch (err) {
+      setError(err?.message || 'Could not create category.')
+      return null
+    } finally {
+      setCreatingCategory(false)
+    }
   }
 
   const handleSubmit = async (formValues) => {
@@ -111,7 +206,7 @@ export default function useMerchantMenuItemCreate() {
       }
       navigate('/merchant/menu')
     } catch (err) {
-      setError(err?.message || 'Could not save menu item.')
+      setError(err?.message || 'Could not save product.')
     } finally {
       setSubmitting(false)
     }
@@ -119,13 +214,17 @@ export default function useMerchantMenuItemCreate() {
 
   return {
     copy,
+    categories,
+    allowsMultipleImages,
+    creatingCategory,
     isEditMode,
-    loading,
+    loading: loading || catalogLoading,
     initialForm,
-    initialImageUrl,
+    initialImageUrls,
     submitting,
     error,
     handleCancel,
+    handleCreateCategory,
     handleSubmit,
   }
 }

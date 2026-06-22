@@ -3,12 +3,16 @@ import MerchantMenuItemCreateMobileHeader from './mobile/MerchantMenuItemCreateM
 
 export default function MerchantMenuItemCreateMobile({
   copy,
+  categories,
+  allowsMultipleImages,
+  creatingCategory,
   loading,
   initialForm,
-  initialImageUrl,
+  initialImageUrls,
   submitting,
   error,
   handleCancel,
+  handleCreateCategory,
   handleSubmit,
 }) {
   return (
@@ -24,10 +28,13 @@ export default function MerchantMenuItemCreateMobile({
         ) : (
           <MerchantMenuItemCreateForm
             copy={copy}
-            categories={copy.categories}
+            categories={categories}
+            allowsMultipleImages={allowsMultipleImages}
+            onCreateCategory={handleCreateCategory}
+            creatingCategory={creatingCategory}
             variant="mobile"
             initialForm={initialForm}
-            initialImageUrl={initialImageUrl}
+            initialImageUrls={initialImageUrls}
             submitting={submitting}
             onCancel={handleCancel}
             onSubmit={handleSubmit}
