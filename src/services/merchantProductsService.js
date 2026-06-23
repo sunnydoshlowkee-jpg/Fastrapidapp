@@ -22,6 +22,7 @@ export function mapInventoryProductFromApi(product) {
     stockWarning: Boolean(product.stock_warning),
     available: Boolean(product.available),
     imageUrl: resolveStorageUrl(product.image_url) || product.image_url,
+    imageKey: product.image_url || product.id,
   }
 }
 
@@ -169,11 +170,9 @@ export async function createMerchantProduct({
 
 export async function updateMerchantProduct(productId, formValues) {
   const formData = buildMerchantProductFormData(formValues)
-  // PHP does not parse multipart bodies on PUT; Laravel expects POST + _method for file uploads.
-  formData.append('_method', 'PUT')
 
   try {
-    const { data } = await api.post(`/merchant/products/${productId}`, formData)
+    const { data } = await api.post(`/merchant/products/${productId}/update`, formData)
 
     return data?.data?.product ?? null
   } catch (err) {

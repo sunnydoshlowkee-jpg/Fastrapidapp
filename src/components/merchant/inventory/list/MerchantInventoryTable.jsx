@@ -55,6 +55,7 @@ export default function MerchantInventoryTable({
                 >
                   <td className="px-4 py-4 lg:px-6">
                     <img
+                      key={product.imageKey}
                       src={product.imageUrl}
                       alt=""
                       className="h-12 w-12 rounded-lg object-cover"

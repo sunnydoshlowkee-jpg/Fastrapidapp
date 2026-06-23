@@ -40,6 +40,7 @@ export default function MerchantInventoryMobileProductList({
           <article className="rounded-merchant-stat bg-merchant-surface p-3 shadow-merchant-stat">
             <div className="flex gap-3">
               <img
+                key={product.imageKey}
                 src={product.imageUrl}
                 alt=""
                 className="h-14 w-14 shrink-0 rounded-lg object-cover"
