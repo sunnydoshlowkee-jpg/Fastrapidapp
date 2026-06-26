@@ -5,6 +5,18 @@ import { getMe } from '../../../services/authService'
 import { toggleStatus } from '../../../services/riderAuthService'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
+import { GoogleMap, useLoadScript, Marker, Circle } from '@react-google-maps/api'
+
+const ZONES = [
+  { id: 'yaba', name: 'Yaba', activeRiders: 14, center: { lat: 6.5095, lng: 3.3711 } },
+  { id: 'lekki', name: 'Lekki', activeRiders: 42, center: { lat: 6.4442, lng: 3.4831 } },
+  { id: 'ikeja', name: 'Ikeja', activeRiders: 28, center: { lat: 6.5866, lng: 3.3563 } },
+]
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%',
+}
 
 export default function RiderDashboard() {
   const navigate = useNavigate()
@@ -12,6 +24,17 @@ export default function RiderDashboard() {
   const [online, setOnline] = useState(false)
   const { deliveries, refresh: refreshDeliveries, accept } = useRiderDeliveries()
   const { earnings, refresh: refreshEarnings } = useRiderEarnings()
+
+  const [activeZone, setActiveZone] = useState(() => {
+    const saved = localStorage.getItem('rider_zone')
+    return saved ? JSON.parse(saved) : ZONES[0]
+  })
+  const [showZoneModal, setShowZoneModal] = useState(false)
+  const [showHeatmap, setShowHeatmap] = useState(false)
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  })
 
   useEffect(() => {
     getMe().then(res => {
@@ -127,9 +150,9 @@ export default function RiderDashboard() {
           </div>
 
           {/* Zone chip */}
-          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit">
+          <div onClick={() => setShowZoneModal(true)} className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit cursor-pointer hover:bg-white/80 transition-colors">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-            <span className="text-xs font-semibold text-gray-600">Yaba Zone • 14 riders active</span>
+            <span className="text-xs font-semibold text-gray-600">{activeZone.name} Zone • {activeZone.activeRiders} riders active</span>
           </div>
         </div>
 
@@ -186,28 +209,38 @@ export default function RiderDashboard() {
         {/* ── Zone / Heatmap ── */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
           <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-            <p className="text-sm font-black" style={{ color: '#5B5BFF' }}>Current Zone: Yaba</p>
-            <button className="text-xs font-bold text-gray-500 uppercase tracking-wider">CHANGE</button>
+            <p className="text-sm font-black" style={{ color: '#5B5BFF' }}>Current Zone: {activeZone.name}</p>
+            <button onClick={() => setShowZoneModal(true)} className="text-xs font-bold text-gray-500 uppercase tracking-wider hover:text-gray-900 transition-colors">CHANGE</button>
           </div>
           {/* Map placeholder */}
-          <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden" style={{ height: '110px', background: 'linear-gradient(135deg, #1a1a3e, #0d0d1f)' }}>
-            {/* Grid lines */}
-            <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 300 110">
-              {[0,1,2,3,4,5].map(i => (
-                <line key={`h${i}`} x1="0" y1={i*22} x2="300" y2={i*22} stroke="#5B5BFF" strokeWidth="0.5"/>
-              ))}
-              {[0,1,2,3,4,5,6,7,8,9,10].map(i => (
-                <line key={`v${i}`} x1={i*30} y1="0" x2={i*30} y2="110" stroke="#5B5BFF" strokeWidth="0.5"/>
-              ))}
-              {/* Zone highlight */}
-              <circle cx="150" cy="55" r="30" fill="rgba(91,91,255,0.15)" stroke="rgba(91,91,255,0.4)" strokeWidth="1"/>
-              <circle cx="150" cy="55" r="4" fill="#5B5BFF"/>
-            </svg>
+          <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden bg-gray-100" style={{ height: '140px' }}>
+            {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={activeZone.center}
+                zoom={13}
+                options={{ disableDefaultUI: true, zoomControl: false }}
+              >
+                <Marker position={activeZone.center} icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' }} />
+                {showHeatmap && (
+                  <Circle
+                    center={activeZone.center}
+                    radius={2500}
+                    options={{ fillColor: '#EF4444', fillOpacity: 0.2, strokeColor: '#EF4444', strokeOpacity: 0.5, strokeWeight: 1 }}
+                  />
+                )}
+              </GoogleMap>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-bold bg-gray-100">
+                Loading Map...
+              </div>
+            )}
+            
             {/* Button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button className="bg-gray-900/80 backdrop-blur-sm text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
+              <button onClick={() => setShowHeatmap(!showHeatmap)} className="pointer-events-auto bg-gray-900/80 backdrop-blur-sm text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-900 transition-colors shadow-lg">
                 <MapPin size={14} />
-                View Heatmap
+                {showHeatmap ? 'Hide Heatmap' : 'View Heatmap'}
               </button>
             </div>
           </div>
@@ -280,6 +313,56 @@ export default function RiderDashboard() {
         </div>
 
       </div>
+
+      {/* ── Zone Selection Modal ── */}
+      {showZoneModal && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setShowZoneModal(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] px-6 pt-6 pb-10 shadow-2xl animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:fade-in-0 duration-300">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
+            <h3 className="text-xl font-black text-gray-900 mb-2">Select Your Zone</h3>
+            <p className="text-sm text-gray-500 mb-6">Choose the area where you want to receive delivery requests.</p>
+            
+            <div className="space-y-3">
+              {ZONES.map((zone) => (
+                <button
+                  key={zone.id}
+                  onClick={() => {
+                    setActiveZone(zone)
+                    localStorage.setItem('rider_zone', JSON.stringify(zone))
+                    setShowZoneModal(false)
+                  }}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-colors ${
+                    activeZone.id === zone.id 
+                      ? 'border-[#5B5BFF] bg-indigo-50/50' 
+                      : 'border-gray-100 hover:border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeZone.id === zone.id ? 'bg-[#5B5BFF] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      <MapPin size={18} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">{zone.name}</p>
+                      <p className="text-xs text-gray-500">{zone.activeRiders} riders active</p>
+                    </div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${activeZone.id === zone.id ? 'border-[#5B5BFF]' : 'border-gray-300'}`}>
+                    {activeZone.id === zone.id && <div className="w-2.5 h-2.5 rounded-full bg-[#5B5BFF]" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <button 
+              onClick={() => setShowZoneModal(false)}
+              className="w-full mt-6 bg-gray-100 text-gray-900 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

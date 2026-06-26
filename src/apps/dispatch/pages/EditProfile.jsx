@@ -19,8 +19,24 @@ function Toggle({ checked, onChange }) {
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const [pushNotifs, setPushNotifs] = useState(true)
-  const [liveTracking, setLiveTracking] = useState(true)
+  const [pushNotifs, setPushNotifs] = useState(() => {
+    const saved = localStorage.getItem('rider_push_notifs')
+    return saved !== null ? JSON.parse(saved) : true
+  })
+  const [liveTracking, setLiveTracking] = useState(() => {
+    const saved = localStorage.getItem('rider_live_tracking')
+    return saved !== null ? JSON.parse(saved) : true
+  })
+
+  const updatePushNotifs = (val) => {
+    setPushNotifs(val)
+    localStorage.setItem('rider_push_notifs', JSON.stringify(val))
+  }
+
+  const updateLiveTracking = (val) => {
+    setLiveTracking(val)
+    localStorage.setItem('rider_live_tracking', JSON.stringify(val))
+  }
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto flex flex-col">
@@ -119,7 +135,7 @@ export default function EditProfile() {
                 <p className="font-bold text-gray-900 text-sm">Push Notifications</p>
                 <p className="text-xs text-gray-400">Alerts for new deliveries</p>
               </div>
-              <Toggle checked={pushNotifs} onChange={setPushNotifs} />
+              <Toggle checked={pushNotifs} onChange={updatePushNotifs} />
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
@@ -129,7 +145,7 @@ export default function EditProfile() {
                 <p className="font-bold text-gray-900 text-sm">Live Tracking</p>
                 <p className="text-xs text-gray-400">Visible to customers</p>
               </div>
-              <Toggle checked={liveTracking} onChange={setLiveTracking} />
+              <Toggle checked={liveTracking} onChange={updateLiveTracking} />
             </div>
           </div>
         </div>

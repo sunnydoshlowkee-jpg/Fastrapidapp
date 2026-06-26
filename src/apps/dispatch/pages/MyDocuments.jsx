@@ -4,8 +4,22 @@ import { ArrowLeft, Camera, CheckCircle, FileText, ShieldCheck, Info, Eye } from
 
 export default function MyDocuments() {
   const navigate = useNavigate()
-  const [ninUploaded, setNinUploaded] = useState(false)
-  const [proofUploaded, setProofUploaded] = useState(false)
+  const [ninUploaded, setNinUploaded] = useState(() => {
+    return localStorage.getItem('rider_nin_uploaded') === 'true'
+  })
+  const [proofUploaded, setProofUploaded] = useState(() => {
+    return localStorage.getItem('rider_proof_uploaded') === 'true'
+  })
+
+  const updateNin = (val) => {
+    setNinUploaded(val)
+    localStorage.setItem('rider_nin_uploaded', String(val))
+  }
+
+  const updateProof = (val) => {
+    setProofUploaded(val)
+    localStorage.setItem('rider_proof_uploaded', String(val))
+  }
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto flex flex-col">
@@ -85,7 +99,7 @@ export default function MyDocuments() {
             {/* National ID — not uploaded */}
             <label className="cursor-pointer">
               <input type="file" accept="image/*" className="hidden"
-                onChange={() => setNinUploaded(true)} />
+                onChange={() => updateNin(true)} />
               <div className={`rounded-2xl border-2 px-5 py-5 flex flex-col items-center gap-2 transition-all ${ninUploaded ? 'border-[#5B5BFF] bg-[#F5F5FF]' : 'border-gray-200 bg-gray-50'}`}>
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center"
                   style={{ background: 'rgba(91,91,255,0.1)' }}>
@@ -120,7 +134,7 @@ export default function MyDocuments() {
               </div>
               <label className="cursor-pointer">
                 <input type="file" accept="image/*" className="hidden"
-                  onChange={() => setProofUploaded(true)} />
+                  onChange={() => updateProof(true)} />
                 <span className="text-[10px] font-black px-3 py-1.5 rounded-xl border-2 transition-colors"
                   style={{
                     borderColor: proofUploaded ? '#5B5BFF' : '#5B5BFF',
