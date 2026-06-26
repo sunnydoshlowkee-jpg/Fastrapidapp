@@ -25,7 +25,9 @@ export default function ForgotPassword() {
     setLoading(true)
     try {
       const result = await merchantRequestPasswordReset(email)
-      navigate(`/merchant/forgot-password/verify?email=${encodeURIComponent(result.email)}`)
+      navigate(`/merchant/forgot-password/verify?email=${encodeURIComponent(result.email)}`, {
+        state: { debugOtp: result.debugOtp },
+      })
     } catch (err) {
       setError(err.message || 'Unable to send reset link. Please try again.')
     } finally {

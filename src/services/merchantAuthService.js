@@ -1,5 +1,4 @@
 import api from './api'
-import { MERCHANT_RESET_OTP } from './data/merchantAuth.mock'
 import { setMerchantSignupEmail } from './merchantRegistrationService'
 import { getApiFieldError } from '../utils/apiErrors'
 
@@ -7,8 +6,6 @@ const MERCHANT_RESET_EMAIL_KEY = 'rapid_merchant_reset_email'
 
 export const MERCHANT_TOKEN_KEY = 'rapid_merchant_token'
 export const MERCHANT_USER_KEY = 'rapid_merchant_user'
-
-const delay = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export function getStoredMerchantSession() {
   const token = localStorage.getItem(MERCHANT_TOKEN_KEY)
@@ -98,9 +95,11 @@ export async function merchantLogout() {
   }
 }
 
-export async function merchantRequestPasswordReset(email) {
-  await delay(800)
+function storeResetEmail(email) {
+  sessionStorage.setItem(MERCHANT_RESET_EMAIL_KEY, email)
+}
 
+export async function merchantRequestPasswordReset(email) {
   const normalizedEmail = email.trim().toLowerCase()
   if (!normalizedEmail || !normalizedEmail.includes('@')) {
     const error = new Error('Enter a valid email address.')
@@ -108,11 +107,20 @@ export async function merchantRequestPasswordReset(email) {
     throw error
   }
 
-  sessionStorage.setItem(MERCHANT_RESET_EMAIL_KEY, normalizedEmail)
+  try {
+    const { data } = await api.post('/merchant/forgot-password', {
+      email: normalizedEmail,
+    })
 
-  return {
-    message: `We've sent a 6-digit code to ${normalizedEmail}.`,
-    email: normalizedEmail,
+    storeResetEmail(normalizedEmail)
+
+    return {
+      message: data?.message || data?.data?.message || `We've sent a 6-digit code to ${normalizedEmail}.`,
+      email: data?.data?.email || normalizedEmail,
+      debugOtp: data?.data?.debug_otp,
+    }
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'email') || getApiFieldError(err, 'form'))
   }
 }
 
@@ -125,34 +133,57 @@ export function clearMerchantResetEmail() {
 }
 
 export async function merchantResendResetCode(email) {
-  await delay(600)
   const normalizedEmail = (email || getMerchantResetEmail()).trim().toLowerCase()
   if (!normalizedEmail) {
     throw new Error('Email is required to resend the code.')
   }
-  sessionStorage.setItem(MERCHANT_RESET_EMAIL_KEY, normalizedEmail)
-  return { message: 'A new verification code has been sent.', email: normalizedEmail }
+
+  try {
+    const { data } = await api.post('/merchant/forgot-password/resend', {
+      email: normalizedEmail,
+    })
+
+    storeResetEmail(normalizedEmail)
+
+    return {
+      message: data?.message || data?.data?.message || 'A new verification code has been sent.',
+      email: data?.data?.email || normalizedEmail,
+      debugOtp: data?.data?.debug_otp,
+    }
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'email') || getApiFieldError(err, 'form'))
+  }
 }
 
 export async function merchantResetPassword({ email, code, newPassword, confirmPassword }) {
-  await delay(800)
-
   const normalizedEmail = (email || getMerchantResetEmail()).trim().toLowerCase()
   if (!normalizedEmail) {
     throw new Error('Session expired. Please start again.')
   }
-  if (code !== MERCHANT_RESET_OTP) {
-    const error = new Error('Invalid verification code. Try again.')
-    error.code = 'INVALID_OTP'
+
+  try {
+    const { data } = await api.post('/merchant/forgot-password/reset', {
+      email: normalizedEmail,
+      code,
+      password: newPassword,
+      password_confirmation: confirmPassword,
+    })
+
+    clearMerchantResetEmail()
+
+    return {
+      message: data?.message || 'Your password has been reset. You can sign in now.',
+      email: data?.data?.email || normalizedEmail,
+    }
+  } catch (err) {
+    const message =
+      getApiFieldError(err, 'code') ||
+      getApiFieldError(err, 'password') ||
+      getApiFieldError(err, 'form')
+    const error = new Error(message)
+    if (getApiFieldError(err, 'code')) {
+      error.code = 'INVALID_OTP'
+    }
     throw error
   }
-  if (!newPassword || newPassword.length < 8) {
-    throw new Error('Password must be at least 8 characters.')
-  }
-  if (newPassword !== confirmPassword) {
-    throw new Error('Passwords do not match.')
-  }
-
-  clearMerchantResetEmail()
-  return { message: 'Your password has been reset. You can sign in now.', email: normalizedEmail }
 }
