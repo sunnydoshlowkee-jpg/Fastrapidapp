@@ -214,7 +214,7 @@ export default function Orders() {
                           <h3 className="font-bold text-gray-900 text-[15px]">{getOrderVendor(order)}</h3>
                           <span className="font-bold text-gray-900 text-sm">{formatCurrency(order.total_amount)}</span>
                         </div>
-                        <p className="text-[11px] text-gray-400 mb-3">{new Date(order.created_at).toLocaleDateString()}</p>
+                        <p className="text-[11px] text-gray-400 mb-3">{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}</p>
                         <p className="text-[11px] text-gray-500 leading-snug line-clamp-2">{getOrderItemsString(order)}</p>
                       </div>
                     </div>
@@ -459,7 +459,7 @@ export default function Orders() {
                             </div>
                             <div>
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Date</p>
-                              <p className="font-bold text-gray-900 text-[15px] mb-1 leading-tight">{new Date(order.created_at).toLocaleDateString()}</p>
+                              <p className="font-bold text-gray-900 text-[15px] mb-1 leading-tight">{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'Unknown Date'}</p>
                             </div>
                             <div className="max-w-[150px]">
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Items & Total</p>
