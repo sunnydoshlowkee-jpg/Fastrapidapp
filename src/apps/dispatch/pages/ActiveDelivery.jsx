@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
+import { getCurrentPosition } from '../../../utils/geolocation'
 import {
   ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
   Navigation, Package, Camera, CheckSquare, Square, ChevronRight
@@ -142,16 +143,27 @@ export default function ActiveDelivery() {
     }
   }
 
-  const handleStatusUpdate = async (status, nextStep) => {
+  const handleStatusUpdate = async (status, nextStep, coords = null) => {
     try {
       setIsProcessing(true)
-      await updateStatus(id, status)
+      await updateStatus(id, status, coords)
       if (nextStep) setStep(nextStep)
     } catch (e) {
       console.error(e)
-      alert(e.response?.data?.message || "Failed to update status")
+      alert(e.response?.data?.message || 'Failed to update status')
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  const handleCompleteDelivery = async () => {
+    try {
+      const coords = await getCurrentPosition()
+      await handleStatusUpdate('delivered', null, coords)
+      navigate(`/dispatch/delivery/${id}/success`)
+    } catch (e) {
+      console.error(e)
+      alert(e.message || 'Could not get your location. Enable GPS and try again.')
     }
   }
 
@@ -547,10 +559,7 @@ export default function ActiveDelivery() {
         </label>
 
         <button 
-          onClick={async () => {
-            await handleStatusUpdate('delivered', null);
-            navigate(`/dispatch/delivery/${id}/success`);
-          }}
+          onClick={handleCompleteDelivery}
           disabled={isProcessing}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>

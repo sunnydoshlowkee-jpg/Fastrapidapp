@@ -55,7 +55,12 @@ export default function RiderVehicle() {
 
   const handleContinue = () => {
     if (isValid) {
-      sessionStorage.setItem('rider_reg_vehicle', JSON.stringify({ vehicleType, plate }))
+      sessionStorage.setItem('rider_reg_vehicle', JSON.stringify({
+        vehicleType,
+        make: make.trim(),
+        plate: plate.trim(),
+        year: year.trim(),
+      }))
       navigate('/dispatch/onboarding/payment')
     }
   }
