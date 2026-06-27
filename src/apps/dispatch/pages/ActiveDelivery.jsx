@@ -47,10 +47,10 @@ function MapBg({ height = '45%', children }) {
 function MapFabs() {
   return (
     <div className="absolute right-4 top-4 flex flex-col gap-2 z-10">
-      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
         <Crosshair size={18} className="text-gray-700" />
       </button>
-      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform">
         <Layers size={18} className="text-gray-700" />
       </button>
     </div>
@@ -311,7 +311,7 @@ export default function ActiveDelivery() {
             <a href={`tel:${merchant?.phone || '000'}`} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
               <Phone size={16} style={{ color: '#5B5BFF' }} />
             </a>
-            <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+            <button onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(merchant?.address_line1 || '')}`, '_blank')} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
               <Navigation size={16} style={{ color: '#5B5BFF' }} />
             </button>
           </div>
@@ -364,7 +364,7 @@ export default function ActiveDelivery() {
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Delivering To</p>
               <p className="font-bold text-gray-900">{customer?.full_name || 'Customer'}</p>
             </div>
-            <button className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
+            <button onClick={() => navigate(`/dispatch/delivery/${id}/chat`)} className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
               <MessageSquare size={14} className="text-white" />
             </button>
             <a href={`tel:${customer?.phone || '000'}`} className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center ml-1">
@@ -463,7 +463,7 @@ export default function ActiveDelivery() {
               <a href={`tel:${customer?.phone || '000'}`} className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
                 <Phone size={16} className="text-gray-600" />
               </a>
-              <button className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
+              <button onClick={() => navigate(`/dispatch/delivery/${id}/chat`)} className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
                 <MessageSquare size={16} className="text-gray-600" />
               </button>
             </div>

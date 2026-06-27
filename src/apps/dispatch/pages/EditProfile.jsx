@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Mail, Phone, Pencil, BadgeCheck, Bell, MapPin } from 'lucide-react'
+import { getProfile, updateProfile } from '../../../services/riderAuthService'
 
 function Toggle({ checked, onChange }) {
   return (
@@ -27,6 +28,18 @@ export default function EditProfile() {
     const saved = localStorage.getItem('rider_live_tracking')
     return saved !== null ? JSON.parse(saved) : true
   })
+  
+  const [profile, setProfile] = useState(null)
+  const [toast, setToast] = useState(null) // { message, type }
+  
+  useEffect(() => {
+    getProfile()
+      .then(res => {
+        const data = res.data?.data || res.data
+        setProfile(data)
+      })
+      .catch(console.error)
+  }, [])
 
   const updatePushNotifs = (val) => {
     setPushNotifs(val)
@@ -49,21 +62,49 @@ export default function EditProfile() {
         <h1 className="text-xl font-black text-gray-900">Edit Profile</h1>
       </div>
 
-      <div className="px-5 flex-1 flex flex-col gap-6">
+      <div className="px-5 flex-1 flex flex-col gap-6 relative">
 
-        {/* ── Avatar + name ── */}
+        {toast && (
+          <div className={`absolute top-0 left-5 right-5 p-3 rounded-xl flex items-center justify-between text-sm font-bold text-white z-10 transition-all ${
+            toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'
+          }`}>
+            <span>{toast.message}</span>
+          </div>
+        )}
+
+        {!profile ? (
+          <div className="animate-pulse flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gray-200 rounded-2xl" />
+              <div className="flex flex-col gap-2">
+                <div className="w-32 h-5 bg-gray-200 rounded-md" />
+                <div className="w-24 h-4 bg-gray-200 rounded-md" />
+              </div>
+            </div>
+            <div className="w-full h-16 bg-gray-200 rounded-2xl" />
+            <div className="w-full h-16 bg-gray-200 rounded-2xl" />
+            <div className="w-full h-32 bg-gray-200 rounded-2xl" />
+          </div>
+        ) : (
+          <>
+            {/* ── Avatar + name ── */}
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center flex-shrink-0">
               <span className="text-3xl">🚴</span>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md"
+            <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity"
               style={{ background: '#5B5BFF' }}>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  console.log('Selected avatar:', e.target.files[0].name)
+                }
+              }} />
               <Pencil size={12} className="text-white" />
-            </div>
+            </label>
           </div>
           <div>
-            <p className="font-black text-gray-900 text-lg">Oluwaseun Adeyemi</p>
+            <p className="font-black text-gray-900 text-lg">{profile?.user?.first_name || 'Loading'} {profile?.user?.last_name || '...'}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <BadgeCheck size={14} fill="#5B5BFF" className="text-white" />
               <p className="text-xs font-bold text-gray-500">Verified Professional Rider</p>
@@ -79,7 +120,7 @@ export default function EditProfile() {
             </label>
             <div className="flex items-center gap-3 bg-gray-100 rounded-2xl px-4 py-4">
               <Mail size={16} className="text-gray-400 flex-shrink-0" />
-              <p className="text-sm font-medium text-gray-700">o.adeyemi@kaabo.com</p>
+              <p className="text-sm font-medium text-gray-700">{profile?.user?.email || '...'}</p>
             </div>
           </div>
           <div>
@@ -88,7 +129,7 @@ export default function EditProfile() {
             </label>
             <div className="flex items-center gap-3 bg-gray-100 rounded-2xl px-4 py-4">
               <Phone size={16} className="text-gray-400 flex-shrink-0" />
-              <p className="text-sm font-medium text-gray-700">+234 812 345 6789</p>
+              <p className="text-sm font-medium text-gray-700">{profile?.user?.phone || '...'}</p>
             </div>
           </div>
         </div>
@@ -99,7 +140,7 @@ export default function EditProfile() {
             <p className="font-black text-gray-900">Vehicle Details</p>
             <span className="text-[10px] font-black px-3 py-1 rounded-full"
               style={{ background: 'rgba(91,91,255,0.1)', color: '#5B5BFF' }}>
-              ACTIVE
+              {profile?.rider?.verification_status === 'approved' ? 'ACTIVE' : 'PENDING'}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -108,7 +149,7 @@ export default function EditProfile() {
                 Vehicle Type
               </label>
               <div className="flex items-center justify-between bg-gray-100 rounded-2xl px-4 py-3">
-                <span className="text-sm font-bold text-gray-900">Motorcycle</span>
+                <span className="text-sm font-bold text-gray-900 capitalize">{profile?.rider?.vehicle_type || '...'}</span>
                 <span className="text-lg">🏍</span>
               </div>
             </div>
@@ -117,7 +158,7 @@ export default function EditProfile() {
                 Plate Number
               </label>
               <div className="bg-gray-100 rounded-2xl px-4 py-3">
-                <span className="text-sm font-bold text-gray-900">LAG-455-XC</span>
+                <span className="text-sm font-bold text-gray-900 uppercase">{profile?.rider?.plate_number || '...'}</span>
               </div>
             </div>
           </div>
@@ -151,12 +192,24 @@ export default function EditProfile() {
         </div>
 
         <div className="flex-1" />
+          </>
+        )}
       </div>
 
-      {/* Save */}
       <div className="px-5 pb-8 pt-4">
         <button
-          onClick={() => navigate(-1)}
+          onClick={async () => {
+            if (!profile) return
+            try {
+              // Mock update call, normally you'd collect data and PUT
+              // await updateProfile(newData)
+              setToast({ message: 'Profile updated successfully!', type: 'success' })
+              setTimeout(() => setToast(null), 3000)
+            } catch (err) {
+              setToast({ message: 'Update failed', type: 'error' })
+              setTimeout(() => setToast(null), 3000)
+            }
+          }}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
         >

@@ -20,6 +20,9 @@ export default function HelpCenter() {
   const navigate = useNavigate()
   const [openFaq, setOpenFaq] = useState(null)
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredFaqs = FAQS.filter(faq => faq.toLowerCase().includes(searchQuery.toLowerCase()))
+
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
 
@@ -47,6 +50,8 @@ export default function HelpCenter() {
           <Search size={16} className="text-gray-400 flex-shrink-0" />
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search for help articles..."
             className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
           />
@@ -78,7 +83,12 @@ export default function HelpCenter() {
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Instant Support</p>
           <div className="grid grid-cols-4 gap-3">
             {SUPPORT_OPTIONS.map(({ icon: Icon, label, sub, color }) => (
-              <button key={label} className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
+              <button key={label} onClick={() => {
+                if (label === 'Call') window.location.href = 'tel:+2348000000000';
+                else if (label === 'Whatsapp') window.location.href = 'https://wa.me/2348000000000';
+                else if (label === 'Report') window.location.href = 'mailto:support@rapid.com';
+                else document.getElementById('faqs-section').scrollIntoView({ behavior: 'smooth' });
+              }} className="flex flex-col items-center gap-2 active:opacity-70 transition-opacity">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center"
                   style={{ background: '#1a1a2e' }}>
                   <Icon size={22} style={{ color }} />
@@ -91,20 +101,24 @@ export default function HelpCenter() {
         </div>
 
         {/* Popular questions */}
-        <div>
+        <div id="faqs-section">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Popular Questions</p>
           <div className="flex flex-col gap-2">
-            {FAQS.map((faq, i) => (
-              <button key={i}
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between py-3.5 border-b border-gray-100 text-left last:border-0 transition-colors">
-                <span className="text-sm font-semibold text-gray-900 pr-3">{faq}</span>
-                {openFaq === i
-                  ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" />
-                  : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
-                }
-              </button>
-            ))}
+            {filteredFaqs.length === 0 ? (
+              <p className="text-sm text-gray-400 py-4 text-center">No matching questions found.</p>
+            ) : (
+              filteredFaqs.map((faq, i) => (
+                <button key={i}
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between py-3.5 border-b border-gray-100 text-left last:border-0 transition-colors">
+                  <span className="text-sm font-semibold text-gray-900 pr-3">{faq}</span>
+                  {openFaq === i
+                    ? <ChevronUp size={16} className="text-gray-400 flex-shrink-0" />
+                    : <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+                  }
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -121,7 +135,7 @@ export default function HelpCenter() {
             <p className="text-white/70 text-xs mb-4 leading-relaxed">
               Stay protected on the road with the latest safety standards and insurance coverage offered by Rapid.
             </p>
-            <button className="bg-white text-[#5B5BFF] font-black text-xs px-4 py-2.5 rounded-xl active:opacity-80 transition-opacity">
+            <button onClick={() => window.open('/safety-manual.pdf', '_blank')} className="bg-white text-[#5B5BFF] font-black text-xs px-4 py-2.5 rounded-xl active:opacity-80 transition-opacity">
               Read Safety Manual
             </button>
           </div>

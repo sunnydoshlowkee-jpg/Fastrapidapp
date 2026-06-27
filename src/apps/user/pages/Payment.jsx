@@ -60,7 +60,7 @@ export default function Payment() {
     }
 
     if (paymentMethod === 'crypto') {
-      alert('Cryptocurrency payments are coming soon.')
+      navigate('/app/payment/crypto')
       return
     }
 
@@ -298,10 +298,10 @@ export default function Payment() {
           <h1 className="text-[24px] font-bold text-gray-900">Checkout</h1>
         </div>
         <div className="flex items-center gap-6 shrink-0">
-          <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+          <div onClick={() => navigate('/app/profile/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
             <MapPin size={20} className="text-gray-500" strokeWidth={2} />
           </div>
-          <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+          <div onClick={() => navigate('/app/cart')} className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
             <ShoppingCart size={24} className="text-gray-700" />
           </div>
         </div>

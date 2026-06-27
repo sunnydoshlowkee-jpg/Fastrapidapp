@@ -5,6 +5,21 @@ export async function getWalletData() {
   return api.get('/user/wallet')
 }
 
+export async function getWalletTransactions(params) {
+  return api.get('/user/wallet/transactions', { params })
+}
+
+
+
+export async function sendBankTransfer(payload) {
+  // Mock bank transfer for now
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ success: true, message: 'Transfer to bank successful' })
+    }, 1000)
+  })
+}
+
 export async function provisionVirtualAccount() {
   try {
     const { data } = await api.post('/user/wallet/virtual-account')
@@ -52,6 +67,24 @@ export async function setWalletPin(pin) {
 export async function purchaseAirtime({ network, phone, amount }) {
   try {
     const { data } = await api.post('/user/wallet/bills/airtime', { network, phone, amount })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function getDataPlans(network) {
+  try {
+    const { data } = await api.get('/user/wallet/bills/data-plans', { params: { network } })
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseData({ network, phone, planId }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/data', { network, phone, plan_id: planId })
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))

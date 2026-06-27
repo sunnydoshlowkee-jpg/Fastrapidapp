@@ -1,23 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, CheckCircle, ShieldCheck, Building2 } from 'lucide-react'
-
-const BANKS = [
-  'Access Bank PLC', 'GTBank', 'First Bank', 'Zenith Bank',
-  'UBA', 'Kuda Bank', 'Opay', 'Palmpay',
-]
-
-const AVAILABLE = 142500
+import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
+import { getProfile } from '../../../services/riderAuthService'
 
 export default function Withdraw() {
   const navigate = useNavigate()
-  const [bank, setBank] = useState('Access Bank PLC')
-  const [showBanks, setShowBanks] = useState(false)
-  const [amount, setAmount] = useState('50,000')
+  const { earnings, refresh } = useRiderEarnings()
+  const [profile, setProfile] = useState(null)
+  
+  const [amount, setAmount] = useState('')
   const fee = 50
 
+  useEffect(() => {
+    refresh()
+    getProfile().then(res => setProfile(res.data?.data || res.data)).catch(console.error)
+  }, [refresh])
+
+  const balance = earnings?.wallet?.balance || 0
+  const availableBalance = balance > fee ? balance - fee : 0
+
   const rawAmount = parseInt(amount.replace(/,/g, '') || '0', 10)
-  const isValid = rawAmount >= 100 && rawAmount <= AVAILABLE
+  const isValid = rawAmount >= 100 && rawAmount <= availableBalance
 
   const handleAmountChange = (e) => {
     const raw = e.target.value.replace(/[^0-9]/g, '')
@@ -25,7 +29,7 @@ export default function Withdraw() {
     setAmount(Number(raw).toLocaleString())
   }
 
-  const setMax = () => setAmount(AVAILABLE.toLocaleString())
+  const setMax = () => setAmount(availableBalance.toLocaleString())
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto flex flex-col">
@@ -47,39 +51,21 @@ export default function Withdraw() {
           <div className="h-0.5 w-14 rounded-full" style={{ background: '#5B5BFF' }} />
         </div>
 
-        {/* Bank selector */}
+        {/* Bank selector (read only now) */}
         <div>
           <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-            Select Receiving Bank
+            Receiving Bank
           </label>
           <div className="relative">
-            <button
-              onClick={() => setShowBanks(!showBanks)}
-              className="w-full bg-gray-100 rounded-2xl px-4 py-4 flex items-center gap-3 text-left"
-            >
+            <div className="w-full bg-gray-100 rounded-2xl px-4 py-4 flex items-center gap-3 text-left">
               <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
                 <Building2 size={16} style={{ color: '#5B5BFF' }} />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-gray-900 text-sm">{bank}</p>
-                <p className="text-xs text-gray-400">Standard Commercial Bank</p>
+                <p className="font-bold text-gray-900 text-sm">{profile?.rider?.payout_bank_name || 'Loading...'}</p>
+                <p className="text-xs text-gray-400">Registered Bank</p>
               </div>
-              <ChevronDown size={16} className="text-gray-400" />
-            </button>
-
-            {showBanks && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-xl border border-gray-100 z-20 overflow-hidden">
-                {BANKS.map(b => (
-                  <button key={b}
-                    onClick={() => { setBank(b); setShowBanks(false) }}
-                    className={`w-full px-4 py-3.5 text-left text-sm transition-colors hover:bg-gray-50 ${b === bank ? 'font-black' : 'font-medium text-gray-700'}`}
-                    style={{ color: b === bank ? '#5B5BFF' : undefined }}
-                  >
-                    {b}
-                  </button>
-                ))}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -89,12 +75,12 @@ export default function Withdraw() {
             Account Number
           </label>
           <div className="bg-gray-100 rounded-2xl px-4 py-4 flex items-center gap-3">
-            <p className="flex-1 font-bold text-gray-900 text-sm tracking-wider">99838732222</p>
+            <p className="flex-1 font-bold text-gray-900 text-sm tracking-wider">{profile?.rider?.payout_account_number || 'Loading...'}</p>
             <CheckCircle size={20} fill="#5B5BFF" className="text-white flex-shrink-0" />
           </div>
           {/* Resolved name */}
-          <p className="text-xs font-black mt-2 px-1" style={{ color: '#5B5BFF' }}>
-            CHUKWUMA EMEKA ADEBAYO
+          <p className="text-xs font-black mt-2 px-1 uppercase" style={{ color: '#5B5BFF' }}>
+            {profile?.rider?.payout_account_name || 'Loading...'}
           </p>
         </div>
 
@@ -119,7 +105,7 @@ export default function Withdraw() {
           {/* Available balance */}
           <div className="flex items-center justify-between mt-2 px-1">
             <p className="text-xs text-gray-400">
-              Available balance: <span className="font-semibold text-gray-600">₦{AVAILABLE.toLocaleString()}.00</span>
+              Available balance: <span className="font-semibold text-gray-600">₦{availableBalance.toLocaleString()}</span>
             </p>
             <button onClick={setMax}
               className="text-xs font-black"

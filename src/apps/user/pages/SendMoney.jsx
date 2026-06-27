@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, User, AlertCircle, Delete } from 'lucide-react'
-import { getWalletData, sendWalletTransfer, setWalletPin } from '../../../services/walletService'
+import { getWalletData, sendWalletTransfer, sendBankTransfer, setWalletPin } from '../../../services/walletService'
 
 export default function SendMoney() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('rapid')
   const [recipient, setRecipient] = useState('')
+  const [bankName, setBankName] = useState('GTBank')
+  const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('')
   const [showPin, setShowPin] = useState(false)
   const [pin, setPin] = useState('')
@@ -49,11 +51,20 @@ export default function SendMoney() {
         await setWalletPin(pin)
       }
 
-      await sendWalletTransfer({
-        recipient,
-        amount: numAmount,
-        pin: hasPin || pin.length === 4 ? pin : undefined,
-      })
+      if (tab === 'bank') {
+        await sendBankTransfer({
+          bankName,
+          accountNumber,
+          amount: numAmount,
+          pin: hasPin || pin.length === 4 ? pin : undefined,
+        })
+      } else {
+        await sendWalletTransfer({
+          recipient,
+          amount: numAmount,
+          pin: hasPin || pin.length === 4 ? pin : undefined,
+        })
+      }
 
       navigate('/app/wallet')
     } catch (err) {
@@ -166,47 +177,74 @@ export default function SendMoney() {
           </div>
 
           {tab === 'bank' ? (
-            <p className="text-sm text-gray-500 mb-6">Bank transfers from your wallet are coming soon. Use Rapid user transfers for instant delivery.</p>
-          ) : (
             <>
+              <div className="mb-4">
+                <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Bank</label>
+                <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 flex items-center gap-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
+                  <select 
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    className="flex-1 text-[14px] md:text-[15px] outline-none bg-transparent"
+                  >
+                    <option value="GTBank">GTBank</option>
+                    <option value="Kuda Bank">Kuda Bank</option>
+                    <option value="Zenith Bank">Zenith Bank</option>
+                    <option value="First Bank">First Bank</option>
+                  </select>
+                </div>
+              </div>
               <div className="mb-6">
-                <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Recipient</label>
+                <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Account Number</label>
                 <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 flex items-center gap-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
                   <input
                     type="text"
-                    value={recipient}
-                    onChange={(e) => setRecipient(e.target.value)}
-                    placeholder="email or phone number"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="10-digit account number"
+                    maxLength={10}
                     className="flex-1 text-[14px] md:text-[15px] outline-none bg-transparent placeholder-gray-400"
                   />
-                  <User size={18} className="text-[#4F46E5] md:w-5 md:h-5" />
                 </div>
               </div>
-
-              <div className="mb-4">
-                <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Amount</label>
-                <div className={`bg-white md:bg-gray-50 rounded-xl border px-5 py-4 flex items-center gap-2 focus-within:ring-2 transition-all ${
-                  insufficient ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-50' : 'border-gray-200 focus-within:border-[#4F46E5] focus-within:ring-indigo-50'
-                }`}>
-                  <span className={`text-[28px] md:text-[32px] font-bold ${insufficient ? 'text-red-500' : 'text-gray-900'}`}>₦</span>
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
-                    className={`text-[28px] md:text-[32px] font-bold outline-none bg-transparent flex-1 ${
-                      insufficient ? 'text-red-500' : 'text-gray-900'
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {insufficient && (
-                <div className="flex items-center gap-2 mb-6 px-1">
-                  <AlertCircle size={14} className="text-red-500" />
-                  <span className="text-[12px] text-red-500 font-medium">Insufficient Funds (Balance: ₦{balance.toLocaleString()})</span>
-                </div>
-              )}
             </>
+          ) : (
+            <div className="mb-6">
+              <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Recipient</label>
+              <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 flex items-center gap-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
+                <input
+                  type="text"
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                  placeholder="email or phone number"
+                  className="flex-1 text-[14px] md:text-[15px] outline-none bg-transparent placeholder-gray-400"
+                />
+                <User size={18} className="text-[#4F46E5] md:w-5 md:h-5" />
+              </div>
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Amount</label>
+            <div className={`bg-white md:bg-gray-50 rounded-xl border px-5 py-4 flex items-center gap-2 focus-within:ring-2 transition-all ${
+              insufficient ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-50' : 'border-gray-200 focus-within:border-[#4F46E5] focus-within:ring-indigo-50'
+            }`}>
+              <span className={`text-[28px] md:text-[32px] font-bold ${insufficient ? 'text-red-500' : 'text-gray-900'}`}>₦</span>
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))}
+                className={`text-[28px] md:text-[32px] font-bold outline-none bg-transparent flex-1 ${
+                  insufficient ? 'text-red-500' : 'text-gray-900'
+                }`}
+              />
+            </div>
+          </div>
+
+          {insufficient && (
+            <div className="flex items-center gap-2 mb-6 px-1">
+              <AlertCircle size={14} className="text-red-500" />
+              <span className="text-[12px] text-red-500 font-medium">Insufficient Funds (Balance: ₦{balance.toLocaleString()})</span>
+            </div>
           )}
 
           {error ? <p className="mb-4 text-sm text-red-600">{error}</p> : null}
@@ -215,10 +253,16 @@ export default function SendMoney() {
             <button
               type="button"
               onClick={() => {
-                if (tab === 'bank') return
-                if (!recipient.trim()) {
-                  setError('Enter a recipient email or phone number.')
-                  return
+                if (tab === 'bank') {
+                  if (accountNumber.length < 10) {
+                    setError('Enter a valid 10-digit account number.')
+                    return
+                  }
+                } else {
+                  if (!recipient.trim()) {
+                    setError('Enter a recipient email or phone number.')
+                    return
+                  }
                 }
                 if (numAmount < 100) {
                   setError('Minimum transfer amount is ₦100.')
@@ -227,9 +271,9 @@ export default function SendMoney() {
                 setError('')
                 setShowPin(true)
               }}
-              disabled={tab === 'bank' || insufficient || !amount || loading}
+              disabled={insufficient || !amount || loading}
               className={`w-full py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] transition-all ${
-                tab === 'bank' || insufficient || !amount || loading
+                insufficient || !amount || loading
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-[#4F46E5] text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 active:scale-[0.98]'
               }`}

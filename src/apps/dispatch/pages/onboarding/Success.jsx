@@ -22,18 +22,22 @@ const CREDENTIALS = [
 export default function RiderSuccess() {
   const navigate = useNavigate()
 
-  return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto px-6 pt-5 pb-10"
-      style={{ background: '#F7F7FF' }}>
+  // Get name from sessionStorage
+  const personal = JSON.parse(sessionStorage.getItem('rider_reg_personal') || '{}')
+  const firstName = personal.firstName || 'Rider'
 
-      {/* Back */}
-      <button onClick={() => navigate(-1)}
-        className="w-10 h-10 rounded-full bg-white flex items-center justify-center active:bg-gray-100 transition-colors mb-8 shadow-sm">
-        <ArrowLeft size={18} className="text-gray-700" />
-      </button>
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      
+      {/* Decorative background blur */}
+      <div className="absolute top-[-10%] left-[-10%] w-[120%] h-[120%] opacity-30 pointer-events-none"
+           style={{
+             background: 'radial-gradient(circle at 50% 50%, rgba(91,91,255,0.1) 0%, rgba(255,255,255,0) 70%)'
+           }}
+      />
 
       {/* Clock icon with badge */}
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-8 z-10">
         <div className="relative">
           {/* Outer ring */}
           <div className="w-36 h-36 rounded-full flex items-center justify-center"
@@ -53,15 +57,17 @@ export default function RiderSuccess() {
       </div>
 
       {/* Heading */}
-      <div className="text-center mb-8">
-        <h1 className="text-[28px] font-black text-gray-900 mb-3">Application Sent!</h1>
-        <p className="text-gray-500 text-sm leading-relaxed px-4">
+      <div className="text-center z-10 mb-12">
+        <h1 className="text-[32px] font-black text-gray-900 leading-tight mb-3">
+          Welcome aboard,<br/>{firstName}!
+        </h1>
+        <p className="text-gray-500 text-[15px] leading-relaxed max-w-[280px] mx-auto">
           Your rider application is now under review by our operations team.
         </p>
       </div>
 
       {/* Submitted credentials */}
-      <div className="bg-white rounded-3xl p-4 mb-6 shadow-sm">
+      <div className="bg-white rounded-3xl p-4 mb-6 shadow-sm border border-gray-100 w-full max-w-sm z-10">
         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 px-2">
           Submitted Credentials
         </p>

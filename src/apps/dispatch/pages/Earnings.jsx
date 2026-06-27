@@ -5,37 +5,10 @@ import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 
 const PERIOD_TABS = ['Today', 'This Week', 'This Month']
 
-const PAYOUT_HISTORY = [
-  {
-    id: 1,
-    icon: 'bank',
-    date: 'July 24, 2024',
-    label: 'Transfer to Kuda Bank',
-    amount: '₦12,450.00',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    icon: 'bank',
-    date: 'July 24, 2024',
-    label: 'Transfer to Kuda Bank',
-    amount: '₦12,450.00',
-    status: 'Paid',
-  },
-  {
-    id: 3,
-    icon: 'clock',
-    date: 'July 22, 2024',
-    label: 'Scheduled Payout',
-    amount: '₦8,200.00',
-    status: 'Pending',
-  },
-]
-
 const STATS = {
-  Today:      { deliveries: 4,  avg: '₦1,100' },
-  'This Week':{ deliveries: 42, avg: '₦1,390' },
-  'This Month':{ deliveries: 168,avg: '₦1,280' },
+  Today:      { deliveries: 0,  avg: '₦0' },
+  'This Week':{ deliveries: 0, avg: '₦0' },
+  'This Month':{ deliveries: 0,avg: '₦0' },
 }
 
 export default function Earnings() {
@@ -50,9 +23,10 @@ export default function Earnings() {
   const stats = STATS[period]
   const tierProgress = 72  // % toward Gold
   
-  const balance = earnings?.balance || 0
-  const totalDeliveries = earnings?.deliveries_count || stats.deliveries
-  const totalEarnings = earnings?.total_earnings || 0
+  const balance = earnings?.wallet?.balance || 0
+  const recentEarnings = earnings?.earnings?.recent || []
+  const totalDeliveries = recentEarnings.length || 0
+  const totalEarnings = earnings?.earnings?.total || 0
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-6">
@@ -165,45 +139,40 @@ export default function Earnings() {
           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Silver</p>
         </div>
 
-        {/* ── Payout History ── */}
+        {/* ── Recent Earnings ── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="font-black text-gray-900">Payout History</p>
-            <button className="text-xs font-black text-gray-400 uppercase tracking-wider">VIEW ALL</button>
+            <p className="font-black text-gray-900">Recent Earnings</p>
+            <button onClick={() => navigate('/dispatch/earnings/history')} className="text-xs font-black text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors">VIEW ALL</button>
           </div>
 
           <div className="flex flex-col gap-3">
-            {PAYOUT_HISTORY.map(p => (
-              <div key={p.id} className="bg-gray-50 rounded-2xl px-4 py-4 flex items-center gap-3">
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: p.status === 'Paid'
-                      ? 'rgba(34,197,94,0.1)'
-                      : 'rgba(249,115,22,0.1)',
-                  }}>
-                  {p.icon === 'bank'
-                    ? <Building2 size={18} style={{ color: '#22c55e' }} />
-                    : <Clock size={18} style={{ color: '#f97316' }} />
-                  }
-                </div>
+            {recentEarnings.length === 0 ? (
+              <div className="text-center py-6 text-gray-500 font-medium text-sm">No recent earnings.</div>
+            ) : (
+              recentEarnings.slice(0, 3).map(p => (
+                <div key={p.id} className="bg-gray-50 rounded-2xl px-4 py-4 flex items-center gap-3">
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-green-100">
+                    <Building2 size={18} style={{ color: '#22c55e' }} />
+                  </div>
 
-                {/* Info */}
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900 text-sm">{p.date}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{p.label}</p>
-                </div>
+                  {/* Info */}
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900 text-sm">{new Date(p.created_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Delivery Earned</p>
+                  </div>
 
-                {/* Amount + status */}
-                <div className="text-right">
-                  <p className="font-black text-gray-900 text-sm">{p.amount}</p>
-                  <p className="text-xs font-bold mt-0.5"
-                    style={{ color: p.status === 'Paid' ? '#22c55e' : '#f97316' }}>
-                    {p.status}
-                  </p>
+                  {/* Amount + status */}
+                  <div className="text-right">
+                    <p className="font-black text-gray-900 text-sm">₦{Number(p.amount).toLocaleString()}</p>
+                    <p className="text-xs font-bold mt-0.5 text-green-500 capitalize">
+                      {p.status}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

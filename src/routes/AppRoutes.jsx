@@ -11,6 +11,7 @@ import VendorDetail from '../apps/user/pages/VendorDetail'
 import ItemDetail from '../apps/user/pages/ItemDetail'
 import CartDetail from '../apps/user/pages/CartDetail'
 import Payment from '../apps/user/pages/Payment'
+import CryptoCheckout from '../apps/user/pages/CryptoCheckout'
 import OrderSuccess from '../apps/user/pages/OrderSuccess'
 import TrackOrder from '../apps/user/pages/TrackOrder'
 import OrderDetail from '../apps/user/pages/OrderDetail'
@@ -24,6 +25,7 @@ import ReceiveMoney from '../apps/user/pages/ReceiveMoney'
 import FundWallet from '../apps/user/pages/FundWallet'
 import PayBills from '../apps/user/pages/PayBills'
 import WalletReceipt from '../apps/user/pages/WalletReceipt'
+import WalletTransactions from '../apps/user/pages/WalletTransactions'
 import Notifications from '../apps/user/pages/Notifications'
 
 export default function AppRoutes() {
@@ -36,6 +38,7 @@ export default function AppRoutes() {
         <Route path="item/:id" element={<ItemDetail />} />
         <Route path="cart" element={<CartDetail />} />
         <Route path="checkout" element={<Payment />} />
+        <Route path="payment/crypto" element={<CryptoCheckout />} />
         <Route path="order-success/:id" element={<OrderSuccess />} />
         <Route path="track/:id" element={<TrackOrder />} />
         <Route path="order/:id" element={<OrderDetail />} />
@@ -49,6 +52,7 @@ export default function AppRoutes() {
         <Route path="wallet/fund" element={<FundWallet />} />
         <Route path="wallet/pay-bills" element={<PayBills />} />
         <Route path="wallet/receipt/:id" element={<WalletReceipt />} />
+        <Route path="wallet/transactions" element={<WalletTransactions />} />
 
         {/* Profile Routes */}
         <Route path="notifications" element={<Notifications />} />

@@ -14,13 +14,18 @@ export default function Orders() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         setLoading(true)
-        const { data } = await getOrders()
+        const { data } = await getOrders({ page: 1 })
         setOrders(data.data || [])
+        setHasMore(data.current_page < data.last_page)
+        setPage(1)
       } catch (err) {
         console.error('Failed to fetch orders', err)
       } finally {
@@ -29,6 +34,22 @@ export default function Orders() {
     }
     fetchOrders()
   }, [])
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return
+    try {
+      setLoadingMore(true)
+      const nextPage = page + 1
+      const { data } = await getOrders({ page: nextPage })
+      setOrders(prev => [...prev, ...(data.data || [])])
+      setHasMore(data.current_page < data.last_page)
+      setPage(nextPage)
+    } catch (err) {
+      console.error('Failed to load more orders', err)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   const ongoingOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled')
   const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled')
@@ -254,7 +275,7 @@ export default function Orders() {
               />
             </div>
             <div className="flex items-center gap-6 shrink-0 ml-auto">
-              <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+              <div onClick={() => navigate('/app/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
                 <MapPin size={20} className="text-[#2D2AEE]" strokeWidth={2} />
                 <span className="font-semibold text-[#2D2AEE] text-[15px]">Lagos, NG</span>
               </div>
@@ -484,10 +505,10 @@ export default function Orders() {
                     ))
                   )}
 
-                  {completedOrders.length > 0 && (
+                  {completedOrders.length > 0 && hasMore && (
                     <div className="mt-6 flex justify-center">
-                      <button className="bg-white border border-gray-200 text-gray-900 font-bold px-8 py-3.5 rounded-xl hover:bg-gray-50 transition-colors shadow-sm text-[14px] flex items-center gap-2">
-                        Load More History <ChevronDown size={18} />
+                      <button onClick={loadMore} disabled={loadingMore} className="bg-white border border-gray-200 text-gray-900 font-bold px-8 py-3.5 rounded-xl hover:bg-gray-50 transition-colors shadow-sm text-[14px] flex items-center gap-2 disabled:opacity-50">
+                        {loadingMore ? 'Loading...' : 'Load More History'} <ChevronDown size={18} />
                       </button>
                     </div>
                   )}

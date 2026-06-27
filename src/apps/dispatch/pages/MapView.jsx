@@ -194,7 +194,9 @@ export default function RiderDashboard() {
         </div>
 
         {/* ── Weekend Bonus Banner ── */}
-        <button className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 text-left transition-opacity active:opacity-80"
+        <button 
+          onClick={() => navigate('/dispatch/earnings')}
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 text-left transition-opacity active:opacity-80"
           style={{ background: 'linear-gradient(90deg, #F59E0B, #FBBF24)' }}>
           <div className="w-10 h-10 bg-white/25 rounded-xl flex items-center justify-center flex-shrink-0">
             <Gift size={20} className="text-white" />

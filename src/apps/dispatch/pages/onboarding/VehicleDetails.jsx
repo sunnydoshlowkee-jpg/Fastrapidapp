@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera } from 'lucide-react'
+import { ArrowLeft, Camera, AlertCircle } from 'lucide-react'
 
 const VEHICLE_TYPES = [
   {
@@ -43,6 +43,26 @@ const VEHICLE_TYPES = [
   },
 ]
 
+const currentYear = new Date().getFullYear()
+
+function validateField(key, value) {
+  switch (key) {
+    case 'make':
+      return value.trim() ? '' : 'Vehicle make & model is required.'
+    case 'plate':
+      return value.trim() ? '' : 'Plate number is required.'
+    case 'year': {
+      if (!value) return 'Vehicle year is required.'
+      const y = parseInt(value)
+      if (isNaN(y) || y < 1990 || y > currentYear + 1)
+        return `Year must be between 1990 and ${currentYear + 1}.`
+      return ''
+    }
+    default:
+      return ''
+  }
+}
+
 export default function RiderVehicle() {
   const navigate = useNavigate()
   const [vehicleType, setVehicleType] = useState('motorcycle')
@@ -50,15 +70,50 @@ export default function RiderVehicle() {
   const [plate, setPlate] = useState('')
   const [year, setYear] = useState('')
   const [photo, setPhoto] = useState(null)
+  const [touched, setTouched] = useState({})
+  const [errors, setErrors] = useState({})
 
-  const isValid = make.trim() && plate.trim() && year.trim()
-
-  const handleContinue = () => {
-    if (isValid) {
-      sessionStorage.setItem('rider_reg_vehicle', JSON.stringify({ vehicleType, plate }))
-      navigate('/dispatch/onboarding/payment')
+  const handleChange = (key, val, setter) => {
+    setter(val)
+    if (touched[key]) {
+      setErrors(e => ({ ...e, [key]: validateField(key, val) }))
     }
   }
+
+  const handleBlur = (key, val) => {
+    setTouched(t => ({ ...t, [key]: true }))
+    setErrors(e => ({ ...e, [key]: validateField(key, val) }))
+  }
+
+  const handleContinue = () => {
+    const fields = { make, plate, year }
+    const allTouched = { make: true, plate: true, year: true }
+    const allErrors = Object.fromEntries(
+      Object.entries(fields).map(([k, v]) => [k, validateField(k, v)])
+    )
+    setTouched(allTouched)
+    setErrors(allErrors)
+
+    if (Object.values(allErrors).some(Boolean)) return
+
+    sessionStorage.setItem('rider_reg_vehicle', JSON.stringify({ vehicleType, plate, make, year }))
+    navigate('/dispatch/onboarding/payment')
+  }
+
+  const inputClass = (key) =>
+    `w-full rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+      errors[key] && touched[key]
+        ? 'bg-red-50 ring-2 ring-red-300'
+        : 'bg-gray-100'
+    }`
+
+  const FieldError = ({ name }) =>
+    touched[name] && errors[name] ? (
+      <div className="flex items-center gap-1.5 mt-2">
+        <AlertCircle size={13} className="text-red-500 shrink-0" />
+        <p className="text-xs font-medium text-red-500">{errors[name]}</p>
+      </div>
+    ) : null
 
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
@@ -70,15 +125,16 @@ export default function RiderVehicle() {
           <ArrowLeft size={18} className="text-gray-700" />
         </button>
         <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#5B5BFF' }}>
-          Step 4 of 4
+          Step 3 of 4
         </span>
       </div>
 
       {/* Progress bar */}
       <div className="flex gap-2 mb-8">
-        {[0,1,2,3].map(i => (
-          <div key={i} className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
-        ))}
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
+        <div className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
       </div>
 
       {/* Heading */}
@@ -125,10 +181,12 @@ export default function RiderVehicle() {
         <input
           type="text"
           value={make}
-          onChange={e => setMake(e.target.value)}
+          onChange={e => handleChange('make', e.target.value, setMake)}
+          onBlur={() => handleBlur('make', make)}
           placeholder="e.g. Honda CB125"
-          className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none"
+          className={inputClass('make')}
         />
+        <FieldError name="make" />
       </div>
 
       {/* Plate + Year */}
@@ -140,10 +198,12 @@ export default function RiderVehicle() {
           <input
             type="text"
             value={plate}
-            onChange={e => setPlate(e.target.value)}
+            onChange={e => handleChange('plate', e.target.value, setPlate)}
+            onBlur={() => handleBlur('plate', plate)}
             placeholder="ABC-1234"
-            className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none"
+            className={inputClass('plate')}
           />
+          <FieldError name="plate" />
         </div>
         <div>
           <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
@@ -152,12 +212,14 @@ export default function RiderVehicle() {
           <input
             type="number"
             value={year}
-            onChange={e => setYear(e.target.value)}
+            onChange={e => handleChange('year', e.target.value, setYear)}
+            onBlur={() => handleBlur('year', year)}
             placeholder="2023"
-            min="2000"
-            max="2030"
-            className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none"
+            min="1990"
+            max={currentYear + 1}
+            className={inputClass('year')}
           />
+          <FieldError name="year" />
         </div>
       </div>
 
@@ -184,8 +246,7 @@ export default function RiderVehicle() {
       {/* Continue */}
       <button
         onClick={handleContinue}
-        disabled={!isValid}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-40"
+        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >
         Continue

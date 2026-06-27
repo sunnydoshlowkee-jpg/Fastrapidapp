@@ -1,12 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Truck, Wallet, Award, MapPin, ShieldCheck, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Bell } from 'lucide-react'
+import { getRiderNotifications, markRiderAsRead } from '../../../services/notificationService'
 
 const TABS = ['All', 'Orders', 'Earnings', 'System']
 
 export default function Notifications() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('All')
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getRiderNotifications()
+      .then(res => {
+        setNotifications(res.data?.data || [])
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markRiderAsRead(id)
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+    } catch (e) {
+      console.error('Failed to mark read', e)
+    }
+  }
+
+  const filteredNotifications = notifications.filter(n => {
+    if (activeTab === 'All') return true
+    const type = n.data?.type?.toLowerCase() || ''
+    const title = n.data?.title?.toLowerCase() || ''
+    if (activeTab === 'Orders') return type.includes('order') || title.includes('order') || title.includes('delivery')
+    if (activeTab === 'Earnings') return type.includes('earning') || title.includes('earn') || title.includes('payment')
+    if (activeTab === 'System') return type.includes('system') || title.includes('system') || title.includes('update')
+    return true
+  })
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
@@ -37,107 +68,37 @@ export default function Notifications() {
       </div>
 
       <div className="px-5 space-y-6">
-        {/* TODAY SECTION */}
-        <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Today</p>
-          
+        {loading ? (
+          <div className="text-center text-gray-500 py-10 font-medium text-sm">Loading notifications...</div>
+        ) : filteredNotifications.length === 0 ? (
+          <div className="text-center text-gray-500 py-10 font-medium text-sm">No new notifications in this tab.</div>
+        ) : (
           <div className="flex flex-col gap-5">
-            {/* New Order */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(91,91,255,0.15)' }}>
-                <Truck size={20} style={{ color: '#5B5BFF' }} />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-gray-900 text-sm">New Order available</p>
-                  <p className="text-[10px] font-bold text-gray-400">2m ago</p>
+            {filteredNotifications.map(n => (
+              <div 
+                key={n.id} 
+                onClick={() => !n.read_at && handleMarkAsRead(n.id)}
+                className={`flex gap-4 p-3 rounded-2xl transition-colors cursor-pointer ${!n.read_at ? 'bg-indigo-50/50' : ''}`}
+              >
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(91,91,255,0.15)' }}>
+                  <Bell size={20} style={{ color: '#5B5BFF' }} />
                 </div>
-                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
-                  Pick up at "The Grill Master" - 4.2km away. Est. Earning: ₦3,500.
-                </p>
-                <button className="px-4 py-2 rounded-xl text-white text-xs font-bold transition-opacity active:opacity-80"
-                  style={{ background: '#5B5BFF' }}>
-                  View Details
-                </button>
-              </div>
-            </div>
-
-            {/* Earnings */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(34,197,94,0.15)' }}>
-                <Wallet size={20} style={{ color: '#22c55e' }} />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-gray-900 text-sm">Earnings credited</p>
-                  <p className="text-[10px] font-bold text-gray-400">45m ago</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-1">
+                    <p className={`text-sm ${!n.read_at ? 'font-black text-gray-900' : 'font-bold text-gray-700'}`}>{n.data?.title || 'Notification'}</p>
+                    <p className="text-[10px] font-bold text-gray-400">
+                      {new Date(n.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2 leading-relaxed">
+                    {n.data?.message || 'You have a new message.'}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  ₦12,450.00 from your morning shift has been deposited to your wallet.
-                </p>
               </div>
-            </div>
-
-            {/* Bonus (Highlight) */}
-            <div className="relative flex gap-4 pl-4 py-1">
-              <div className="absolute left-0 top-0 bottom-0 w-1 rounded-full" style={{ background: '#F59E0B' }} />
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(245,158,11,0.15)' }}>
-                <Award size={20} style={{ color: '#F59E0B' }} />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-sm" style={{ color: '#F59E0B' }}>Bonus unlocked!</p>
-                  <p className="text-[10px] font-bold" style={{ color: '#F59E0B' }}>3h ago</p>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  You've completed 10 deliveries today. ₦2,500 streak bonus added!
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
-
-        {/* YESTERDAY SECTION */}
-        <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Yesterday</p>
-          
-          <div className="flex flex-col gap-5">
-            {/* Zone update */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gray-200">
-                <MapPin size={20} className="text-gray-500" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-gray-900 text-sm">Zone update</p>
-                  <p className="text-[10px] font-bold text-gray-400">Yesterday</p>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  The "Ikeja North" zone boundaries have been expanded. View the updated map.
-                </p>
-              </div>
-            </div>
-
-            {/* Documents verified */}
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-gray-200">
-                <ShieldCheck size={20} className="text-gray-500" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <p className="font-bold text-gray-900 text-sm">Documents verified</p>
-                  <p className="text-[10px] font-bold text-gray-400">Yesterday</p>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  Your insurance renewal document has been approved by the Rapid team.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* PROMO BANNER */}
         <div className="rounded-3xl p-5 relative overflow-hidden mt-2"

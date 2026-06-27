@@ -83,7 +83,7 @@ export default function Wallet() {
       {/* Header */}
       <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 flex items-center justify-between border-b md:border-none border-gray-100">
         <h1 className="text-[20px] md:text-[24px] font-bold text-gray-900">Wallet</h1>
-        <button className="text-gray-600 hover:text-gray-900 transition-colors bg-white border border-gray-200 p-2 rounded-full shadow-sm">
+        <button onClick={() => navigate('/app/cart')} className="text-gray-600 hover:text-gray-900 transition-colors bg-white border border-gray-200 p-2 rounded-full shadow-sm">
           <ShoppingCart size={20} />
         </button>
       </div>
@@ -104,7 +104,13 @@ export default function Wallet() {
                     {showBalance ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                 </div>
-                <div className="w-9 h-9 md:w-12 md:h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors">
+                <div onClick={() => {
+                  const el = document.createElement('input');
+                  el.type = 'file';
+                  el.accept = 'image/*';
+                  el.onchange = () => alert('QR Scanner opening...');
+                  el.click();
+                }} className="w-9 h-9 md:w-12 md:h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors">
                   <QrCode size={20} className="text-white" />
                 </div>
               </div>
@@ -240,7 +246,7 @@ export default function Wallet() {
                   <span className="md:hidden">Transaction History</span>
                   <span className="hidden md:inline">Recent Activity</span>
                 </h3>
-                <button className="text-[#4F46E5] text-[12px] font-semibold hover:underline">View All</button>
+                <button onClick={() => navigate('/app/wallet/transactions')} className="text-[#4F46E5] text-[12px] font-semibold hover:underline">View All</button>
               </div>
               
               <div className="flex flex-col gap-3 md:gap-2 md:bg-white md:p-2 md:rounded-3xl md:border md:border-gray-100 md:shadow-sm min-h-[200px]">

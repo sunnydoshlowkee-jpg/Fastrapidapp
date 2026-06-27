@@ -20,7 +20,9 @@ export default function Search() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [activeTabMobile, setActiveTabMobile] = useState('Products')
-  const [activeTabDesktop] = useState('discovery')
+  
+  const [recentDesktop, setRecentDesktop] = useState(recentSearchesDesktop)
+  const [recentMobile, setRecentMobile] = useState(recentSearchesMobile)
   
   const [products, setProducts] = useState([])
   const [vendors, setVendors] = useState([])
@@ -90,15 +92,18 @@ export default function Search() {
           {!isSearching ? (
             <div className="flex flex-col gap-8">
               <div>
-                <h3 className="text-[13px] font-bold text-gray-900 mb-4">Recent searches</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[13px] font-bold text-gray-900">Recent searches</h3>
+                  <button onClick={() => setRecentMobile([])} className="text-[#4F46E5] text-[11px] font-bold">Clear all</button>
+                </div>
                 <div className="flex flex-col gap-4">
-                  {recentSearchesMobile.map((s, i) => (
+                  {recentMobile.map((s, i) => (
                     <div key={i} className="flex items-center justify-between cursor-pointer group" onClick={() => setQuery(s)}>
                       <div className="flex items-center gap-3">
                         <Clock size={16} className="text-gray-400 group-hover:text-[#4F46E5]" />
                         <span className="text-[13px] text-gray-600">{s}</span>
                       </div>
-                      <button onClick={(e) => e.stopPropagation()} className="p-1">
+                      <button onClick={(e) => { e.stopPropagation(); setRecentMobile(prev => prev.filter(x => x !== s)) }} className="p-1">
                         <X size={16} className="text-gray-300 hover:text-gray-500" />
                       </button>
                     </div>
@@ -209,15 +214,22 @@ export default function Search() {
               <SearchIcon size={20} className="text-[#2D2AEE]" />
               <input 
                 type="text" 
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search for everything RAPID..." 
                 className="w-full bg-transparent outline-none text-[15px] placeholder-gray-500 text-gray-900"
               />
+              {isSearching && (
+                <button onClick={() => setQuery('')} className="text-gray-400 hover:text-[#2D2AEE] ml-auto">
+                  <X size={18} />
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-6 shrink-0 ml-auto">
-              <div className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+              <div onClick={() => navigate('/app/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
                 <MapPin size={20} className="text-gray-500" strokeWidth={2} />
               </div>
-              <div className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
+              <div onClick={() => navigate('/app/cart')} className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
                 <ShoppingCart size={20} className="text-gray-500" strokeWidth={2} />
                 <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
               </div>
@@ -226,19 +238,73 @@ export default function Search() {
 
           <div className="px-10 pt-10 pb-12 bg-[#FAFAFA] flex-1">
             <div className="max-w-5xl">
+              {isSearching ? (
+                <div className="flex flex-col gap-8 w-full">
+              <h2 className="text-[24px] font-bold text-gray-900">Search Results</h2>
+              {loading && <div className="text-gray-500">Searching...</div>}
               
-              <div className="flex items-start gap-12 mb-12">
-                
-                {/* Recent Searches (Left Column) */}
-                <div className="flex-1 max-w-[500px]">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-[20px] font-bold text-gray-900">Recent searches</h2>
-                    <button className="text-[#2D2AEE] text-[13px] font-bold">Clear all</button>
+              {!loading && products.length === 0 && vendors.length === 0 && (
+                <div className="text-gray-500 py-10">No results found for "{query}".</div>
+              )}
+              
+              {!loading && products.length > 0 && (
+                <div>
+                  <h3 className="text-[16px] font-bold text-gray-900 mb-6">Products & Items</h3>
+                  <div className="grid grid-cols-3 gap-6">
+                    {products.map(item => (
+                      <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex gap-4">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-gray-50">
+                          <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900 text-[15px] mb-1">{item.name}</h4>
+                          <p className="text-[12px] text-gray-500 line-clamp-1 mb-2">{item.description}</p>
+                          <p className="font-bold text-gray-900 text-[14px]">{item.price}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div className="flex flex-col gap-4">
-                    {recentSearchesDesktop.map((search, idx) => (
-                      <div key={idx} onClick={() => setQuery(search.term)} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
+                </div>
+              )}
+              
+              {!loading && vendors.length > 0 && (
+                <div>
+                  <h3 className="text-[16px] font-bold text-gray-900 mb-6">Vendors</h3>
+                  <div className="grid grid-cols-3 gap-6">
+                    {vendors.map(vendor => (
+                      <div key={vendor.id} onClick={() => navigate(`/app/vendor/${vendor.id}`)} className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all flex gap-4">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-gray-50">
+                          <img src={vendor.img} alt={vendor.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900 text-[15px] mb-1">{vendor.name}</h4>
+                          <p className="text-[12px] text-gray-500 line-clamp-1 mb-2">{vendor.tags}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold flex items-center gap-1">
+                              <span className="text-yellow-500">★</span> {vendor.rating || '4.8'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              </div>
+              ) : (
+                <>
+                  <div className="flex items-start gap-12 mb-12">
+                    
+                    {/* Recent Searches (Left Column) */}
+                    <div className="flex-1 max-w-[500px]">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-[20px] font-bold text-gray-900">Recent searches</h2>
+                        <button onClick={() => setRecentDesktop([])} className="text-[#2D2AEE] text-[13px] font-bold">Clear all</button>
+                      </div>
+                      
+                      <div className="flex flex-col gap-4">
+                        {recentDesktop.map((search, idx) => (
+                          <div key={idx} onClick={() => setQuery(search.term)} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-[#F4F5F7] rounded-full flex items-center justify-center text-gray-400 group-hover:text-[#2D2AEE] transition-colors">
                             <Clock size={18} />
@@ -281,9 +347,10 @@ export default function Search() {
                 </div>
               </div>
 
+                </>
+              )}
             </div>
           </div>
-
         </div>
 
       </div>

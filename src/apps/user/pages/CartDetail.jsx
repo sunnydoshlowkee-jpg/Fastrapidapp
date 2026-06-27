@@ -217,11 +217,20 @@ export default function CartDetail() {
                 <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-3">Promo Code</label>
                 <div className="flex gap-3">
                   <input 
+                    id="promo-input"
                     type="text" 
                     placeholder="Enter code" 
                     className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[14px] outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
                   />
-                  <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-6 py-3 rounded-xl text-[14px] transition-colors">
+                  <button onClick={() => {
+                    const el = document.getElementById('promo-input');
+                    if (el && el.value) {
+                      alert('Validating promo code ' + el.value + ' with server...');
+                      // Here you would call promotionService.applyPromo(...)
+                    } else {
+                      alert('Please enter a promo code first.');
+                    }
+                  }} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-6 py-3 rounded-xl text-[14px] transition-colors">
                     Apply
                   </button>
                 </div>

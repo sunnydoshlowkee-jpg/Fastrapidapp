@@ -22,7 +22,7 @@ export default function RiderLogin() {
       const token = response.data?.token || response.token
       const user = response.data?.user || response.user
 
-      localStorage.setItem('rapid_token', token)
+      localStorage.setItem('rider_token', token)
       localStorage.setItem('rider_user', JSON.stringify(user))
 
       // Redirect to rider dashboard index

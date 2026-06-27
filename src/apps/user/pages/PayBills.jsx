@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react'
-import { purchaseAirtime } from '../../../services/walletService'
+import { purchaseAirtime, getDataPlans, purchaseData } from '../../../services/walletService'
 
 const providers = [
   { id: 'mtn', name: 'MTN', color: 'bg-yellow-400', textColor: 'text-yellow-900' },
@@ -22,6 +22,21 @@ export default function PayBills() {
   const [amount, setAmount] = useState('500')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [dataPlans, setDataPlans] = useState([])
+  const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [showPlanDropdown, setShowPlanDropdown] = useState(false)
+
+  useEffect(() => {
+    if (tab === 'data') {
+      getDataPlans(provider).then(plans => {
+        setDataPlans(plans)
+        if (plans.length > 0) {
+          setSelectedPlanId(plans[0].id)
+          setAmount(plans[0].price.toString())
+        }
+      })
+    }
+  }, [tab, provider])
 
   useEffect(() => {
     const type = searchParams.get('type')
@@ -33,28 +48,31 @@ export default function PayBills() {
   const handlePay = async () => {
     setError('')
 
-    if (tab === 'data') {
-      setError('Data bundle purchases are coming soon. Use airtime for now.')
-      return
-    }
-
-    const parsedAmount = Number.parseFloat(amount)
     if (!phone.trim()) {
       setError('Enter a recipient phone number.')
-      return
-    }
-    if (!Number.isFinite(parsedAmount) || parsedAmount < 50) {
-      setError('Minimum airtime amount is ₦50.')
       return
     }
 
     setLoading(true)
     try {
-      await purchaseAirtime({
-        network: provider,
-        phone: phone.trim(),
-        amount: parsedAmount,
-      })
+      if (tab === 'data') {
+        if (!selectedPlanId) throw new Error('Select a data plan.')
+        await purchaseData({
+          network: provider,
+          phone: phone.trim(),
+          planId: selectedPlanId,
+        })
+      } else {
+        const parsedAmount = Number.parseFloat(amount)
+        if (!Number.isFinite(parsedAmount) || parsedAmount < 50) {
+          throw new Error('Minimum airtime amount is ₦50.')
+        }
+        await purchaseAirtime({
+          network: provider,
+          phone: phone.trim(),
+          amount: parsedAmount,
+        })
+      }
       navigate('/app/wallet')
     } catch (err) {
       setError(err?.message || 'Could not complete purchase.')
@@ -140,17 +158,41 @@ export default function PayBills() {
 
           {/* Data Plan (shown for data tab) */}
           {tab === 'data' && (
-            <div className="mb-5 md:mb-6">
+            <div className="mb-5 md:mb-6 relative">
               <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Select Data Plan</label>
-              <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 flex items-center justify-between cursor-pointer hover:border-[#4F46E5] transition-colors">
-                <span className="text-[14px] md:text-[15px] text-gray-900 font-medium">Monthly 10GB - ₦3,000</span>
+              <div 
+                onClick={() => setShowPlanDropdown(!showPlanDropdown)}
+                className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 flex items-center justify-between cursor-pointer hover:border-[#4F46E5] transition-colors"
+              >
+                <span className="text-[14px] md:text-[15px] text-gray-900 font-medium">
+                  {dataPlans.find(p => p.id === selectedPlanId)?.name || 'Select a plan'}
+                </span>
                 <ChevronDown size={18} className="text-gray-400" />
               </div>
+              
+              {showPlanDropdown && (
+                <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-xl shadow-lg border border-gray-100 z-10 max-h-[200px] overflow-y-auto">
+                  {dataPlans.map(plan => (
+                    <div 
+                      key={plan.id}
+                      onClick={() => {
+                        setSelectedPlanId(plan.id)
+                        setAmount(plan.price.toString())
+                        setShowPlanDropdown(false)
+                      }}
+                      className="px-4 py-3 hover:bg-indigo-50 cursor-pointer flex justify-between items-center"
+                    >
+                      <span className="text-sm font-medium text-gray-900">{plan.name}</span>
+                      <span className="text-sm font-bold text-[#4F46E5]">₦{plan.price}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {/* Amount */}
-          <div className="mb-4 md:mb-6">
+          <div className={`mb-4 md:mb-6 ${tab === 'data' ? 'opacity-50 pointer-events-none' : ''}`}>
             <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Amount</label>
             <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 flex items-center gap-2 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
               <span className="text-[16px] md:text-[18px] font-bold text-gray-900">₦</span>
@@ -158,26 +200,29 @@ export default function PayBills() {
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                readOnly={tab === 'data'}
                 className="flex-1 text-[16px] md:text-[18px] font-semibold text-gray-900 outline-none bg-transparent"
               />
             </div>
           </div>
 
           {/* Recent Amounts */}
-          <div className="mb-8 md:mb-10">
-            <label className="text-[11px] font-semibold text-gray-400 mb-2 block">Recent Amounts</label>
-            <div className="flex gap-2">
-              {recentAmounts.map(a => (
-                <button 
-                  key={a}
-                  onClick={() => setAmount(a.replace(/[₦,]/g, ''))}
-                  className="px-4 py-2 bg-white md:bg-gray-50 rounded-full border border-gray-200 text-[12px] md:text-[13px] font-semibold text-gray-700 hover:border-[#4F46E5] hover:text-[#4F46E5] transition-colors shadow-sm md:shadow-none"
-                >
-                  {a}
-                </button>
-              ))}
+          {tab === 'airtime' && (
+            <div className="mb-8 md:mb-10">
+              <label className="text-[11px] font-semibold text-gray-400 mb-2 block">Recent Amounts</label>
+              <div className="flex gap-2">
+                {recentAmounts.map(a => (
+                  <button 
+                    key={a}
+                    onClick={() => setAmount(a.replace(/[₦,]/g, ''))}
+                    className="px-4 py-2 bg-white md:bg-gray-50 rounded-full border border-gray-200 text-[12px] md:text-[13px] font-semibold text-gray-700 hover:border-[#4F46E5] hover:text-[#4F46E5] transition-colors shadow-sm md:shadow-none"
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {error ? <p className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
 

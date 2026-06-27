@@ -8,6 +8,15 @@ export default function RiderIdentity() {
   const [selfie, setSelfie] = useState(null)
   const [profilePhoto, setProfilePhoto] = useState(null)
 
+  const handleContinue = () => {
+    sessionStorage.setItem('rider_reg_identity', JSON.stringify({
+      govIdUploaded: !!govId,
+      selfieUploaded: !!selfie,
+      profilePhotoUploaded: !!profilePhoto
+    }))
+    navigate('/dispatch/onboarding/vehicle')
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
 
@@ -24,7 +33,7 @@ export default function RiderIdentity() {
 
       {/* Progress bar */}
       <div className="flex gap-2 mb-8">
-        <div className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
         <div className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
         <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
         <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
@@ -109,7 +118,7 @@ export default function RiderIdentity() {
 
       {/* Continue */}
       <button
-        onClick={() => navigate('/dispatch/onboarding/vehicle')}
+        onClick={handleContinue}
         className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >
