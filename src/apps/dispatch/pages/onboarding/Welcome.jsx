@@ -30,7 +30,7 @@ export default function RiderWelcome() {
 
       {/* CTA */}
       <button
-        onClick={() => navigate('/dispatch/onboarding/phone')}
+        onClick={() => navigate('/dispatch/onboarding/personal')}
         className="w-full py-4 rounded-2xl text-white font-bold text-base mb-4 transition-opacity active:opacity-80"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >

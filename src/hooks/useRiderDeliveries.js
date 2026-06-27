@@ -46,9 +46,9 @@ export const useRiderDeliveries = () => {
     }
   };
 
-  const updateStatus = async (id, status) => {
+  const updateStatus = async (id, status, coords = null) => {
     try {
-      await updateDeliveryStatusService(id, status);
+      await updateDeliveryStatusService(id, status, coords);
       return true;
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to update status');

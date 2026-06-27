@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import MerchantAuthShell from '../../../../components/merchant/auth/MerchantAuthShell'
 import MerchantAuthCard from '../../../../components/merchant/auth/MerchantAuthCard'
 import MerchantAuthField from '../../../../components/merchant/auth/MerchantAuthField'
@@ -14,6 +14,7 @@ import {
 
 export default function ResetPassword() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const emailParam = searchParams.get('email') || ''
   const email = emailParam || getMerchantResetEmail()
@@ -26,6 +27,7 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
+  const [debugOtp, setDebugOtp] = useState(location.state?.debugOtp || '')
 
   useEffect(() => {
     if (!email) {
@@ -73,6 +75,7 @@ export default function ResetPassword() {
     try {
       const result = await merchantResendResetCode(email)
       setResendMessage(result.message)
+      if (result.debugOtp) setDebugOtp(result.debugOtp)
       setCode('')
     } catch (err) {
       setError(err.message || 'Unable to resend code.')
@@ -95,6 +98,12 @@ export default function ResetPassword() {
             account.
           </p>
         </header>
+
+        {import.meta.env.DEV && debugOtp && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-center text-xs text-amber-800">
+            Dev code (email not configured): <strong>{debugOtp}</strong>
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 md:gap-8">
           <div className="flex flex-col gap-2">
