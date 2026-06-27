@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, CheckCircle, Info, ShieldCheck, AlertCircle, XCircle } from 'lucide-react'
 import { register } from '../../../../services/riderAuthService'
+import { uploadStoredRiderIdentityAssets } from '../../../../services/riderOnboardingService'
 
 const BANKS = ['GTBank', 'Access Bank', 'First Bank', 'Zenith Bank', 'UBA', 'Kuda Bank', 'Opay', 'Palmpay']
 
@@ -11,6 +12,7 @@ export default function RiderPayment() {
   const [accountNumber, setAccountNumber] = useState('')
   const [showBanks, setShowBanks] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   // Derive account name from personal info stored in step 1
   const personal = JSON.parse(sessionStorage.getItem('rider_reg_personal') || '{}')
@@ -35,6 +37,17 @@ export default function RiderPayment() {
     const personal = JSON.parse(sessionStorage.getItem('rider_reg_personal') || '{}')
     const vehicle = JSON.parse(sessionStorage.getItem('rider_reg_vehicle') || '{}')
     const password = sessionStorage.getItem('rider_reg_password') || ''
+
+    if (!personal.email || !personal.password) {
+      setError('Please complete personal information first.')
+      navigate('/dispatch/onboarding/personal')
+      return
+    }
+
+    if (!isResolved || !accountName.trim()) {
+      setError('Enter a valid 10-digit account number and account name.')
+      return
+    }
 
     const registerData = {
       first_name: personal.firstName,
@@ -169,19 +182,26 @@ export default function RiderPayment() {
           )}
         </div>
 
-        {/* Account name — auto-resolved */}
+        {/* Account name */}
         {isResolved && (
           <div>
             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
               Account Name
             </label>
-            <div className="bg-gray-100 rounded-2xl px-4 py-4 flex items-center justify-between">
-              <span className="text-gray-900 text-sm font-bold tracking-wide">{accountName}</span>
-              <CheckCircle size={20} fill="#5B5BFF" className="text-white shrink-0" />
-            </div>
+            <input
+              type="text"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              placeholder="Name on bank account"
+              className="w-full bg-gray-100 rounded-2xl px-4 py-4 text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none"
+            />
           </div>
         )}
       </div>
+
+      {error && (
+        <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+      )}
 
       {/* Instant payouts banner */}
       <div className="mt-6 rounded-2xl p-4 flex gap-3" style={{ background: 'rgba(91,91,255,0.06)' }}>
@@ -198,7 +218,6 @@ export default function RiderPayment() {
 
       {/* Security badge */}
       <div className="mt-5 rounded-2xl overflow-hidden relative flex items-end" style={{ height: '100px', background: 'linear-gradient(135deg, #1a1a3e, #0d0d1f)' }}>
-        {/* Abstract secure graphic */}
         <div className="absolute inset-0 flex items-center justify-center opacity-20">
           <div className="w-24 h-24 rounded-full border-4 border-gray-400 flex items-center justify-center">
             <div className="w-12 h-12 rounded-full border-2 border-gray-400" />
@@ -234,7 +253,7 @@ export default function RiderPayment() {
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={loading}
+        disabled={loading || !isResolved || !accountName.trim()}
         className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 mt-6 disabled:opacity-40"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >

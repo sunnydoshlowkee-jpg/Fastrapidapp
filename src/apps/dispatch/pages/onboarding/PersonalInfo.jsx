@@ -83,8 +83,10 @@ export default function RiderPersonalInfo() {
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
       <div className="flex items-center justify-between mb-6">
-        <button onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:bg-gray-200 transition-colors">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:bg-gray-200 transition-colors"
+        >
           <ArrowLeft size={18} className="text-gray-700" />
         </button>
         <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#5B5BFF' }}>
@@ -158,7 +160,7 @@ export default function RiderPersonalInfo() {
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-60 flex items-center justify-center gap-2"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
         >
-          Continue
+          {loading ? 'Sending code…' : 'Continue'}
         </button>
       </div>
     </div>

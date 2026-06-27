@@ -18,6 +18,12 @@ function Toggle({ checked, onChange }) {
   )
 }
 
+const VEHICLE_TYPES = [
+  { value: 'motorcycle', label: 'Motorcycle' },
+  { value: 'bicycle', label: 'Bicycle' },
+  { value: 'car', label: 'Car' },
+]
+
 export default function EditProfile() {
   const navigate = useNavigate()
   const [pushNotifs, setPushNotifs] = useState(() => {
@@ -54,7 +60,6 @@ export default function EditProfile() {
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto flex flex-col">
 
-      {/* Header */}
       <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center">
           <ArrowLeft size={20} className="text-gray-700" />
@@ -107,12 +112,13 @@ export default function EditProfile() {
             <p className="font-black text-gray-900 text-lg">{profile?.user?.first_name || 'Loading'} {profile?.user?.last_name || '...'}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <BadgeCheck size={14} fill="#5B5BFF" className="text-white" />
-              <p className="text-xs font-bold text-gray-500">Verified Professional Rider</p>
+              <p className="text-xs font-bold text-gray-500">
+                {profile?.rider?.status === 'approved' ? 'Verified Professional Rider' : 'Rider'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* ── Contact info ── */}
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
@@ -134,7 +140,6 @@ export default function EditProfile() {
           </div>
         </div>
 
-        {/* ── Vehicle details ── */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="font-black text-gray-900">Vehicle Details</p>
@@ -144,7 +149,7 @@ export default function EditProfile() {
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="col-span-2">
               <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
                 Vehicle Type
               </label>
@@ -155,6 +160,28 @@ export default function EditProfile() {
             </div>
             <div>
               <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                Make / Brand
+              </label>
+              <input
+                type="text"
+                value={form.vehicle_brand}
+                onChange={(e) => setForm((f) => ({ ...f, vehicle_brand: e.target.value }))}
+                className="w-full bg-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                Year
+              </label>
+              <input
+                type="number"
+                value={form.vehicle_year}
+                onChange={(e) => setForm((f) => ({ ...f, vehicle_year: e.target.value }))}
+                className="w-full bg-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
                 Plate Number
               </label>
               <div className="bg-gray-100 rounded-2xl px-4 py-3">
@@ -164,7 +191,6 @@ export default function EditProfile() {
           </div>
         </div>
 
-        {/* ── Job preferences ── */}
         <div>
           <p className="font-black text-gray-900 mb-4">Job Preferences</p>
           <div className="flex flex-col gap-4">
@@ -191,6 +217,10 @@ export default function EditProfile() {
           </div>
         </div>
 
+        {error && (
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        )}
+
         <div className="flex-1" />
           </>
         )}
@@ -213,7 +243,7 @@ export default function EditProfile() {
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
         >
-          Save All Changes
+          {saving ? 'Saving…' : 'Save All Changes'}
         </button>
       </div>
     </div>

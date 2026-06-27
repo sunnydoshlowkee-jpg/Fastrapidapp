@@ -79,29 +79,27 @@ export default function MyDocuments() {
 
       <div className="px-5 flex-1 flex flex-col gap-5 pb-6">
 
-        {/* Avatar + title */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center text-4xl"
-              style={{ background: 'linear-gradient(135deg, #F97316, #FBBF24)' }}>
-              👨‍💼
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md"
-              style={{ background: '#5B5BFF' }}>
-              <Camera size={12} className="text-white" />
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-20 h-20 rounded-full object-cover" />
+            ) : (
+              <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
+                style={{ background: 'linear-gradient(135deg, #F97316, #FBBF24)' }}>
+                👤
+              </div>
+            )}
           </div>
           <div className="text-center">
-            <h2 className="font-black text-gray-900 text-base">Documents Verification</h2>
+            <h2 className="font-black text-gray-900 text-base">Identity Documents</h2>
             <p className="text-xs text-gray-400 mt-0.5">Submit high-quality photos for faster approval.</p>
           </div>
         </div>
 
-        {/* ── Personal Identification ── */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <FileText size={14} className="text-gray-400" />
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Personal Identification</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Required Documents</p>
           </div>
 
           {loading ? (
@@ -199,7 +197,7 @@ export default function MyDocuments() {
         <div className="flex items-start gap-3 bg-gray-50 rounded-2xl px-4 py-4">
           <Info size={16} className="text-gray-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-gray-500 leading-relaxed">
-            All documents are encrypted and only used for identity verification purposes. Processing usually takes 12–24 hours.
+            All documents are encrypted and only used for identity verification. Processing usually takes 12–24 hours.
           </p>
         </div>
 

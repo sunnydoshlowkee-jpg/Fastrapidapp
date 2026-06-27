@@ -16,7 +16,7 @@ export default function RiderVerify() {
   
   const displayTarget = method === 'email' ? email : `+234 ${phone}`
 
-  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
+  const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
   const [timer, setTimer] = useState(45)
   const [canResend, setCanResend] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -33,27 +33,52 @@ export default function RiderVerify() {
 
   // Countdown timer
   useEffect(() => {
-    if (timer <= 0) { setCanResend(true); return }
-    const id = setTimeout(() => setTimer(t => t - 1), 1000)
+    if (!email) {
+      navigate('/dispatch/onboarding/personal', { replace: true })
+    }
+  }, [email, navigate])
+
+  useEffect(() => {
+    if (timer <= 0) {
+      setCanResend(true)
+      return
+    }
+    const id = setTimeout(() => setTimer((t) => t - 1), 1000)
     return () => clearTimeout(id)
   }, [timer])
 
+  const submitCode = async (otpDigits) => {
+    const otp = otpDigits.join('')
+    if (otp.length !== OTP_LENGTH) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      await verifyRegistrationEmail({ email, code: otp })
+      navigate('/dispatch/onboarding/identity')
+    } catch (err) {
+      setError(getApiFieldError(err, 'code') || 'Invalid verification code.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleChange = (val, idx) => {
     if (!/^\d?$/.test(val)) return
-    const next = [...otp]
+    const next = [...code]
     next[idx] = val
     setOtp(next)
     setError('')
     
     if (val && idx < OTP_LENGTH - 1) inputsRef.current[idx + 1]?.focus()
-    // Auto-submit when last digit entered
     if (val && idx === OTP_LENGTH - 1) {
       verifyCode([...next])
     }
   }
 
   const handleKeyDown = (e, idx) => {
-    if (e.key === 'Backspace' && !otp[idx] && idx > 0) {
+    if (e.key === 'Backspace' && !code[idx] && idx > 0) {
       inputsRef.current[idx - 1]?.focus()
     }
   }
@@ -138,6 +163,11 @@ export default function RiderVerify() {
             Edit
           </button>
         </p>
+        {import.meta.env.DEV && debugOtp && (
+          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Dev code: <strong>{debugOtp}</strong>
+          </p>
+        )}
       </div>
 
       {/* OTP boxes */}
@@ -145,7 +175,7 @@ export default function RiderVerify() {
         {otp.map((digit, i) => (
           <input
             key={i}
-            ref={el => (inputsRef.current[i] = el)}
+            ref={(el) => (inputsRef.current[i] = el)}
             type="tel"
             maxLength={1}
             value={digit}
@@ -181,16 +211,10 @@ export default function RiderVerify() {
             {sendingOtp ? 'Sending...' : 'Resend code'}
           </button>
         </p>
-        {!canResend && (
-          <p className="text-gray-400 text-xs mt-1">
-            Resend code in 0:{timer.toString().padStart(2, '0')}
-          </p>
-        )}
       </div>
 
       <div className="flex-1" />
 
-      {/* Verify button */}
       <button
         onClick={() => verifyCode()}
         disabled={filled < OTP_LENGTH || verifying}

@@ -1,12 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Star, MapPin, Pencil, FileText, Building2,
   BellRing, HelpCircle, ScrollText, LogOut, ChevronRight, X
 } from 'lucide-react'
 import { toggleStatus, getProfile } from '../../../services/riderAuthService'
 import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
-import { useEffect } from 'react'
-
 const MENU = [
   { icon: FileText,  label: 'My Documents',        to: '/dispatch/profile/documents' },
   { icon: Building2, label: 'Bank Account',          to: '/dispatch/earnings/withdraw' },
@@ -17,12 +15,12 @@ const MENU = [
 
 export default function RiderProfile() {
   const navigate = useNavigate()
+  const [profile, setProfile] = useState(null)
   const [online, setOnline] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
   const [showZoneModal, setShowZoneModal] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [selectedZone, setSelectedZone] = useState('Yaba, Lagos')
-  const [profile, setProfile] = useState(null)
 
   const ZONES = ['Yaba, Lagos', 'Ikeja, Lagos', 'Victoria Island, Lagos', 'Lekki, Lagos', 'Surulere, Lagos']
 
@@ -39,26 +37,65 @@ export default function RiderProfile() {
       .catch(console.error)
   }, [])
 
-  // Activates the GPS tracking automatically when online=true
   useRiderLocationTracking(online)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await getRiderMe()
+        const data = res.data?.data || res.data
+        if (!cancelled) {
+          setProfile(data)
+          setOnline(Boolean(data?.rider?.is_online))
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [])
+
+  const fullName = profile?.user?.full_name
+    || [profile?.user?.first_name, profile?.user?.last_name].filter(Boolean).join(' ')
+    || 'Rider'
+  const initials = fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+  const rating = profile?.rider?.rating != null ? Number(profile.rider.rating).toFixed(1) : '—'
+  const displayId = profile?.rider?.display_id || profile?.rider?.rider_code || '—'
 
   const handleToggleOnline = async () => {
     try {
       setIsToggling(true)
-      await toggleStatus()
-      setOnline(!online)
+      const res = await toggleStatus()
+      const isOnline = res.data?.is_online ?? !online
+      setOnline(isOnline)
     } catch (e) {
       console.error(e)
-      alert("Failed to toggle status")
+      alert('Failed to toggle status')
     } finally {
       setIsToggling(false)
     }
   }
 
+  const handleSignOut = () => {
+    localStorage.removeItem('rapid_token')
+    localStorage.removeItem('rider_user')
+    navigate('/dispatch/login')
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white max-w-md mx-auto flex items-center justify-center">
+        <p className="text-gray-500 text-sm">Loading profile…</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
 
-      {/* Header */}
       <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">Profile</h1>
         <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 flex items-center justify-center">
@@ -68,7 +105,6 @@ export default function RiderProfile() {
 
       <div className="px-5 space-y-5">
 
-        {/* ── Profile card ── */}
         <div className="bg-gray-50 rounded-3xl px-5 py-5 flex items-center gap-4">
           {/* Avatar */}
           <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 text-xl font-black text-white"
@@ -76,17 +112,17 @@ export default function RiderProfile() {
             {profile?.user?.first_name?.[0] || 'R'}{profile?.user?.last_name?.[0] || 'D'}
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
             <p className="font-black text-gray-900 text-base">{profile?.user?.first_name} {profile?.user?.last_name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <Star size={11} fill="#FBBF24" strokeWidth={0} />
-              <p className="text-xs font-bold" style={{ color: '#F59E0B' }}>Silver Rider</p>
+              <p className="text-xs font-bold" style={{ color: '#F59E0B' }}>
+                {profile?.rider?.status === 'approved' ? 'Verified Rider' : 'Rider'}
+              </p>
             </div>
             <p className="text-xs text-gray-400 mt-0.5">Rider ID: {profile?.rider?.id || 'N/A'}</p>
           </div>
 
-          {/* Edit */}
           <button
             onClick={() => navigate('/dispatch/profile/edit')}
             className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
@@ -95,7 +131,6 @@ export default function RiderProfile() {
           </button>
         </div>
 
-        {/* ── Stats ── */}
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'Rating',     value: profile?.rider?.rating || '0.0', suffix: '⭐' },
@@ -104,7 +139,7 @@ export default function RiderProfile() {
           ].map(s => (
             <div key={s.label} className="bg-gray-50 rounded-2xl px-3 py-3 text-center">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className="font-black text-gray-900 text-base">
+              <p className="font-black text-gray-900 text-base capitalize">
                 {s.value}<span className="text-sm">{s.suffix}</span>
               </p>
             </div>
@@ -121,7 +156,6 @@ export default function RiderProfile() {
           <button onClick={() => setShowZoneModal(true)} className="text-sm font-bold" style={{ color: '#5B5BFF' }}>Change</button>
         </div>
 
-        {/* ── Ready for Deliveries banner ── */}
         <div className="rounded-3xl px-5 py-5 flex items-center justify-between"
           style={{ background: 'linear-gradient(135deg, #5B5BFF, #4444EE)' }}>
           <div>
@@ -143,7 +177,6 @@ export default function RiderProfile() {
           </button>
         </div>
 
-        {/* ── Menu list ── */}
         <div className="bg-gray-50 rounded-3xl overflow-hidden divide-y divide-gray-100">
           {MENU.map(({ icon: Icon, label, to }) => (
             <button
@@ -158,7 +191,6 @@ export default function RiderProfile() {
           ))}
         </div>
 
-        {/* ── Sign out ── */}
         <button
           onClick={() => setShowLogoutModal(true)}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gray-200 transition-colors hover:bg-gray-50 active:bg-red-50"
@@ -167,7 +199,6 @@ export default function RiderProfile() {
           <span className="font-bold text-red-500 text-sm">Sign Out Account</span>
         </button>
 
-        {/* Footer */}
         <p className="text-center text-gray-300 text-xs font-bold pb-2">Rapid Rider</p>
       </div>
 
