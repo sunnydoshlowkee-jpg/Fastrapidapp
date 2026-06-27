@@ -24,30 +24,20 @@ export default function RiderProfile() {
 
   const ZONES = ['Yaba, Lagos', 'Ikeja, Lagos', 'Victoria Island, Lagos', 'Lekki, Lagos', 'Surulere, Lagos']
 
-  useEffect(() => {
-    getProfile()
-      .then(res => {
-        const data = res.data?.data || res.data
-        setProfile(data)
-        setOnline(data?.rider?.is_online || false)
-        const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
-        riderInfo.is_online = data?.rider?.is_online || false
-        localStorage.setItem('rider_user', JSON.stringify(riderInfo))
-      })
-      .catch(console.error)
-  }, [])
-
-  useRiderLocationTracking(online)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const res = await getRiderMe()
+        const res = await getProfile()
         const data = res.data?.data || res.data
         if (!cancelled) {
           setProfile(data)
-          setOnline(Boolean(data?.rider?.is_online))
+          setOnline(data?.rider?.is_online || false)
+          const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+          riderInfo.is_online = data?.rider?.is_online || false
+          localStorage.setItem('rider_user', JSON.stringify(riderInfo))
         }
       } catch (e) {
         console.error(e)
@@ -57,6 +47,8 @@ export default function RiderProfile() {
     })()
     return () => { cancelled = true }
   }, [])
+
+  useRiderLocationTracking(online)
 
   const fullName = profile?.user?.full_name
     || [profile?.user?.first_name, profile?.user?.last_name].filter(Boolean).join(' ')

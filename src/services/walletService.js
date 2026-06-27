@@ -91,6 +91,24 @@ export async function purchaseData({ network, phone, planId }) {
   }
 }
 
+export async function verifyMeter({ serviceId, meterNumber, type }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/electricity/verify', { service_id: serviceId, meter_number: meterNumber, type })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseElectricity({ serviceId, meterNumber, type, amount, phone }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/electricity', { service_id: serviceId, meter_number: meterNumber, type, amount, phone })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export function walletTransactionLabel(tx) {
   if (tx.description) return tx.description
   const labels = {

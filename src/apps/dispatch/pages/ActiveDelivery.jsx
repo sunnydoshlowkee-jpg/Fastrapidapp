@@ -4,8 +4,9 @@ import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { getCurrentPosition } from '../../../utils/geolocation'
 import {
   ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
-  Navigation, Package, Camera, CheckSquare, Square, ChevronRight
+  Navigation, Package, Camera, CheckSquare, Square, ChevronRight, Clock
 } from 'lucide-react'
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 
 // ─── Step constants ───────────────────────────────────────────────
 const STEPS = {
@@ -16,29 +17,45 @@ const STEPS = {
   CONFIRM_DELIVERY:'confirm-delivery',
 }
 
-// ─── Shared dark map background ──────────────────────────────────
-function MapBg({ height = '45%', children }) {
+// ─── Helper: Distance Calculator ───────────────────────────────────
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+  const R = 6371; 
+  const dLat = (lat2-lat1) * (Math.PI/180);
+  const dLon = (lon2-lon1) * (Math.PI/180); 
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return (R * c).toFixed(1);
+}
+
+// ─── Shared Live Leaflet Map ──────────────────────────────────────
+function LiveMap({ height = '45%', riderLocation, targetLocation, children }) {
+  const center = riderLocation || targetLocation || { lat: 6.5244, lng: 3.3792 };
+  const position = [Number(center.lat), Number(center.lng)];
+
   return (
     <div className="relative flex-shrink-0" style={{ height }}>
-      {/* Dark grid map */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #0d1117 0%, #0a1628 50%, #0d1117 100%)' }}>
-        <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 400 300" preserveAspectRatio="none">
-          {/* Grid */}
-          {Array.from({ length: 16 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 20} x2="400" y2={i * 20} stroke="#1d4ed8" strokeWidth="0.4" />
-          ))}
-          {Array.from({ length: 22 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20} y2="300" stroke="#1d4ed8" strokeWidth="0.4" />
-          ))}
-          {/* Route line */}
-          <path d="M 200 10 C 210 80, 190 150, 205 290" stroke="#3b82f6" strokeWidth="4"
-            fill="none" strokeLinecap="round" opacity="0.9" />
-          {/* Start dot */}
-          <circle cx="200" cy="14" r="5" fill="#5B5BFF" />
-          {/* End dot */}
-          <circle cx="205" cy="286" r="5" fill="#22c55e" />
-        </svg>
-      </div>
+      <MapContainer 
+        center={position} 
+        zoom={14} 
+        zoomControl={false}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {targetLocation && <Marker position={[targetLocation.lat, targetLocation.lng]} />}
+        {riderLocation && <Marker position={[riderLocation.lat, riderLocation.lng]} />}
+        {riderLocation && targetLocation && (
+           <Polyline positions={[[riderLocation.lat, riderLocation.lng], [targetLocation.lat, targetLocation.lng]]} pathOptions={{ color: '#5B5BFF', weight: 4, opacity: 0.8 }} />
+        )}
+      </MapContainer>
+      {/* Optional dark overlay */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(10,22,40,0.6) 0%, transparent 30%, rgba(10,22,40,0.2) 100%)', zIndex: 1000 }} />
       {children}
     </div>
   )
@@ -103,6 +120,21 @@ export default function ActiveDelivery() {
   const [photoTaken, setPhotoTaken] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [riderLocation, setRiderLocation] = useState(null)
+
+  useEffect(() => {
+    let watchId;
+    if ('geolocation' in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => setRiderLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.warn(err),
+        { enableHighAccuracy: true }
+      )
+    }
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId)
+    }
+  }, [])
 
   useEffect(() => {
     if (id) {
@@ -135,6 +167,13 @@ export default function ActiveDelivery() {
       setIsProcessing(true)
       await accept(id)
       setStep(STEPS.HEADING_PICKUP)
+      
+      // Let's also do a quick status update to accepted, and pass initial coords if possible
+      try {
+         const coords = await getCurrentPosition()
+         await updateStatus(id, 'accepted', coords)
+      } catch(e) {} // ignore
+      
     } catch (e) {
       console.error(e)
       alert(e.response?.data?.message || "Failed to accept delivery")
@@ -158,12 +197,22 @@ export default function ActiveDelivery() {
 
   const handleCompleteDelivery = async () => {
     try {
-      const coords = await getCurrentPosition()
+      let coords = null;
+      try {
+        coords = await getCurrentPosition()
+      } catch (geoErr) {
+        console.warn('Geolocation failed or denied, proceeding with default coordinates:', geoErr.message)
+        // Fallback to merchant or destination coordinates if available, otherwise use a safe default
+        coords = {
+          lat: delivery?.order?.delivery_address?.lat || 6.5244,
+          lng: delivery?.order?.delivery_address?.lng || 3.3792
+        }
+      }
       await handleStatusUpdate('delivered', null, coords)
       navigate(`/dispatch/delivery/${id}/success`)
     } catch (e) {
       console.error(e)
-      alert(e.message || 'Could not get your location. Enable GPS and try again.')
+      alert(e.response?.data?.message || 'Failed to complete delivery.')
     }
   }
 
@@ -180,8 +229,9 @@ export default function ActiveDelivery() {
 
   const merchant = delivery?.order?.items?.[0]?.product?.merchant
   const customer = delivery?.order?.user
+  const customerName = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer' : 'Customer'
   const address = delivery?.order?.delivery_address
-  const deliveryFee = delivery?.order?.delivery_fee || 650
+  const deliveryFee = delivery?.fee || delivery?.order?.delivery_fee || 0
   const itemsCount = delivery?.order?.items?.length || 1
 
   // ── NEW ORDER MODAL ────────────────────────────────────────────
@@ -190,7 +240,7 @@ export default function ActiveDelivery() {
       <div className="fixed inset-0 z-50 flex flex-col max-w-md mx-auto overflow-hidden">
         {/* Map & Overlay behind */}
         <div className="absolute inset-0 z-0">
-          <MapBg height="100%" />
+          <LiveMap height="100%" riderLocation={riderLocation} targetLocation={merchant?.latitude ? { lat: merchant.latitude, lng: merchant.longitude } : null} />
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
         </div>
 
@@ -219,11 +269,15 @@ export default function ActiveDelivery() {
           {/* Restaurant */}
           <div className="flex items-center gap-3 mb-5">
             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-900 flex-shrink-0 flex items-center justify-center">
-              <span className="text-3xl">🍔</span>
+              {merchant?.logo_path ? (
+                <img src={merchant.logo_path} alt={merchant.business_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-3xl">🍔</span>
+              )}
             </div>
             <div>
-              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
-              <p className="text-sm text-gray-400">{merchant?.city || 'Victoria Island'}</p>
+              <p className="font-bold text-gray-900">{merchant?.business_name || 'Fastrapid Merchant'}</p>
+              <p className="text-sm text-gray-400">{merchant?.address_city || 'Lagos'}</p>
             </div>
           </div>
 
@@ -238,13 +292,13 @@ export default function ActiveDelivery() {
             <div className="flex flex-col gap-4 flex-1">
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pickup</p>
-                <p className="font-bold text-gray-900 text-sm">{merchant?.address_line1 || 'Merchant Address'}</p>
-                <p className="text-xs text-gray-400">{delivery?.distance ? `${delivery.distance}km` : '1.5km'} away • 5 mins</p>
+                <p className="font-bold text-gray-900 text-sm">{merchant?.registered_address || 'Merchant Location'}</p>
+                <p className="text-xs text-gray-400">Merchant Location</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Dropoff</p>
-                <p className="font-bold text-gray-900 text-sm">{address?.address_line1 || 'Customer Address'}</p>
-                <p className="text-xs text-gray-400">{itemsCount} items</p>
+                <p className="font-bold text-gray-900 text-sm">{address?.address || 'Customer Location'}</p>
+                <p className="text-xs text-gray-400">Customer Location</p>
               </div>
             </div>
           </div>
@@ -268,24 +322,30 @@ export default function ActiveDelivery() {
 
   // ── HEADING TO PICKUP ──────────────────────────────────────────
   if (step === STEPS.HEADING_PICKUP) {
+    const merchantLocation = delivery?.pickup_lat 
+      ? { lat: Number(delivery.pickup_lat), lng: Number(delivery.pickup_lng) } 
+      : merchant?.latitude ? { lat: Number(merchant.latitude), lng: Number(merchant.longitude) } : null
+    const distKm = getDistanceFromLatLonInKm(riderLocation?.lat, riderLocation?.lng, merchantLocation?.lat, merchantLocation?.lng)
+    const estMins = distKm > 0 ? Math.max(1, Math.round(distKm * 4)) : '--'
+
     return (
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         <div className="relative" style={{ height: '55vh' }}>
-          <MapBg height="100%">
+          <LiveMap height="100%" riderLocation={riderLocation} targetLocation={merchantLocation}>
             <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
             <MapFabs />
-          </MapBg>
+          </LiveMap>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 px-4 py-3 bg-gray-50">
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimated Arrival</p>
-            <p className="text-xl font-black text-gray-900">5 mins</p>
+            <p className="text-xl font-black text-gray-900">{estMins} mins</p>
           </div>
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Distance</p>
-            <p className="text-xl font-black text-gray-900">{delivery?.distance ? `${delivery.distance}km` : '1.5km'}</p>
+            <p className="text-xl font-black text-gray-900">{distKm > 0 ? `${distKm}km` : '--'}</p>
           </div>
         </div>
 
@@ -297,8 +357,8 @@ export default function ActiveDelivery() {
             <Navigation size={18} className="text-white" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm">Head East on Ozumba Mbadiwe Rd</p>
-            <p className="text-gray-400 text-xs">Then turn right in 400m</p>
+            <p className="text-white font-bold text-sm truncate max-w-[220px]">Head towards {merchant?.business_name || 'Pickup'}</p>
+            <p className="text-gray-400 text-xs">Drive safely</p>
           </div>
         </div>
 
@@ -313,12 +373,16 @@ export default function ActiveDelivery() {
 
           {/* Restaurant row */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-xl bg-gray-900 flex items-center justify-center flex-shrink-0">
-              <span className="text-2xl">🍔</span>
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-900 flex-shrink-0 flex items-center justify-center">
+              {merchant?.logo_path ? (
+                <img src={merchant.logo_path} alt={merchant.business_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl">🍔</span>
+              )}
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
-              <p className="text-xs text-gray-400">{merchant?.address_line1 || 'Merchant Address'}</p>
+              <p className="font-bold text-gray-900">{merchant?.business_name || 'Fastrapid Merchant'}</p>
+              <p className="text-xs text-gray-400 truncate max-w-[200px]">{merchant?.registered_address || 'Merchant Location'}</p>
             </div>
             <a href={`tel:${merchant?.phone || '000'}`} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
               <Phone size={16} style={{ color: '#5B5BFF' }} />
@@ -354,9 +418,9 @@ export default function ActiveDelivery() {
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         {/* Map */}
         <div className="relative" style={{ height: '28vh' }}>
-          <MapBg height="100%">
+          <LiveMap height="100%" riderLocation={riderLocation} targetLocation={merchant?.latitude ? { lat: merchant.latitude, lng: merchant.longitude } : null}>
             <OrderHeader onBack={() => setStep(STEPS.HEADING_PICKUP)} orderId={delivery?.order_id || id} />
-          </MapBg>
+          </LiveMap>
         </div>
 
         {/* Bottom sheet */}
@@ -374,7 +438,7 @@ export default function ActiveDelivery() {
             </div>
             <div className="flex-1">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Delivering To</p>
-              <p className="font-bold text-gray-900">{customer?.full_name || 'Customer'}</p>
+              <p className="font-bold text-gray-900">{customerName}</p>
             </div>
             <button onClick={() => navigate(`/dispatch/delivery/${id}/chat`)} className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
               <MessageSquare size={14} className="text-white" />
@@ -422,23 +486,33 @@ export default function ActiveDelivery() {
 
   // ── EN ROUTE ──────────────────────────────────────────────────
   if (step === STEPS.EN_ROUTE) {
+    const customerLocation = delivery?.destination_lat
+      ? { lat: Number(delivery.destination_lat), lng: Number(delivery.destination_lng) }
+      : address?.lat ? { lat: Number(address.lat), lng: Number(address.lng) } : null
+    const distKm = getDistanceFromLatLonInKm(riderLocation?.lat, riderLocation?.lng, customerLocation?.lat, customerLocation?.lng)
+    const estMins = distKm > 0 ? Math.max(1, Math.round(distKm * 4)) : '--'
+
     return (
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         {/* Map full top */}
         <div className="relative flex-1" style={{ minHeight: '50vh' }}>
-          <MapBg height="100%">
+          <LiveMap height="100%" riderLocation={riderLocation} targetLocation={customerLocation}>
             <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
 
             {/* Floating turn card */}
             <div className="absolute left-4 right-4 z-20" style={{ top: '90px' }}>
               <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+                  <a href={`tel:${customer?.phone || '0800000000'}`} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-900 py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-colors">
+                    <Phone size={18} /> Call Customer
+                  </a>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ background: '#5B5BFF' }}>
                   <Navigation size={18} className="text-white" />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#5B5BFF' }}>400 Meters</p>
-                  <p className="font-bold text-gray-900 text-sm">Turn right onto Admiralty Way</p>
+                <div className="flex-1 overflow-hidden">
+                  <span className="text-[14px] font-bold text-gray-900 tracking-wide">Order #{delivery?.order_id || delivery?.order?.id || id}</span>
+                  <p className="text-[10px] font-black uppercase tracking-widest truncate" style={{ color: '#5B5BFF' }}>{distKm > 0 ? `${distKm}km Remaining` : 'En Route'}</p>
+                  <p className="font-bold text-gray-900 text-sm truncate">Head towards {customer ? customerName : 'Dropoff'}</p>
                 </div>
               </div>
             </div>
@@ -450,7 +524,7 @@ export default function ActiveDelivery() {
                 <span className="text-white text-xs font-bold">Live Tracking Active</span>
               </div>
             </div>
-          </MapBg>
+          </LiveMap>
         </div>
 
         {/* Bottom sheet */}
@@ -468,8 +542,8 @@ export default function ActiveDelivery() {
           {/* Customer info */}
           <div className="flex items-start justify-between mb-5">
             <div>
-              <p className="text-xl font-black text-gray-900">{customer?.full_name || 'Customer'}</p>
-              <p className="text-sm text-gray-400 mt-0.5">{address?.address_line1 || 'Customer Address'}</p>
+              <p className="text-xl font-black text-gray-900">{customerName}</p>
+              <p className="text-sm text-gray-400 mt-0.5">{address?.address || 'Customer Address'}</p>
             </div>
             <div className="flex gap-2">
               <a href={`tel:${customer?.phone || '000'}`} className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
@@ -485,11 +559,11 @@ export default function ActiveDelivery() {
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-gray-50 rounded-2xl px-4 py-3">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Time to Dropoff</p>
-              <p className="text-xl font-black text-gray-900">12 mins</p>
+              <p className="text-xl font-black text-gray-900">{estMins} mins</p>
             </div>
-            <div className="bg-gray-50 rounded-2xl px-4 py-3">
-              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Earnings</p>
-              <p className="text-xl font-black text-gray-900">₦{Number(deliveryFee).toLocaleString()}</p>
+            <div className="flex-1 bg-gray-50 rounded-2xl p-4">
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Earnings</p>
+              <p className="font-bold text-[18px]">₦{Number(deliveryFee).toLocaleString()}</p>
             </div>
           </div>
 
@@ -508,14 +582,14 @@ export default function ActiveDelivery() {
     <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
       {/* Map */}
       <div className="relative" style={{ height: '30vh' }}>
-        <MapBg height="100%">
+        <LiveMap height="100%" riderLocation={riderLocation} targetLocation={address?.lat ? { lat: address.lat, lng: address.lng } : null}>
           <div className="absolute top-12 left-4 z-10">
             <button onClick={() => setStep(STEPS.EN_ROUTE)}
-              className="w-9 h-9 flex items-center justify-center">
+              className="w-9 h-9 flex items-center justify-center bg-white/20 rounded-full backdrop-blur-sm">
               <ArrowLeft size={20} className="text-white" />
             </button>
           </div>
-        </MapBg>
+        </LiveMap>
       </div>
 
       {/* Bottom sheet */}

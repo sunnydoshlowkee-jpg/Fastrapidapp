@@ -1,6 +1,7 @@
 import api from './api';
 
 export const getAvailableDeliveries = (lat, lng) => api.get('/rider/deliveries/available', { params: { lat, lng } });
+export const getDeliveryHistory = () => api.get('/rider/deliveries/history');
 export const getDeliveryDetails = (id) => api.get(`/rider/deliveries/${id}`);
 export const acceptDelivery = (id) => api.post(`/rider/deliveries/${id}/accept`);
 export const updateDeliveryStatus = (id, status, coords = null) => {

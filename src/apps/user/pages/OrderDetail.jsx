@@ -30,6 +30,12 @@ export default function OrderDetail() {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
   }
 
+  const isValidDate = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return !isNaN(d.getTime());
+  }
+
   const getOrderVendor = () => {
     if (!order?.items || order.items.length === 0) return 'Unknown Vendor'
     return order.items[0]?.product?.merchant?.business_name || 'Vendor'
@@ -80,7 +86,7 @@ export default function OrderDetail() {
               {getOrderVendor().charAt(0)}
             </div>
             <h2 className="text-lg font-bold text-gray-900 mb-1">{getOrderVendor()}</h2>
-            <p className="text-[11px] text-gray-500 font-medium">Placed on {new Date(order.created_at).toLocaleString()}</p>
+            <p className="text-[11px] text-gray-500 font-medium">Placed on {isValidDate(order.created_at) ? new Date(order.created_at).toLocaleString() : 'N/A'}</p>
             
             <div className="flex gap-4 w-full mt-6">
               <button className="flex-1 bg-[#4F46E5] text-white py-3.5 rounded-2xl font-semibold shadow-sm hover:bg-indigo-700 transition-colors text-[13px]">
@@ -144,7 +150,7 @@ export default function OrderDetail() {
                   <div className="w-2 h-2 rounded-full bg-[#A0AAB2] mt-1.5 ring-4 ring-[#FAFAFA]"></div>
                   <div>
                     <h4 className="font-bold text-gray-900 text-sm mb-0.5">Ordered</h4>
-                    <p className="text-[11px] text-gray-400">{new Date(order.created_at).toLocaleTimeString()}</p>
+                    <p className="text-[11px] text-gray-400">{isValidDate(order.created_at) ? new Date(order.created_at).toLocaleTimeString() : ''}</p>
                   </div>
                 </div>
               </div>
@@ -159,8 +165,8 @@ export default function OrderDetail() {
                 <MapPin size={18} />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">{order.deliveryAddress?.label || 'Address'}</h4>
-                <p className="text-[11px] text-gray-500 leading-snug">{order.deliveryAddress?.address || 'N/A'}</p>
+                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">{order.delivery_address?.label || 'Address'}</h4>
+                <p className="text-[11px] text-gray-500 leading-snug">{order.delivery_address?.address || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -235,30 +241,28 @@ export default function OrderDetail() {
                         <CheckCircle2 size={16} />
                       </div>
                       <p className="font-bold text-gray-900 text-[14px] text-center mb-1">Ordered</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">12:00 PM</p>
+                      <p className="text-[12px] text-gray-500 text-center font-medium">{isValidDate(order.created_at) ? new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</p>
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-[#2D2AEE] border-[4px] border-white mb-3 flex items-center justify-center text-white">
-                        <CheckCircle2 size={16} />
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white ${order.status === 'delivered' || order.status === 'en_route' || order.status === 'preparing' ? 'bg-[#2D2AEE]' : 'bg-gray-200'}`}>
+                        {order.status !== 'pending' && <CheckCircle2 size={16} />}
                       </div>
-                      <p className="font-bold text-gray-900 text-[14px] text-center mb-1">Accepted</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">12:05 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status !== 'pending' ? 'text-gray-900' : 'text-gray-400'}`}>Accepted</p>
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-[#2D2AEE] border-[4px] border-white mb-3 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                        <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white shadow-md ${order.status === 'delivered' || order.status === 'en_route' ? 'bg-[#2D2AEE] shadow-blue-500/20' : 'bg-gray-200 shadow-none'}`}>
+                        {order.status === 'en_route' ? <div className="w-2.5 h-2.5 bg-white rounded-full"></div> : order.status === 'delivered' ? <CheckCircle2 size={16} /> : null}
                       </div>
-                      <p className="font-bold text-[#2D2AEE] text-[14px] text-center mb-1">On the way</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">1:20 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status === 'en_route' || order.status === 'delivered' ? 'text-[#2D2AEE]' : 'text-gray-400'}`}>On the way</p>
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-gray-200 border-[4px] border-white mb-3 flex items-center justify-center text-white">
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white ${order.status === 'delivered' ? 'bg-[#2D2AEE]' : 'bg-gray-200'}`}>
+                         {order.status === 'delivered' && <CheckCircle2 size={16} />}
                       </div>
-                      <p className="font-bold text-gray-400 text-[14px] text-center mb-1">Arriving</p>
-                      <p className="text-[12px] text-gray-400 text-center font-medium">Est. 1:35 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status === 'delivered' ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</p>
                     </div>
                   </div>
                 </div>
@@ -273,9 +277,9 @@ export default function OrderDetail() {
                       <h3 className="text-[16px] font-bold text-gray-900">Delivery Address</h3>
                     </div>
                     <div className="bg-[#F4F5F7] rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-colors">
-                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">{order.deliveryAddress?.label || 'Address'}</h4>
+                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">{order.delivery_address?.label || 'Address'}</h4>
                       <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                        {order.deliveryAddress?.address || 'N/A'}
+                        {order.delivery_address?.address || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -311,17 +315,19 @@ export default function OrderDetail() {
                       <div className="absolute w-[60%] h-[60%] border-[3px] border-dashed border-[#2D2AEE] opacity-40 transform -skew-x-12 -skew-y-12 rounded-[40px]"></div>
                     </div>
                     
-                    {/* Courier Pin */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                      <div className="bg-white rounded-full p-1 shadow-lg mb-1">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full overflow-hidden border border-gray-200">
-                           <img src="/driver.png" className="w-full h-full object-cover" />
+                    {/* Courier Pin (Only show if rider assigned) */}
+                    {order.delivery?.rider && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                        <div className="bg-white rounded-full p-1 shadow-lg mb-1">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full overflow-hidden border border-gray-200 flex items-center justify-center text-blue-600 font-bold text-[10px]">
+                            {order.delivery.rider.first_name.charAt(0)}
+                          </div>
+                        </div>
+                        <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                          {order.delivery.rider.first_name} is delivering
                         </div>
                       </div>
-                      <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-                        Tunde is 5 mins away
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
@@ -339,7 +345,7 @@ export default function OrderDetail() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-[16px] mb-1">{getOrderVendor()}</h3>
-                      <p className="text-[13px] text-gray-500 font-medium">{new Date(order.created_at).toLocaleString()}</p>
+                      <p className="text-[13px] text-gray-500 font-medium">{isValidDate(order.created_at) ? new Date(order.created_at).toLocaleString() : 'N/A'}</p>
                     </div>
                   </div>
 
@@ -373,7 +379,7 @@ export default function OrderDetail() {
                   <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center justify-between">
                     <div>
                       <p className="text-[11px] font-bold tracking-widest uppercase text-gray-400 mb-1">Transaction ID</p>
-                      <p className="text-[14px] font-bold text-gray-900">#TRX-8829-441-A</p>
+                      <p className="text-[14px] font-bold text-gray-900">#TRX-{order.id?.toString().padStart(6, '0')}-A</p>
                     </div>
                     <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#2D2AEE] shadow-sm hover:bg-gray-100 transition-colors">
                       <Copy size={16} />

@@ -5,12 +5,6 @@ import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 
 const PERIOD_TABS = ['Today', 'This Week', 'This Month']
 
-const STATS = {
-  Today:      { deliveries: 0,  avg: '₦0' },
-  'This Week':{ deliveries: 0, avg: '₦0' },
-  'This Month':{ deliveries: 0,avg: '₦0' },
-}
-
 export default function Earnings() {
   const navigate = useNavigate()
   const { earnings, loading, refresh } = useRiderEarnings()
@@ -20,13 +14,18 @@ export default function Earnings() {
     refresh()
   }, [refresh])
 
-  const stats = STATS[period]
-  const tierProgress = 72  // % toward Gold
-  
   const balance = earnings?.wallet?.balance || 0
   const recentEarnings = earnings?.earnings?.recent || []
-  const totalDeliveries = recentEarnings.length || 0
+  const totalDeliveries = earnings?.earnings?.deliveries || 0
   const totalEarnings = earnings?.earnings?.total || 0
+  const avgTrip = earnings?.earnings?.avg_trip || 0
+  const tierProgress = earnings?.earnings?.tier_progress || 82
+  
+  // Create dynamic stats based on backend response (for now we map the total to all periods for simplicity, but backend could provide period-based stats)
+  const stats = { 
+    deliveries: totalDeliveries, 
+    avg: `₦${Math.round(avgTrip).toLocaleString()}` 
+  }
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-6">
@@ -98,14 +97,18 @@ export default function Earnings() {
         {/* ── Stats cards ── */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
-            <Truck size={18} className="text-gray-400 mb-3" />
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Deliveries</p>
-            <p className="text-3xl font-black text-white">{totalDeliveries}</p>
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-3">
+              <Truck size={14} className="text-white" />
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Deliveries</p>
+            <p className="text-2xl font-black text-white">{stats.deliveries}</p>
           </div>
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
-            <TrendingUp size={18} className="text-yellow-400 mb-3" />
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Avg / Trip</p>
-            <p className="text-3xl font-black text-white">{stats.avg}</p>
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-3">
+              <TrendingUp size={14} className="text-white" />
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Avg / Trip</p>
+            <p className="text-2xl font-black text-white">{stats.avg}</p>
           </div>
         </div>
 
@@ -140,35 +143,30 @@ export default function Earnings() {
         </div>
 
         {/* ── Recent Earnings ── */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-black text-gray-900">Recent Earnings</p>
-            <button onClick={() => navigate('/dispatch/earnings/history')} className="text-xs font-black text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors">VIEW ALL</button>
+        <div className="pb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-gray-900 text-sm">Recent Earnings</h2>
+            <button onClick={() => navigate('/dispatch/earnings/history')} className="text-[10px] font-black text-gray-400 uppercase tracking-widest">View All</button>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="space-y-3">
             {recentEarnings.length === 0 ? (
-              <div className="text-center py-6 text-gray-500 font-medium text-sm">No recent earnings.</div>
+              <p className="text-center text-xs text-gray-400 py-6">No recent earnings.</p>
             ) : (
-              recentEarnings.slice(0, 3).map(p => (
-                <div key={p.id} className="bg-gray-50 rounded-2xl px-4 py-4 flex items-center gap-3">
-                  {/* Icon */}
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-green-100">
-                    <Building2 size={18} style={{ color: '#22c55e' }} />
+              recentEarnings.map((txn, i) => (
+                <div key={txn.id || i} className="bg-gray-50 rounded-2xl p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600 shrink-0">
+                      <TrendingUp size={16} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm truncate max-w-[150px]">{txn.description || 'Delivery Payout'}</p>
+                      <p className="text-xs text-gray-400">{new Date(txn.created_at).toLocaleDateString()}</p>
+                    </div>
                   </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-900 text-sm">{new Date(p.created_at).toLocaleDateString()}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Delivery Earned</p>
-                  </div>
-
-                  {/* Amount + status */}
                   <div className="text-right">
-                    <p className="font-black text-gray-900 text-sm">₦{Number(p.amount).toLocaleString()}</p>
-                    <p className="text-xs font-bold mt-0.5 text-green-500 capitalize">
-                      {p.status}
-                    </p>
+                    <p className="font-bold text-gray-900 text-sm">₦{Number(txn.amount).toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-green-500 uppercase tracking-widest">{txn.status || 'Paid'}</p>
                   </div>
                 </div>
               ))

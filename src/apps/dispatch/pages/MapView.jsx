@@ -5,7 +5,7 @@ import { getMe } from '../../../services/authService'
 import { toggleStatus } from '../../../services/riderAuthService'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
-import { GoogleMap, useLoadScript, Marker, Circle } from '@react-google-maps/api'
+import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet'
 
 const ZONES = [
   { id: 'yaba', name: 'Yaba', activeRiders: 14, center: { lat: 6.5095, lng: 3.3711 } },
@@ -31,10 +31,6 @@ export default function RiderDashboard() {
   })
   const [showZoneModal, setShowZoneModal] = useState(false)
   const [showHeatmap, setShowHeatmap] = useState(false)
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-  })
 
   useEffect(() => {
     getMe().then(res => {
@@ -216,27 +212,26 @@ export default function RiderDashboard() {
           </div>
           {/* Map placeholder */}
           <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden bg-gray-100" style={{ height: '140px' }}>
-            {isLoaded ? (
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={activeZone.center}
-                zoom={13}
-                options={{ disableDefaultUI: true, zoomControl: false }}
-              >
-                <Marker position={activeZone.center} icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' }} />
-                {showHeatmap && (
-                  <Circle
-                    center={activeZone.center}
-                    radius={2500}
-                    options={{ fillColor: '#EF4444', fillOpacity: 0.2, strokeColor: '#EF4444', strokeOpacity: 0.5, strokeWeight: 1 }}
-                  />
-                )}
-              </GoogleMap>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-bold bg-gray-100">
-                Loading Map...
-              </div>
-            )}
+            <MapContainer 
+              center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} 
+              zoom={13} 
+              zoomControl={false}
+              style={mapContainerStyle}
+              key={`${activeZone.center?.lat || 6.5095}-${activeZone.center?.lng || 3.3711}`}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <Marker position={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} />
+              {showHeatmap && (
+                <Circle
+                  center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]}
+                  radius={2500}
+                  pathOptions={{ fillColor: '#EF4444', fillOpacity: 0.2, color: '#EF4444', opacity: 0.5, weight: 1 }}
+                />
+              )}
+            </MapContainer>
             
             {/* Button */}
             <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
@@ -269,7 +264,7 @@ export default function RiderDashboard() {
               </div>
             ) : (
               deliveries.map(d => {
-                const merchantName = d.order?.items?.[0]?.product?.merchant?.name || 'Food Order'
+                const merchantName = d.order?.items?.[0]?.product?.merchant?.business_name || 'Food Order'
                 const isGroceries = d.order?.items?.[0]?.product?.category?.name?.toLowerCase().includes('grocery') || false
                 return (
                   <div key={d.id} className="bg-white rounded-2xl px-4 py-4 shadow-sm">

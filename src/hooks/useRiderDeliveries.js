@@ -7,12 +7,18 @@ export const useRiderDeliveries = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async (lat, lng) => {
+  const refresh = useCallback(async (lat = null, lng = null) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getAvailableDeliveries(lat, lng);
-      setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
+      if (lat != null && lng != null) {
+        const response = await getAvailableDeliveries(lat, lng);
+        setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
+      } else {
+        const { getDeliveryHistory } = await import('../services/riderDeliveryService');
+        const response = await getDeliveryHistory();
+        setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch deliveries');
     } finally {
