@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getAvailableDeliveries, getDeliveryDetails, acceptDelivery as acceptDeliveryService, updateDeliveryStatus as updateDeliveryStatusService } from '../services/riderDeliveryService';
+import { getAvailableDeliveries, getDeliveryDetails, acceptDelivery as acceptDeliveryService, updateDeliveryStatus as updateDeliveryStatusService, getDeliveryHistory } from '../services/riderDeliveryService';
 
 export const useRiderDeliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
@@ -15,7 +15,6 @@ export const useRiderDeliveries = () => {
         const response = await getAvailableDeliveries(lat, lng);
         setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
       } else {
-        const { getDeliveryHistory } = await import('../services/riderDeliveryService');
         const response = await getDeliveryHistory();
         setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
       }
