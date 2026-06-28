@@ -23,13 +23,13 @@ export default function SendMoney() {
 
   useEffect(() => {
     const load = async () => {
-      try {
-        const { data } = await getWalletData()
+      // Load wallet data independently so it doesn't block banks
+      getWalletData().then(({ data }) => {
         setBalance(data?.data?.balance || 0)
         setHasPin(Boolean(data?.data?.has_pin))
-      } catch (err) {
-        console.error(err)
-      }
+      }).catch(console.error)
+
+      // Load banks immediately
       try {
         const banksList = await getBanks()
         setBanks(banksList)

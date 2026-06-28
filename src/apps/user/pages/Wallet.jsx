@@ -21,6 +21,7 @@ export default function Wallet() {
         setBalance(data.data.balance || 0)
         setVirtualAccount(data.data.virtual_account || null)
         setTransactions(data.data.transactions || [])
+        return data.data.virtual_account
       }
     } catch (err) {
       console.error('Failed to fetch wallet data', err)
@@ -52,7 +53,11 @@ export default function Wallet() {
   }
 
   useEffect(() => {
-    fetchData()
+    fetchData().then((acc) => {
+      if (!acc?.account_number && acc?.status !== 'failed') {
+        retryVirtualAccount()
+      }
+    })
     const interval = window.setInterval(fetchData, 15000)
     return () => window.clearInterval(interval)
   }, [])
