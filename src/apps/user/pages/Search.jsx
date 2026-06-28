@@ -226,7 +226,7 @@ export default function Search() {
               )}
             </div>
             <div className="flex items-center gap-6 shrink-0 ml-auto">
-              <div onClick={() => navigate('/app/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+              <div onClick={() => navigate('/app/profile/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
                 <MapPin size={20} className="text-gray-500" strokeWidth={2} />
               </div>
               <div onClick={() => navigate('/app/cart')} className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">

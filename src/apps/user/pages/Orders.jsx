@@ -275,7 +275,7 @@ export default function Orders() {
               />
             </div>
             <div className="flex items-center gap-6 shrink-0 ml-auto">
-              <div onClick={() => navigate('/app/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
+              <div onClick={() => navigate('/app/profile/addresses')} className="flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors">
                 <MapPin size={20} className="text-[#2D2AEE]" strokeWidth={2} />
                 <span className="font-semibold text-[#2D2AEE] text-[15px]">Lagos, NG</span>
               </div>
