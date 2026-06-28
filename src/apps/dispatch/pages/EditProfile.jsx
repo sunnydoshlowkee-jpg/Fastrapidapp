@@ -37,6 +37,7 @@ export default function EditProfile() {
   
   const [profile, setProfile] = useState(null)
   const [toast, setToast] = useState(null) // { message, type }
+  const [saving, setSaving] = useState(false)
   
   useEffect(() => {
     getProfile()
@@ -229,15 +230,19 @@ export default function EditProfile() {
       <div className="px-5 pb-8 pt-4">
         <button
           onClick={async () => {
-            if (!profile) return
+            if (!profile || saving) return
+            setSaving(true)
             try {
               // Mock update call, normally you'd collect data and PUT
               // await updateProfile(newData)
+              await new Promise(resolve => setTimeout(resolve, 800)) // simulate network request
               setToast({ message: 'Profile updated successfully!', type: 'success' })
               setTimeout(() => setToast(null), 3000)
             } catch (err) {
               setToast({ message: 'Update failed', type: 'error' })
               setTimeout(() => setToast(null), 3000)
+            } finally {
+              setSaving(false)
             }
           }}
           className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"

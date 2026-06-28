@@ -260,7 +260,7 @@ export default function Wallet() {
                     return (
                       <button 
                         key={tx.id}
-                        onClick={() => navigate(`/app/wallet/receipt/${tx.id}`)}
+                        onClick={() => navigate(`/app/wallet/receipt/${tx.id}`, { state: { tx } })}
                         className="bg-white md:bg-transparent rounded-2xl md:rounded-xl p-4 md:p-3 shadow-sm md:shadow-none border border-gray-100 md:border-none md:hover:bg-gray-50 flex items-center justify-between transition-colors"
                       >
                         <div className="flex items-center gap-3 md:gap-4">

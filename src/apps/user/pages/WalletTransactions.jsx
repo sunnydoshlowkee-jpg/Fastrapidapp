@@ -16,8 +16,9 @@ export default function WalletTransactions() {
       try {
         setLoading(true)
         const { data } = await getWalletTransactions({ page: 1 })
-        setTransactions(data.data || [])
-        setHasMore(data.current_page < data.last_page)
+        const txList = data?.data?.transactions || data?.data || []
+        setTransactions(Array.isArray(txList) ? txList : [])
+        setHasMore(false)
         setPage(1)
       } catch (err) {
         console.error('Failed to fetch transactions', err)
@@ -78,7 +79,7 @@ export default function WalletTransactions() {
           ) : (
             <div className="flex flex-col gap-5">
               {transactions.map(tx => (
-                <div key={tx.id} className="flex items-center justify-between bg-white md:bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <button key={tx.id} onClick={() => navigate(`/app/wallet/receipt/${tx.id}`, { state: { tx } })} className="flex items-center justify-between w-full text-left bg-white md:bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                       {tx.type === 'credit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
@@ -95,7 +96,7 @@ export default function WalletTransactions() {
                       {tx.type === 'credit' ? '+' : '-'}{formatCurrency(tx.amount)}
                     </p>
                   </div>
-                </div>
+                </button>
               ))}
 
               {hasMore && (

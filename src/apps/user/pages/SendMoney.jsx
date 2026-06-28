@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, User, AlertCircle, Delete } from 'lucide-react'
-import { getWalletData, sendWalletTransfer, sendBankTransfer, setWalletPin } from '../../../services/walletService'
+import { getWalletData, sendWalletTransfer, sendBankTransfer, setWalletPin, getBanks, resolveAccountName } from '../../../services/walletService'
 
 export default function SendMoney() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('rapid')
   const [recipient, setRecipient] = useState('')
-  const [bankName, setBankName] = useState('GTBank')
+  const [banks, setBanks] = useState([])
+  const [bankCode, setBankCode] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [amount, setAmount] = useState('')
   const [showPin, setShowPin] = useState(false)
@@ -16,6 +17,8 @@ export default function SendMoney() {
   const [hasPin, setHasPin] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [recipientName, setRecipientName] = useState('')
+  const [resolvingName, setResolvingName] = useState(false)
   const submittedRef = useRef(false)
 
   useEffect(() => {
@@ -27,9 +30,52 @@ export default function SendMoney() {
       } catch (err) {
         console.error(err)
       }
+      try {
+        const banksList = await getBanks()
+        setBanks(banksList)
+        if (banksList.length > 0) {
+          setBankCode(banksList[0].code)
+        }
+      } catch (err) {
+        console.error('Could not load banks', err)
+      }
     }
     load()
   }, [])
+
+  useEffect(() => {
+    let active = true
+    const resolveName = async () => {
+      if (tab === 'bank' && accountNumber.length === 10 && bankCode) {
+        setResolvingName(true)
+        setRecipientName('')
+        setError('')
+        try {
+          const result = await resolveAccountName(bankCode, accountNumber)
+          if (active && result?.account_name) {
+            setRecipientName(result.account_name)
+          }
+        } catch (err) {
+          if (active) {
+            setError('Could not verify account name')
+            setRecipientName('')
+          }
+        } finally {
+          if (active) {
+            setResolvingName(false)
+          }
+        }
+      } else {
+        setRecipientName('')
+        setResolvingName(false)
+      }
+    }
+    const timer = setTimeout(resolveName, 500)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [accountNumber, bankCode, tab])
 
   const numAmount = Number.parseFloat(String(amount).replace(/[^\d.]/g, '')) || 0
   const insufficient = numAmount > balance
@@ -52,8 +98,9 @@ export default function SendMoney() {
       }
 
       if (tab === 'bank') {
+        const selectedBank = banks.find(b => b.code === bankCode)
         await sendBankTransfer({
-          bankName,
+          bankName: selectedBank ? selectedBank.name : bankCode,
           accountNumber,
           amount: numAmount,
           pin: hasPin || pin.length === 4 ? pin : undefined,
@@ -182,14 +229,15 @@ export default function SendMoney() {
                 <label className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-2 block">Bank</label>
                 <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 flex items-center gap-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
                   <select 
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
+                    value={bankCode}
+                    onChange={(e) => setBankCode(e.target.value)}
                     className="flex-1 text-[14px] md:text-[15px] outline-none bg-transparent"
                   >
-                    <option value="GTBank">GTBank</option>
-                    <option value="Kuda Bank">Kuda Bank</option>
-                    <option value="Zenith Bank">Zenith Bank</option>
-                    <option value="First Bank">First Bank</option>
+                    {banks.map(bank => (
+                      <option key={bank.code} value={bank.code}>
+                        {bank.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -205,6 +253,18 @@ export default function SendMoney() {
                     className="flex-1 text-[14px] md:text-[15px] outline-none bg-transparent placeholder-gray-400"
                   />
                 </div>
+                {resolvingName && (
+                  <p className="text-[12px] text-gray-500 mt-2 flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-[#4F46E5] border-t-transparent rounded-full animate-spin"></span>
+                    Resolving account name...
+                  </p>
+                )}
+                {recipientName && (
+                  <div className="mt-2 bg-green-50 border border-green-100 text-green-700 px-3 py-2.5 rounded-lg text-[13px] font-bold flex items-center gap-2">
+                    <User size={14} className="text-green-600" />
+                    {recipientName}
+                  </div>
+                )}
               </div>
             </>
           ) : (

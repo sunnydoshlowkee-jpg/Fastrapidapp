@@ -11,6 +11,27 @@ export async function getWalletTransactions(params) {
 
 
 
+export async function getBanks() {
+  try {
+    const { data } = await api.get('/user/wallet/banks')
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function resolveAccountName(bankCode, accountNumber) {
+  try {
+    const { data } = await api.post('/user/wallet/resolve-account', {
+      bank_code: bankCode,
+      account_number: accountNumber
+    })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export async function sendBankTransfer(payload) {
   // Mock bank transfer for now
   return new Promise((resolve) => {
