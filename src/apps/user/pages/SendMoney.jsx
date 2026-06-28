@@ -100,6 +100,7 @@ export default function SendMoney() {
       if (tab === 'bank') {
         const selectedBank = banks.find(b => b.code === bankCode)
         await sendBankTransfer({
+          bankCode,
           bankName: selectedBank ? selectedBank.name : bankCode,
           accountNumber,
           amount: numAmount,

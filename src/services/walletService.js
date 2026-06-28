@@ -33,12 +33,18 @@ export async function resolveAccountName(bankCode, accountNumber) {
 }
 
 export async function sendBankTransfer(payload) {
-  // Mock bank transfer for now
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ success: true, message: 'Transfer to bank successful' })
-    }, 1000)
-  })
+  try {
+    const { data } = await api.post('/user/wallet/transfer/bank', {
+      amount: payload.amount,
+      account_number: payload.accountNumber,
+      bank_code: payload.bankCode,
+      bank_name: payload.bankName,
+      pin: payload.pin,
+    })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
 }
 
 export async function provisionVirtualAccount() {
