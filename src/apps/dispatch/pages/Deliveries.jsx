@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ArrowRight, Clock, SlidersHorizontal, Search } from 'lucide-react'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
@@ -7,6 +7,7 @@ const TABS = ['All', 'Completed', 'Declined', 'Cancelled']
 
 const STATUS_STYLES = {
   COMPLETED: { bg: 'transparent', text: '#22c55e', border: 'none' },
+  DELIVERED: { bg: 'transparent', text: '#22c55e', border: 'none' },
   DECLINED:  { bg: '#ef4444',     text: '#fff',    border: 'none', pill: true },
   CANCELLED: { bg: '#f97316',     text: '#fff',    border: 'none', pill: true },
 }
@@ -17,10 +18,16 @@ export default function Deliveries() {
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch] = useState('')
 
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
   const safeDeliveries = Array.isArray(deliveries) ? deliveries : []
 
   const filtered = safeDeliveries.filter(d => {
-    const matchTab = activeTab === 'All' || d.status === activeTab.toUpperCase()
+    const dStatus = (d.status || '').toLowerCase()
+    const tStatus = activeTab.toLowerCase()
+    const matchTab = activeTab === 'All' || dStatus === tStatus || (tStatus === 'completed' && dStatus === 'delivered')
     const matchSearch = search === '' ||
       (d.restaurant || d.merchant_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (d.orderId || String(d.id)).toLowerCase().includes(search.toLowerCase())
@@ -84,7 +91,7 @@ export default function Deliveries() {
         ) : (
           <div>
             {filtered.map((d, i) => {
-              const s = STATUS_STYLES[d.status]
+              const s = STATUS_STYLES[(d.status || '').toUpperCase()]
               return (
                 <div key={d.id}>
                   <div className="py-4">

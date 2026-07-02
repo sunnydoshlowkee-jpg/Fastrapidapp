@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Trash2, Briefcase, Home, MapPin, Plus, Edit2, User, Clock, CreditCard, Wallet, Bell, Shield, LogOut, CheckCircle2, X } from 'lucide-react'
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from '../../../services/addressService'
+import { useAuth } from '../../../context/AuthContext'
+import { getDisplayName } from '../../../utils/userDisplay'
 
 export default function Addresses() {
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('addresses')
   const [showLogoutModal, setShowLogoutModal] = useState(false)
@@ -198,12 +201,16 @@ export default function Addresses() {
         <div className="w-[320px] bg-white rounded-3xl border border-gray-100 shadow-sm p-6 shrink-0 sticky top-[120px]">
           
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-200">
-               <img src="/driver.png" alt="Babajide Johnson" className="w-full h-full object-cover" onError={(e) => {e.target.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzNCODJGNiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNDAiIHI9IjIwIiBmaWxsPSIjRkVGMzhDIi8+PHBhdGggZD0iTTMwIDEwMCBDMzAgNjAgNzAgNjAgNzAgMTAwIiBmaWxsPSIjRkVGMzhDIi8+PC9zdmc+'}} />
+            <div className="w-14 h-14 rounded-full overflow-hidden border border-gray-200 bg-[#3B82F6] flex items-center justify-center text-white font-bold text-xl">
+               {user?.avatar_url ? (
+                 <img src={user.avatar_url} alt={getDisplayName(user)} className="w-full h-full object-cover" />
+               ) : (
+                 (user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()
+               )}
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-[16px]">Babajide Johnson</h3>
-              <p className="text-[13px] text-gray-500">babajide.j@example.com</p>
+              <h3 className="font-bold text-gray-900 text-[16px]">{getDisplayName(user) || 'Your profile'}</h3>
+              <p className="text-[13px] text-gray-500">{user?.email || user?.phone || ''}</p>
             </div>
           </div>
 
@@ -304,9 +311,10 @@ export default function Addresses() {
             </div>
             <div className="flex flex-col gap-3">
               <button 
-                onClick={() => {
+                onClick={async () => {
                   setShowLogoutModal(false)
-                  navigate('/login')
+                  if (logout) await logout()
+                  navigate('/auth/login')
                 }}
                 className="w-full bg-[#D92D20] text-white py-4 rounded-xl font-bold shadow-md hover:bg-red-700 transition-colors text-[15px]"
               >

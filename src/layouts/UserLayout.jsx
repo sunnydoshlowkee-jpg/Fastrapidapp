@@ -102,42 +102,40 @@ export default function UserLayout() {
         </nav>
         
         {/* Active Order Widget (Desktop) */}
-        <div 
-          onClick={() => {
-            if (activeOrder) {
+        {activeOrder && (
+          <div 
+            onClick={() => {
               navigate(`/app/track/${activeOrder.id}`)
-            } else {
-              navigate('/app/orders')
-            }
-          }}
-          className="px-5 mt-auto cursor-pointer hover:opacity-90 transition-opacity"
-        >
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-5 relative overflow-hidden">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[11px] font-bold text-[#1A1AF5] tracking-wider uppercase">
-                {statusInfo.label}
-              </span>
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-[#1A1AF5]">
-                <Car size={20} />
+            }}
+            className="px-5 mt-auto cursor-pointer hover:opacity-90 transition-opacity"
+          >
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-5 relative overflow-hidden">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-[11px] font-bold text-[#1A1AF5] tracking-wider uppercase">
+                  {statusInfo.label}
+                </span>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
               </div>
-              <div>
-                <p className="text-[15px] font-bold text-gray-900">
-                  {activeOrder ? `Order #${activeOrder.id}` : 'Order #8821'}
-                </p>
-                <p className="text-[13px] text-gray-500">
-                  {statusInfo.time}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-[#1A1AF5]">
+                  <Car size={20} />
+                </div>
+                <div>
+                  <p className="text-[15px] font-bold text-gray-900">
+                    Order #{activeOrder.id}
+                  </p>
+                  <p className="text-[13px] text-gray-500">
+                    {statusInfo.time}
+                  </p>
+                </div>
               </div>
-            </div>
-            {/* Progress bar */}
-            <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-              <div className={`bg-[#1A1AF5] h-full rounded-full ${statusInfo.progress}`}></div>
+              {/* Progress bar */}
+              <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                <div className={`bg-[#1A1AF5] h-full rounded-full ${statusInfo.progress}`}></div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* --- MAIN CONTENT --- */}

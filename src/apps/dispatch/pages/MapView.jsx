@@ -1,106 +1,74 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Star, Calendar, BarChart2, Gift, ChevronRight, MapPin, Utensils, ShoppingBasket } from 'lucide-react'
-import {
-  getRiderMe,
-  toggleStatus,
-  getCachedRiderProfile,
-  persistRiderSession,
-  getRiderGreetingName,
-  getTimeGreeting,
-} from '../../../services/riderAuthService'
+import { getMe } from '../../../services/authService'
+import { toggleStatus } from '../../../services/riderAuthService'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
-import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
-import { getCurrentPosition } from '../../../utils/geolocation'
-import { formatMerchantName, countOrderItems } from '../../../utils/riderDeliveryDisplay'
+import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet'
+
+const ZONES = [
+  { id: 'yaba', name: 'Yaba', activeRiders: 14, center: { lat: 6.5095, lng: 3.3711 } },
+  { id: 'lekki', name: 'Lekki', activeRiders: 42, center: { lat: 6.4442, lng: 3.4831 } },
+  { id: 'ikeja', name: 'Ikeja', activeRiders: 28, center: { lat: 6.5866, lng: 3.3563 } },
+]
+
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%',
+}
 
 export default function RiderDashboard() {
   const navigate = useNavigate()
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [riderName, setRiderName] = useState('Chidi')
   const [online, setOnline] = useState(false)
-  const [toggling, setToggling] = useState(false)
-  const { deliveries, activeDeliveries, refresh: refreshDeliveries, refreshActive, accept } = useRiderDeliveries()
+  const { deliveries, refresh: refreshDeliveries, accept } = useRiderDeliveries()
   const { earnings, refresh: refreshEarnings } = useRiderEarnings()
 
-  useRiderLocationTracking(online)
+  const [activeZone, setActiveZone] = useState(() => {
+    const saved = localStorage.getItem('rider_zone')
+    return saved ? JSON.parse(saved) : ZONES[0]
+  })
+  const [showZoneModal, setShowZoneModal] = useState(false)
+  const [showHeatmap, setShowHeatmap] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-
-    ;(async () => {
-      try {
-        const res = await getRiderMe()
-        const data = res.data?.data || res.data
-        if (cancelled) return
-        setProfile(data)
-        setOnline(Boolean(data?.rider?.is_online))
-        persistRiderSession({ profile: data })
-      } catch (err) {
-        console.error('Error fetching rider profile', err)
-        if (!cancelled) {
-          const cached = getCachedRiderProfile()
-          if (cached) {
-            setProfile(cached)
-            setOnline(Boolean(cached?.rider?.is_online))
-          }
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
+    getMe().then(res => {
+      const u = res.data?.user || res.user || res.data
+      if (u) {
+        setRiderName(u.first_name || u.name?.split(' ')[0] || 'Rider')
       }
-    })()
-
-    return () => { cancelled = true }
+      
+      const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+      setOnline(riderInfo.is_online || false)
+    }).catch(err => {
+      console.error('Error fetching rider user', err)
+      setRiderName('Rider')
+    })
   }, [])
 
   const toggle = async () => {
     try {
-      setToggling(true)
       const response = await toggleStatus()
       const newStatus = response.data?.is_online ?? !online
       setOnline(newStatus)
-
-      setProfile((current) => {
-        const next = current
-          ? { ...current, rider: { ...current.rider, is_online: newStatus } }
-          : current
-        if (next) persistRiderSession({ profile: next })
-        return next
-      })
+      
+      const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+      riderInfo.is_online = newStatus
+      localStorage.setItem('rider_user', JSON.stringify(riderInfo))
     } catch (err) {
       console.error('Error toggling rider status', err)
       alert('Failed to update online status')
-    } finally {
-      setToggling(false)
     }
   }
 
   useEffect(() => {
-    refreshActive()
-    const interval = setInterval(refreshActive, 10000)
-    return () => clearInterval(interval)
-  }, [refreshActive])
-
-  useEffect(() => {
-    if (!online) return undefined
-
-    let cancelled = false
-
-    const poll = async () => {
-      try {
-        const coords = await getCurrentPosition()
-        if (!cancelled) refreshDeliveries(coords.lat, coords.lng)
-      } catch {
-        if (!cancelled) refreshDeliveries(6.5244, 3.3792)
-      }
-    }
-
-    poll()
-    const interval = setInterval(poll, 10000)
-    return () => {
-      cancelled = true
-      clearInterval(interval)
+    if (online) {
+      refreshDeliveries(6.5244, 3.3792)
+      const interval = setInterval(() => {
+        refreshDeliveries(6.5244, 3.3792)
+      }, 10000)
+      return () => clearInterval(interval)
     }
   }, [online, refreshDeliveries])
 
@@ -111,7 +79,6 @@ export default function RiderDashboard() {
   const handleAccept = async (deliveryId) => {
     try {
       await accept(deliveryId)
-      await refreshActive()
       navigate(`/dispatch/delivery/${deliveryId}`)
     } catch (err) {
       console.error(err)
@@ -119,50 +86,18 @@ export default function RiderDashboard() {
     }
   }
 
-  const getDeliveryMeta = (delivery) => {
-    const merchant = delivery.order?.items?.[0]?.product?.merchant
-    const merchantName = formatMerchantName(merchant)
-    const fee = Number(delivery.order?.delivery_fee || 0)
-    const orderLabel = delivery.order?.id ? `Order #${delivery.order.id}` : `Delivery #${delivery.id}`
-    const statusLabel = (delivery.status || delivery.order?.status || 'assigned')
-      .replace(/_/g, ' ')
-    const itemCount = countOrderItems(delivery) || delivery.order?.items?.length || 0
-    return { merchantName, fee, orderLabel, statusLabel, itemCount }
-  }
-
-  const hasActiveDelivery = activeDeliveries.length > 0
-  const primaryActive = activeDeliveries[0]
-
-  const riderName = getRiderGreetingName(profile)
-  const greeting = getTimeGreeting()
-  const walletBalance = earnings?.wallet?.balance ?? 0
-  const totalEarnings = earnings?.earnings?.total ?? 0
-  const totalOrders = profile?.rider?.total_deliveries ?? 0
-  const rating = profile?.rider?.rating != null
-    ? Number(profile.rider.rating).toFixed(1)
-    : '—'
-  const vehicleLabel = profile?.rider?.vehicle_type
-    ? profile.rider.vehicle_type.charAt(0).toUpperCase() + profile.rider.vehicle_type.slice(1)
-    : 'Rider'
-  const zoneLabel = profile?.rider?.plate_number
-    ? `${vehicleLabel} • ${profile.rider.plate_number}`
-    : `${vehicleLabel} • Your service area`
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Loading your dashboard…</p>
-      </div>
-    )
-  }
+  const walletBalance = earnings?.wallet?.balance || 0
+  const totalEarnings = earnings?.earnings?.total || 0
+  const totalOrders = earnings?.earnings?.recent?.length || 0
 
   return (
     <div className="min-h-screen bg-gray-50 pb-4">
 
+      {/* ── Header ── */}
       <div className="sticky top-0 z-50 bg-gray-50 px-5 pt-12 pb-4 flex items-center justify-between">
         <div>
           <p className="text-[17px] font-bold" style={{ color: '#5B5BFF' }}>
-            {greeting}, {riderName} 👋
+            Good morning, {riderName} 👋
           </p>
         </div>
         <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
@@ -172,6 +107,7 @@ export default function RiderDashboard() {
 
       <div className="px-5 space-y-4">
 
+        {/* ── Online / Offline card ── */}
         <div
           className="rounded-3xl p-5 transition-all duration-500"
           style={{
@@ -189,19 +125,17 @@ export default function RiderDashboard() {
               {online ? (
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse" />
-                  <span className="text-gray-500 text-sm">
-                    {hasActiveDelivery ? 'You have an active delivery' : 'Waiting for orders nearby...'}
-                  </span>
+                  <span className="text-gray-500 text-sm">Waiting for orders nearby...</span>
                 </div>
               ) : (
                 <p className="text-gray-500 text-sm">Go online to start receiving orders</p>
               )}
             </div>
 
+            {/* Toggle */}
             <button
               onClick={toggle}
-              disabled={toggling}
-              className="relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 mt-0.5 focus:outline-none disabled:opacity-50"
+              className="relative w-14 h-7 rounded-full transition-all duration-300 flex-shrink-0 mt-0.5 focus:outline-none"
               style={{ background: online ? '#5B5BFF' : '#CBD5E1' }}
             >
               <span
@@ -211,17 +145,19 @@ export default function RiderDashboard() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit">
-            <span className={`w-1.5 h-1.5 rounded-full ${online ? 'bg-green-500' : 'bg-gray-400'}`} />
-            <span className="text-xs font-semibold text-gray-600">{zoneLabel}</span>
+          {/* Zone chip */}
+          <div onClick={() => setShowZoneModal(true)} className="flex items-center gap-2 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit cursor-pointer hover:bg-white/80 transition-colors">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+            <span className="text-xs font-semibold text-gray-600">{activeZone.name} Zone • {activeZone.activeRiders} riders active</span>
           </div>
         </div>
 
+        {/* ── Today / Orders / Rating ── */}
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'WALLET', value: `₦${Number(walletBalance).toLocaleString()}` },
             { label: 'ORDERS', value: String(totalOrders) },
-            { label: 'RATING', value: rating, star: rating !== '—' },
+            { label: 'RATING', value: '4.8', star: true },
           ].map(({ label, value, star }) => (
             <div key={label} className="bg-white rounded-2xl px-4 py-4 shadow-sm">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
@@ -233,6 +169,7 @@ export default function RiderDashboard() {
           ))}
         </div>
 
+        {/* ── Weekly / Monthly ── */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-2xl px-4 py-4 shadow-sm">
             <div className="flex items-center gap-1.5 mb-2">
@@ -248,13 +185,14 @@ export default function RiderDashboard() {
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Active Task</p>
             </div>
             <p className="text-xs text-gray-500 mb-0.5">Status</p>
-            <p className={`text-sm font-black ${hasActiveDelivery ? 'text-[#5B5BFF]' : online ? 'text-green-600' : 'text-gray-500'}`}>
-              {hasActiveDelivery ? 'On delivery' : online ? 'Available' : 'Offline'}
-            </p>
+            <p className="text-sm font-black text-green-600">{online ? 'Available' : 'Offline'}</p>
           </div>
         </div>
 
-        <button className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 text-left transition-opacity active:opacity-80"
+        {/* ── Weekend Bonus Banner ── */}
+        <button 
+          onClick={() => navigate('/dispatch/earnings')}
+          className="w-full rounded-2xl px-5 py-4 flex items-center gap-4 text-left transition-opacity active:opacity-80"
           style={{ background: 'linear-gradient(90deg, #F59E0B, #FBBF24)' }}>
           <div className="w-10 h-10 bg-white/25 rounded-xl flex items-center justify-center flex-shrink-0">
             <Gift size={20} className="text-white" />
@@ -266,76 +204,46 @@ export default function RiderDashboard() {
           <ChevronRight size={18} className="text-white/70 flex-shrink-0" />
         </button>
 
+        {/* ── Zone / Heatmap ── */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
           <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-            <p className="text-sm font-black" style={{ color: '#5B5BFF' }}>
-              {profile?.rider?.vehicle_brand
-                ? `Vehicle: ${profile.rider.vehicle_brand}`
-                : 'Your delivery zone'}
-            </p>
-            <button
-              onClick={() => navigate('/dispatch/profile/edit')}
-              className="text-xs font-bold text-gray-500 uppercase tracking-wider"
-            >
-              EDIT
-            </button>
+            <p className="text-sm font-black" style={{ color: '#5B5BFF' }}>Current Zone: {activeZone.name}</p>
+            <button onClick={() => setShowZoneModal(true)} className="text-xs font-bold text-gray-500 uppercase tracking-wider hover:text-gray-900 transition-colors">CHANGE</button>
           </div>
-          <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden" style={{ height: '110px', background: 'linear-gradient(135deg, #1a1a3e, #0d0d1f)' }}>
-            <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 300 110">
-              {[0,1,2,3,4,5].map(i => (
-                <line key={`h${i}`} x1="0" y1={i*22} x2="300" y2={i*22} stroke="#5B5BFF" strokeWidth="0.5"/>
-              ))}
-              {[0,1,2,3,4,5,6,7,8,9,10].map(i => (
-                <line key={`v${i}`} x1={i*30} y1="0" x2={i*30} y2="110" stroke="#5B5BFF" strokeWidth="0.5"/>
-              ))}
-              <circle cx="150" cy="55" r="30" fill="rgba(91,91,255,0.15)" stroke="rgba(91,91,255,0.4)" strokeWidth="1"/>
-              <circle cx="150" cy="55" r="4" fill="#5B5BFF"/>
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button className="bg-gray-900/80 backdrop-blur-sm text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-2">
+          {/* Map placeholder */}
+          <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden bg-gray-100" style={{ height: '140px' }}>
+            <MapContainer 
+              center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} 
+              zoom={13} 
+              zoomControl={false}
+              style={mapContainerStyle}
+              key={`${activeZone.center?.lat || 6.5095}-${activeZone.center?.lng || 3.3711}`}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <Marker position={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} />
+              {showHeatmap && (
+                <Circle
+                  center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]}
+                  radius={2500}
+                  pathOptions={{ fillColor: '#EF4444', fillOpacity: 0.2, color: '#EF4444', opacity: 0.5, weight: 1 }}
+                />
+              )}
+            </MapContainer>
+            
+            {/* Button */}
+            <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
+              <button onClick={() => setShowHeatmap(!showHeatmap)} className="pointer-events-auto bg-gray-900/80 backdrop-blur-sm text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-900 transition-colors shadow-lg">
                 <MapPin size={14} />
-                View Heatmap
+                {showHeatmap ? 'Hide Heatmap' : 'View Heatmap'}
               </button>
             </div>
           </div>
         </div>
 
-        {hasActiveDelivery && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <p className="font-black text-base" style={{ color: '#5B5BFF' }}>Your Active Delivery</p>
-            </div>
-            <div className="space-y-3">
-              {activeDeliveries.map((delivery) => {
-                const { merchantName, fee, orderLabel, statusLabel } = getDeliveryMeta(delivery)
-                return (
-                  <div key={delivery.id} className="rounded-2xl px-4 py-4 shadow-sm border-2 border-[#5B5BFF]/20 bg-white">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="font-bold text-gray-900 text-sm">{merchantName}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{orderLabel}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: '#5B5BFF' }}>
-                          {statusLabel}
-                        </p>
-                      </div>
-                      <p className="font-black text-gray-900 text-sm">
-                        ₦{fee.toLocaleString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => navigate(`/dispatch/delivery/${delivery.id}`)}
-                      className="w-full py-2.5 rounded-xl text-white text-sm font-bold transition-opacity active:opacity-80"
-                      style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
-                    >
-                      Continue Delivery
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
+        {/* ── Active Deliveries ── */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <p className="font-black text-base" style={{ color: '#5B5BFF' }}>Available Deliveries</p>
@@ -356,7 +264,7 @@ export default function RiderDashboard() {
               </div>
             ) : (
               deliveries.map(d => {
-                const merchantName = formatMerchantName(d.order?.items?.[0]?.product?.merchant)
+                const merchantName = d.order?.items?.[0]?.product?.merchant?.business_name || 'Food Order'
                 const isGroceries = d.order?.items?.[0]?.product?.category?.name?.toLowerCase().includes('grocery') || false
                 return (
                   <div key={d.id} className="bg-white rounded-2xl px-4 py-4 shadow-sm">
@@ -388,7 +296,7 @@ export default function RiderDashboard() {
                         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}>
                         Accept Task
                       </button>
-                      <button
+                      <button 
                         onClick={() => navigate(`/dispatch/delivery/${d.id}`)}
                         className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold">
                         Details
@@ -402,6 +310,56 @@ export default function RiderDashboard() {
         </div>
 
       </div>
+
+      {/* ── Zone Selection Modal ── */}
+      {showZoneModal && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setShowZoneModal(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-t-[2rem] sm:rounded-[2rem] px-6 pt-6 pb-10 shadow-2xl animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:fade-in-0 duration-300">
+            <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
+            <h3 className="text-xl font-black text-gray-900 mb-2">Select Your Zone</h3>
+            <p className="text-sm text-gray-500 mb-6">Choose the area where you want to receive delivery requests.</p>
+            
+            <div className="space-y-3">
+              {ZONES.map((zone) => (
+                <button
+                  key={zone.id}
+                  onClick={() => {
+                    setActiveZone(zone)
+                    localStorage.setItem('rider_zone', JSON.stringify(zone))
+                    setShowZoneModal(false)
+                  }}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-colors ${
+                    activeZone.id === zone.id 
+                      ? 'border-[#5B5BFF] bg-indigo-50/50' 
+                      : 'border-gray-100 hover:border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeZone.id === zone.id ? 'bg-[#5B5BFF] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      <MapPin size={18} />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900">{zone.name}</p>
+                      <p className="text-xs text-gray-500">{zone.activeRiders} riders active</p>
+                    </div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${activeZone.id === zone.id ? 'border-[#5B5BFF]' : 'border-gray-300'}`}>
+                    {activeZone.id === zone.id && <div className="w-2.5 h-2.5 rounded-full bg-[#5B5BFF]" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <button 
+              onClick={() => setShowZoneModal(false)}
+              className="w-full mt-6 bg-gray-100 text-gray-900 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

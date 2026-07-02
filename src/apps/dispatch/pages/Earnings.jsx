@@ -5,39 +5,6 @@ import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 
 const PERIOD_TABS = ['Today', 'This Week', 'This Month']
 
-const PAYOUT_HISTORY = [
-  {
-    id: 1,
-    icon: 'bank',
-    date: 'July 24, 2024',
-    label: 'Transfer to Kuda Bank',
-    amount: '₦12,450.00',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    icon: 'bank',
-    date: 'July 24, 2024',
-    label: 'Transfer to Kuda Bank',
-    amount: '₦12,450.00',
-    status: 'Paid',
-  },
-  {
-    id: 3,
-    icon: 'clock',
-    date: 'July 22, 2024',
-    label: 'Scheduled Payout',
-    amount: '₦8,200.00',
-    status: 'Pending',
-  },
-]
-
-const STATS = {
-  Today:      { deliveries: 4,  avg: '₦1,100' },
-  'This Week':{ deliveries: 42, avg: '₦1,390' },
-  'This Month':{ deliveries: 168,avg: '₦1,280' },
-}
-
 export default function Earnings() {
   const navigate = useNavigate()
   const { earnings, loading, refresh } = useRiderEarnings()
@@ -47,12 +14,18 @@ export default function Earnings() {
     refresh()
   }, [refresh])
 
-  const stats = STATS[period]
-  const tierProgress = 72  // % toward Gold
+  const balance = earnings?.wallet?.balance || 0
+  const recentEarnings = earnings?.earnings?.recent || []
+  const totalDeliveries = earnings?.earnings?.deliveries || 0
+  const totalEarnings = earnings?.earnings?.total || 0
+  const avgTrip = earnings?.earnings?.avg_trip || 0
+  const tierProgress = earnings?.earnings?.tier_progress || 82
   
-  const balance = earnings?.wallet?.balance ?? 0
-  const totalDeliveries = earnings?.earnings?.recent?.length ?? stats.deliveries
-  const totalEarnings = earnings?.earnings?.total ?? 0
+  // Create dynamic stats based on backend response (for now we map the total to all periods for simplicity, but backend could provide period-based stats)
+  const stats = { 
+    deliveries: totalDeliveries, 
+    avg: `₦${Math.round(avgTrip).toLocaleString()}` 
+  }
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-6">
@@ -124,14 +97,18 @@ export default function Earnings() {
         {/* ── Stats cards ── */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
-            <Truck size={18} className="text-gray-400 mb-3" />
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Deliveries</p>
-            <p className="text-3xl font-black text-white">{totalDeliveries}</p>
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-3">
+              <Truck size={14} className="text-white" />
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Deliveries</p>
+            <p className="text-2xl font-black text-white">{stats.deliveries}</p>
           </div>
           <div className="rounded-2xl p-4" style={{ background: '#1a1a2e' }}>
-            <TrendingUp size={18} className="text-yellow-400 mb-3" />
-            <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Avg / Trip</p>
-            <p className="text-3xl font-black text-white">{stats.avg}</p>
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mb-3">
+              <TrendingUp size={14} className="text-white" />
+            </div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Avg / Trip</p>
+            <p className="text-2xl font-black text-white">{stats.avg}</p>
           </div>
         </div>
 
@@ -165,45 +142,35 @@ export default function Earnings() {
           <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Silver</p>
         </div>
 
-        {/* ── Payout History ── */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-black text-gray-900">Payout History</p>
-            <button className="text-xs font-black text-gray-400 uppercase tracking-wider">VIEW ALL</button>
+        {/* ── Recent Earnings ── */}
+        <div className="pb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-gray-900 text-sm">Recent Earnings</h2>
+            <button onClick={() => navigate('/dispatch/earnings/history')} className="text-[10px] font-black text-gray-400 uppercase tracking-widest">View All</button>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {PAYOUT_HISTORY.map(p => (
-              <div key={p.id} className="bg-gray-50 rounded-2xl px-4 py-4 flex items-center gap-3">
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: p.status === 'Paid'
-                      ? 'rgba(34,197,94,0.1)'
-                      : 'rgba(249,115,22,0.1)',
-                  }}>
-                  {p.icon === 'bank'
-                    ? <Building2 size={18} style={{ color: '#22c55e' }} />
-                    : <Clock size={18} style={{ color: '#f97316' }} />
-                  }
+          <div className="space-y-3">
+            {recentEarnings.length === 0 ? (
+              <p className="text-center text-xs text-gray-400 py-6">No recent earnings.</p>
+            ) : (
+              recentEarnings.map((txn, i) => (
+                <div key={txn.id || i} className="bg-gray-50 rounded-2xl p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600 shrink-0">
+                      <TrendingUp size={16} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm truncate max-w-[150px]">{txn.description || 'Delivery Payout'}</p>
+                      <p className="text-xs text-gray-400">{new Date(txn.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-gray-900 text-sm">₦{Number(txn.amount).toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-green-500 uppercase tracking-widest">{txn.status || 'Paid'}</p>
+                  </div>
                 </div>
-
-                {/* Info */}
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900 text-sm">{p.date}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{p.label}</p>
-                </div>
-
-                {/* Amount + status */}
-                <div className="text-right">
-                  <p className="font-black text-gray-900 text-sm">{p.amount}</p>
-                  <p className="text-xs font-bold mt-0.5"
-                    style={{ color: p.status === 'Paid' ? '#22c55e' : '#f97316' }}>
-                    {p.status}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

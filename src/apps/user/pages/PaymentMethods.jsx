@@ -1,8 +1,25 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronRight, X } from 'lucide-react'
 
 export default function PaymentMethods() {
   const navigate = useNavigate()
+  const [showAddCard, setShowAddCard] = useState(false)
+  
+  const [cards, setCards] = useState([
+    { id: '1', type: 'Mastercard', last4: '4122', default: true },
+    { id: '2', type: 'Visa', last4: '8829', default: false },
+  ])
+  
+  const handleAddCard = (e) => {
+    e.preventDefault()
+    const fd = new FormData(e.target)
+    const cardNum = fd.get('cardNumber')
+    const last4 = cardNum.slice(-4)
+    const isVisa = cardNum.startsWith('4')
+    setCards([...cards, { id: Date.now().toString(), type: isVisa ? 'Visa' : 'Mastercard', last4, default: false }])
+    setShowAddCard(false)
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24">
@@ -32,7 +49,7 @@ export default function PaymentMethods() {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Saved Cards</h3>
-          <button className="text-[#4F46E5] text-[13px] font-bold">
+          <button onClick={() => setShowAddCard(true)} className="text-[#4F46E5] text-[13px] font-bold">
             [ Add New Card ]
           </button>
         </div>
@@ -40,37 +57,30 @@ export default function PaymentMethods() {
         {/* Cards List */}
         <div className="flex flex-col gap-4 mb-10">
           
-          <div className="bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 flex-shrink-0">
-                <div className="w-6 h-6 flex relative">
-                  <div className="w-4 h-4 bg-red-500 rounded-full absolute left-0 mix-blend-multiply"></div>
-                  <div className="w-4 h-4 bg-yellow-400 rounded-full absolute right-0 mix-blend-multiply"></div>
+          {cards.map(card => (
+            <div key={card.id} className="bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border flex-shrink-0 ${card.type === 'Visa' ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'}`}>
+                  {card.type === 'Visa' ? (
+                    <span className="font-bold text-blue-900 text-xs italic">VISA</span>
+                  ) : (
+                    <div className="w-6 h-6 flex relative">
+                      <div className="w-4 h-4 bg-red-500 rounded-full absolute left-0 mix-blend-multiply"></div>
+                      <div className="w-4 h-4 bg-yellow-400 rounded-full absolute right-0 mix-blend-multiply"></div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-sm mb-0.5">{card.type}</h4>
+                  <p className="text-[11px] text-gray-500">XXXX {card.last4}</p>
                 </div>
               </div>
-              <div>
-                <h4 className="font-bold text-gray-900 text-sm mb-0.5">Mastercard</h4>
-                <p className="text-[11px] text-gray-500">XXXX 4122</p>
+              <div className="flex items-center gap-3">
+                {card.default && <span className="text-[10px] font-bold text-[#4F46E5]">Default</span>}
+                <ChevronRight size={16} className="text-gray-300" />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold text-[#4F46E5]">Default</span>
-              <ChevronRight size={16} className="text-gray-300" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 flex-shrink-0">
-                <span className="font-bold text-blue-900 text-xs italic">VISA</span>
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 text-sm mb-0.5">Visa</h4>
-                <p className="text-[11px] text-gray-500">XXXX 8829</p>
-              </div>
-            </div>
-            <ChevronRight size={16} className="text-gray-300" />
-          </div>
+          ))}
 
           <div className="bg-white rounded-2xl p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-4">
@@ -97,6 +107,39 @@ export default function PaymentMethods() {
         </div>
 
       </div>
+
+      {showAddCard && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white w-full max-w-md sm:rounded-[32px] rounded-t-[32px] p-6 shadow-2xl animate-in slide-in-from-bottom-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Add New Card</h3>
+              <button onClick={() => setShowAddCard(false)} className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddCard} className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Card Number</label>
+                <input required minLength={16} maxLength={19} name="cardNumber" type="text" placeholder="0000 0000 0000 0000" className="bg-[#F4F5F7] px-4 py-3.5 rounded-xl outline-none focus:ring-2 focus:ring-[#4F46E5]/20 font-medium text-[15px]" />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Expiry</label>
+                  <input required name="expiry" type="text" placeholder="MM/YY" maxLength={5} className="bg-[#F4F5F7] px-4 py-3.5 rounded-xl outline-none focus:ring-2 focus:ring-[#4F46E5]/20 font-medium text-[15px]" />
+                </div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">CVV</label>
+                  <input required name="cvv" type="password" placeholder="***" maxLength={4} className="bg-[#F4F5F7] px-4 py-3.5 rounded-xl outline-none focus:ring-2 focus:ring-[#4F46E5]/20 font-medium text-[15px]" />
+                </div>
+              </div>
+              <button type="submit" className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-bold text-[15px] hover:bg-indigo-700 transition-colors mt-2">
+                Save Card
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   )

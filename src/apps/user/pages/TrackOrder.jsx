@@ -3,6 +3,27 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Clock, Check, Phone, MessageSquare, Star, Plus, Minus, Crosshair, MapPin, ShoppingCart } from 'lucide-react'
 import { getOrder } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
+
+const mapContainerStyleMobile = { width: '100%', height: '100%' }
+const mapContainerStyleDesktop = { width: '100%', height: '100%' }
+
+// Default positions for demo if real coordinates are missing
+const DEFAULT_HOME = { lat: 6.5400, lng: 3.3900 }
+const DEFAULT_VENDOR = { lat: 6.5244, lng: 3.3792 }
+
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+  const R = 6371; 
+  const dLat = (lat2-lat1) * (Math.PI/180);
+  const dLon = (lon2-lon1) * (Math.PI/180); 
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  return parseFloat((R * c).toFixed(1));
+}
 
 export default function TrackOrder() {
   const navigate = useNavigate()
@@ -11,39 +32,101 @@ export default function TrackOrder() {
   const [view, setView] = useState('tracking') // 'tracking' | 'rating'
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [toastMessage, setToastMessage] = useState('')
+  const [prevStatusIndex, setPrevStatusIndex] = useState(-1)
+
+  // Computed Locations
+  const vendorLocation = order?.items?.[0]?.product?.merchant?.latitude 
+    ? { lat: Number(order.items[0].product.merchant.latitude), lng: Number(order.items[0].product.merchant.longitude) }
+    : DEFAULT_VENDOR
+
+  const homeLocation = order?.delivery?.destination_lat
+    ? { lat: Number(order.delivery.destination_lat), lng: Number(order.delivery.destination_lng) }
+    : DEFAULT_HOME
+
+  const riderLocation = order?.delivery?.rider_id
+    ? { lat: Number(order.delivery.pickup_lat) + 0.005, lng: Number(order.delivery.pickup_lng) + 0.005 } // Mock intermediate
+    : null
+
+  const targetLocation = order?.delivery?.status === 'accepted' || order?.delivery?.status === 'en-route-pickup' ? vendorLocation : homeLocation
+  const currentRiderPos = riderLocation || vendorLocation
+  const distKm = getDistanceFromLatLonInKm(currentRiderPos.lat, currentRiderPos.lng, targetLocation.lat, targetLocation.lng)
+  const estMins = distKm > 0 ? Math.max(1, Math.round(distKm * 4)) : '--'
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrder = async (isBackground = false) => {
       try {
-        setLoading(true)
+        if (!isBackground) setLoading(true)
         const { data } = await getOrder(id)
         setOrder(data.data)
       } catch (err) {
         console.error('Failed to fetch order', err)
       } finally {
-        setLoading(false)
+        if (!isBackground) setLoading(false)
       }
     }
     fetchOrder()
+    const interval = window.setInterval(() => fetchOrder(true), 15000)
+    return () => window.clearInterval(interval)
   }, [id])
 
   // Derive status index: 0=pending, 1=preparing, 2=en_route/in_transit, 3=delivered
   const statusIndex = (() => {
     if (!order) return 0
-    switch (order.status) {
+    const status = order.delivery?.status || order.status
+    switch (status) {
       case 'pending': return 0
-      case 'preparing': return 1
+      case 'preparing':
+      case 'accepted': return 1
+      case 'picked_up':
+      case 'en_route':
       case 'in_transit': return 2
       case 'delivered': return 3
       default: return 0
     }
   })()
 
+  useEffect(() => {
+    if (prevStatusIndex !== -1 && statusIndex > prevStatusIndex && order) {
+      const stepLabels = ['Order Placed', 'Preparing', 'En Route', 'Delivered'];
+      const newStatus = stepLabels[statusIndex] || 'Updated';
+      setToastMessage(`Order status updated to: ${newStatus}`);
+      setTimeout(() => setToastMessage(''), 5000);
+    }
+    setPrevStatusIndex(statusIndex);
+  }, [statusIndex, prevStatusIndex, order]);
+
+  const isValidDate = (dateStr) => {
+    if (!dateStr) return false
+    const d = new Date(dateStr)
+    return !isNaN(d.getTime())
+  }
+
   const steps = [
-    { id: 1, title: 'Order Placed', subtitle: order ? new Date(order.created_at).toLocaleTimeString() : '', status: statusIndex >= 0 ? (statusIndex === 0 ? 'active' : 'done') : 'pending' },
-    { id: 2, title: 'Preparing', subtitle: 'Vendor is preparing your order', status: statusIndex >= 1 ? (statusIndex === 1 ? 'active' : 'done') : 'pending' },
-    { id: 3, title: 'En Route', subtitle: 'Driver is on the way', status: statusIndex >= 2 ? (statusIndex === 2 ? 'active' : 'done') : 'pending' },
-    { id: 4, title: 'Delivered', subtitle: '', status: statusIndex >= 3 ? 'done' : 'pending' },
+    { 
+      id: 1, 
+      title: 'Order Placed', 
+      subtitle: order && isValidDate(order.created_at) ? new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : 'Just now', 
+      status: statusIndex >= 0 ? (statusIndex === 0 ? 'active' : 'done') : 'pending' 
+    },
+    { 
+      id: 2, 
+      title: 'Preparing', 
+      subtitle: 'Vendor is preparing your order', 
+      status: statusIndex >= 1 ? (statusIndex === 1 ? 'active' : 'done') : 'pending' 
+    },
+    { 
+      id: 3, 
+      title: 'En Route', 
+      subtitle: order?.delivery?.rider_id ? 'Driver is on the way' : 'Assigning driver...', 
+      status: statusIndex >= 2 ? (statusIndex === 2 ? 'active' : 'done') : 'pending' 
+    },
+    { 
+      id: 4, 
+      title: 'Delivered', 
+      subtitle: '', 
+      status: statusIndex >= 3 ? 'done' : 'pending' 
+    },
   ]
 
   const formatCurrency = (amount) => {
@@ -73,7 +156,17 @@ export default function TrackOrder() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0 relative">
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3">
+            <Check size={18} className="text-green-400" />
+            <span className="font-bold text-[14px] whitespace-nowrap">{toastMessage}</span>
+          </div>
+        </div>
+      )}
       
       {/* -------------------------------------------------------------------------------- */}
       {/*                                 MOBILE LAYOUT                                      */}
@@ -91,19 +184,24 @@ export default function TrackOrder() {
           <>
             {/* Mobile Map Area */}
             <div className="relative w-full h-[200px] bg-[#E8EAE6] overflow-hidden">
-              <img src="/map.png" alt="Map" className="w-full h-full object-cover opacity-70" onError={(e) => e.target.style.display='none'} />
-              <div className="absolute inset-0 bg-[#E8EAE6] -z-10" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[80%]">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 bg-[#4F46E5] rounded-full flex items-center justify-center shadow-lg">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
-                  </div>
-                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#4F46E5] -mt-0.5"></div>
-                </div>
-              </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-white px-5 py-2.5 rounded-full shadow-md border border-gray-100 flex items-center gap-2 z-10 w-max">
+              <MapContainer 
+                center={riderLocation ? [riderLocation.lat, riderLocation.lng] : [vendorLocation.lat, vendorLocation.lng]} 
+                zoom={13} 
+                zoomControl={false}
+                style={mapContainerStyleMobile}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker position={[vendorLocation.lat, vendorLocation.lng]} />
+                <Marker position={[homeLocation.lat, homeLocation.lng]} />
+                {riderLocation && <Marker position={[riderLocation.lat, riderLocation.lng]} />}
+                <Polyline positions={[[vendorLocation.lat, vendorLocation.lng], [homeLocation.lat, homeLocation.lng]]} pathOptions={{ color: '#4F46E5', weight: 3, opacity: 0.8, dashArray: '6, 6' }} />
+              </MapContainer>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-white px-5 py-2.5 rounded-full shadow-md border border-gray-100 flex items-center gap-2 z-[1000] w-max">
                 <Clock size={16} className="text-[#4F46E5]" />
-                <span className="font-bold text-gray-900 text-[13px]">Arriving in 15-20 mins</span>
+                <span className="font-bold text-gray-900 text-[13px]">Arriving in {estMins} mins</span>
               </div>
             </div>
 
@@ -145,32 +243,41 @@ export default function TrackOrder() {
 
             {/* Mobile Driver Info Card */}
             <div className="px-5 mb-5 mt-auto">
-              <div className="bg-[#F3F4F6] rounded-2xl p-4 flex items-center gap-4 border border-transparent">
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
-                  <img src="/rider.png" alt="Driver" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Chinedu&background=random" }} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 text-[14px]">Chinedu</h4>
-                  <div className="flex items-center gap-1 text-[12px]">
-                    <span className="font-semibold text-gray-700">4.8</span>
-                    <Star size={12} className="text-yellow-500 fill-yellow-500" />
+              {order?.delivery?.rider_id ? (
+                <>
+                  <div className="bg-[#F3F4F6] rounded-2xl p-4 flex items-center gap-4 border border-transparent">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                      <img src="/rider.png" alt="Driver" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Rider&background=random" }} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-[14px]">{order.delivery.rider?.user?.first_name || 'Assigned Rider'}</h4>
+                      <div className="flex items-center gap-1 text-[12px]">
+                        <span className="font-semibold text-gray-700">{order.delivery.rider?.rating || '4.8'}</span>
+                        <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                      </div>
+                    </div>
+                    <div className="ml-auto bg-white rounded-xl px-4 py-2.5 border border-gray-200 shadow-sm">
+                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Vehicle</p>
+                      <p className="font-bold text-gray-900 text-[13px]">{order.delivery.rider?.plate_number || 'N/A'}</p>
+                    </div>
                   </div>
+                  
+                  {/* Mobile Action Buttons */}
+                  <div className="flex gap-3 mt-4">
+                    <a href={`tel:${order.delivery.rider?.phone || '0800000000'}`} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
+                      <Phone size={16} /> Call
+                    </a>
+                    <button className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
+                      <MessageSquare size={16} /> Message
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-[#FFF4E5] rounded-2xl p-4 flex items-center justify-center gap-3 border border-orange-100">
+                  <div className="w-8 h-8 rounded-full border-2 border-orange-400 border-t-transparent animate-spin shrink-0"></div>
+                  <p className="text-[14px] font-bold text-orange-600">Assigning Rider...</p>
                 </div>
-                <div className="ml-auto bg-white rounded-xl px-4 py-2.5 border border-gray-200 shadow-sm">
-                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Vehicle</p>
-                  <p className="font-bold text-gray-900 text-[13px]">ABC-123-XY</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Action Buttons */}
-            <div className="px-5 flex gap-3 mb-6">
-              <a href="tel:0800000000" className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
-                <Phone size={16} /> Call
-              </a>
-              <button className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
-                <MessageSquare size={16} /> Message
-              </button>
+              )}
             </div>
 
             <div className="px-5 text-center pb-8">
@@ -216,29 +323,21 @@ export default function TrackOrder() {
         
         {/* Left Full Map Area */}
         <div className="flex-1 relative h-[calc(100vh-100px)]">
-          {/* Mock abstract 3D globe effect */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.4)_0%,transparent_70%)] opacity-80" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-[#A5E3DE] to-[#7AB6B1] rounded-full shadow-2xl opacity-90 border-[4px] border-white/20 blur-sm" />
-          
-          <img src="/pizza.png" alt="Map Globe" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] object-cover mix-blend-overlay opacity-30 rounded-full" />
-          
-          {/* Tracking Path Line */}
-          <svg className="absolute w-full h-full" preserveAspectRatio="none">
-            <path d="M400,600 Q600,400 800,200" fill="none" stroke="#2D2AEE" strokeWidth="3" strokeDasharray="6,6" />
-          </svg>
-
-          {/* Delivery Pin */}
-          <div className="absolute top-[200px] right-[400px]">
-             <MapPin size={32} className="text-red-500 fill-red-500 drop-shadow-lg" />
-             <div className="absolute -top-8 -left-10 bg-gray-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">Your Home</div>
-          </div>
-
-          {/* Rider Pin */}
-          <div className="absolute top-[380px] left-[520px]">
-            <div className="w-14 h-14 bg-[#2D2AEE] rounded-full flex items-center justify-center border-4 border-white shadow-xl">
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="7" cy="17" r="3"></circle><circle cx="17" cy="17" r="3"></circle><path d="M14 17h-4v-6h-6v6"></path><path d="M14 11h4l3 3v3h-2"></path><path d="M5 14H3v-3a2 2 0 0 1 2-2h4"></path></svg>
-            </div>
-          </div>
+          <MapContainer 
+            center={riderLocation ? [riderLocation.lat, riderLocation.lng] : [(vendorLocation.lat + homeLocation.lat)/2, (vendorLocation.lng + homeLocation.lng)/2]} 
+            zoom={14} 
+            zoomControl={false}
+            style={mapContainerStyleDesktop}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Marker position={[vendorLocation.lat, vendorLocation.lng]} />
+            <Marker position={[homeLocation.lat, homeLocation.lng]} />
+            {riderLocation && <Marker position={[riderLocation.lat, riderLocation.lng]} />}
+            <Polyline positions={[[vendorLocation.lat, vendorLocation.lng], [homeLocation.lat, homeLocation.lng]]} pathOptions={{ color: '#2D2AEE', weight: 3, opacity: 0.8 }} />
+          </MapContainer>
 
           {/* Zoom Controls */}
           <div className="absolute bottom-10 left-10 flex flex-col gap-3">
@@ -260,42 +359,62 @@ export default function TrackOrder() {
         <div className="w-[420px] bg-white h-[calc(100vh-100px)] shadow-[-10px_0_30px_rgba(0,0,0,0.05)] z-10 flex flex-col p-8 overflow-y-auto hide-scrollbar">
           
           {/* Estimated Arrival Card */}
-          <div className="bg-[#F4F5F7] rounded-3xl p-6 relative overflow-hidden mb-10 border border-gray-100">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-100 rounded-full blur-2xl opacity-60"></div>
-            <p className="text-[13px] font-bold text-gray-500 mb-1">Estimated Arrival</p>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-[42px] font-bold text-gray-900 leading-none">ASAP</span>
+          <div className="flex gap-4 mb-10">
+            <div className="bg-[#F4F5F7] rounded-2xl p-4 flex-1 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-100 rounded-full blur-xl opacity-60 transform translate-x-1/2 -translate-y-1/2"></div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 relative z-10">
+                <Clock size={12} /> Time Taken
+              </div>
+              <p className="text-[22px] font-bold text-gray-900 leading-none relative z-10">{estMins} mins</p>
             </div>
-            <div className="flex items-center gap-1.5 text-gray-700 font-medium text-[14px]">
-              <MapPin size={16} className="text-[#2D2AEE]" /> 2.4 km away
+            
+            <div className="bg-[#F4F5F7] rounded-2xl p-4 flex-1 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-100 rounded-full blur-xl opacity-60 transform translate-x-1/2 -translate-y-1/2"></div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 relative z-10">
+                <MapPin size={12} /> Distance
+              </div>
+              <p className="text-[22px] font-bold text-gray-900 leading-none relative z-10">{distKm > 0 ? `${distKm} km` : '--'}</p>
             </div>
           </div>
 
           {/* Courier */}
-          <h3 className="text-[12px] font-bold text-gray-400 tracking-widest uppercase mb-4">Your Courier</h3>
-          <div className="flex items-center gap-4 mb-5">
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
-              <img src="/rider.png" alt="Adekunle Smith" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Adekunle+Smith&background=random" }} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h4 className="font-bold text-gray-900 text-[16px]">Adekunle Smith</h4>
-                <div className="flex items-center gap-1 bg-[#FFF4E5] text-[#D48806] px-2 py-0.5 rounded text-[11px] font-bold">
-                  <Star size={10} className="fill-[#D48806]" /> 4.9
+          {order?.delivery?.rider_id ? (
+            <>
+              <h3 className="text-[12px] font-bold text-gray-400 tracking-widest uppercase mb-4">Your Courier</h3>
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                  <img src="/rider.png" alt="Rider" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = "https://ui-avatars.com/api/?name=Rider&background=random" }} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h4 className="font-bold text-gray-900 text-[16px]">{order.delivery.rider?.user?.first_name || 'Assigned Rider'}</h4>
+                    <div className="flex items-center gap-1 bg-[#FFF4E5] text-[#D48806] px-2 py-0.5 rounded text-[11px] font-bold">
+                      <Star size={10} className="fill-[#D48806]" /> {order.delivery.rider?.rating || '4.8'}
+                    </div>
+                  </div>
+                  <p className="text-[12px] text-gray-500">Rapid Partner • {order.delivery.rider?.plate_number || 'Vehicle Assigned'}</p>
                 </div>
               </div>
-              <p className="text-[12px] text-gray-500">Rapid Elite Partner • 2,401 Deliveries</p>
-            </div>
-          </div>
 
-          <div className="flex gap-3 mb-10 pb-10 border-b border-gray-100">
-            <button className="flex-1 bg-[#2D2AEE] text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20">
-              <Phone size={18} /> Call Driver
-            </button>
-            <button className="w-12 h-12 bg-[#F4F5F7] hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition-colors shrink-0">
-              <MessageSquare size={20} />
-            </button>
-          </div>
+              <div className="flex gap-3 mb-10 pb-10 border-b border-gray-100">
+                <a href={`tel:${order.delivery.rider?.phone || '0800000000'}`} className="flex-1 bg-[#2D2AEE] text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20">
+                  <Phone size={18} /> Call Driver
+                </a>
+                <button className="w-12 h-12 bg-[#F4F5F7] hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition-colors shrink-0">
+                  <MessageSquare size={20} />
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="text-[12px] font-bold text-gray-400 tracking-widest uppercase mb-4">Your Courier</h3>
+              <div className="bg-[#FFF4E5] rounded-xl p-5 flex items-center justify-center gap-4 border border-orange-100 mb-10 pb-10 border-b-0 border-b-gray-100 relative">
+                <div className="absolute -bottom-10 left-0 right-0 h-[1px] bg-gray-100"></div>
+                <div className="w-8 h-8 rounded-full border-[3px] border-orange-400 border-t-transparent animate-spin shrink-0"></div>
+                <p className="text-[15px] font-bold text-orange-600">Assigning a driver to your order...</p>
+              </div>
+            </>
+          )}
 
           {/* Order Progress */}
           <h3 className="text-[12px] font-bold text-gray-400 tracking-widest uppercase mb-6">Order Progress</h3>

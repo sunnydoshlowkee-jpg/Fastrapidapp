@@ -5,6 +5,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 })
 
@@ -12,6 +13,7 @@ api.interceptors.request.use(config => {
   const requestUrl = String(config.url ?? '')
   const isMerchantApi = requestUrl.includes('/merchant')
   const isAdminApi = requestUrl.includes('/admin')
+  const isRiderApi = requestUrl.includes('/rider')
 
   let token = null
   if (isAdminApi) {
@@ -28,6 +30,8 @@ api.interceptors.request.use(config => {
     }
   } else if (isMerchantApi) {
     token = localStorage.getItem('rapid_merchant_token')
+  } else if (isRiderApi) {
+    token = localStorage.getItem('rider_token')
   } else {
     token =
       localStorage.getItem('rapid_token') ||
@@ -55,6 +59,7 @@ api.interceptors.response.use(
       const path = window.location.pathname
       const isMerchantRoute = path.startsWith('/merchant')
       const isAdminRoute = path.startsWith('/admin')
+      const isRiderRoute = path.startsWith('/dispatch')
 
       if (isAdminRoute) {
         localStorage.removeItem('rapid_admin_token')
@@ -62,6 +67,13 @@ api.interceptors.response.use(
         sessionStorage.removeItem('rapid_admin_session_token')
         sessionStorage.removeItem('rapid_admin_pending_session')
         window.location.href = '/admin/login'
+        return Promise.reject(err)
+      }
+
+      if (isRiderRoute) {
+        localStorage.removeItem('rider_token')
+        localStorage.removeItem('rider_user')
+        window.location.href = '/dispatch/login'
         return Promise.reject(err)
       }
 

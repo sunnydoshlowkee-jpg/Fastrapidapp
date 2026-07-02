@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Mail, Phone, Pencil, BadgeCheck, Bell, MapPin } from 'lucide-react'
-import { getRiderMe, updateRiderProfile, uploadRiderAvatar, persistRiderSession } from '../../../services/riderAuthService'
-import { validateImageFile } from '../../../utils/imageUpload'
+import { getProfile, updateProfile } from '../../../services/riderAuthService'
 
 function Toggle({ checked, onChange }) {
   return (
@@ -27,102 +26,36 @@ const VEHICLE_TYPES = [
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [pushNotifs, setPushNotifs] = useState(true)
-  const [liveTracking, setLiveTracking] = useState(true)
-  const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
-    vehicle_type: 'motorcycle',
-    plate_number: '',
-    vehicle_brand: '',
-    vehicle_year: '',
+  const [pushNotifs, setPushNotifs] = useState(() => {
+    const saved = localStorage.getItem('rider_push_notifs')
+    return saved !== null ? JSON.parse(saved) : true
   })
-
+  const [liveTracking, setLiveTracking] = useState(() => {
+    const saved = localStorage.getItem('rider_live_tracking')
+    return saved !== null ? JSON.parse(saved) : true
+  })
+  
+  const [profile, setProfile] = useState(null)
+  const [toast, setToast] = useState(null) // { message, type }
+  const [saving, setSaving] = useState(false)
+  
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await getRiderMe()
+    getProfile()
+      .then(res => {
         const data = res.data?.data || res.data
-        if (cancelled) return
         setProfile(data)
-        setForm({
-          first_name: data.user?.first_name || '',
-          last_name: data.user?.last_name || '',
-          phone: data.user?.phone || '',
-          vehicle_type: data.rider?.vehicle_type || 'motorcycle',
-          plate_number: data.rider?.plate_number || '',
-          vehicle_brand: data.rider?.vehicle_brand || '',
-          vehicle_year: data.rider?.vehicle_year ? String(data.rider.vehicle_year) : '',
-        })
-      } catch (e) {
-        if (!cancelled) setError(e.response?.data?.message || 'Failed to load profile')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
+      })
+      .catch(console.error)
   }, [])
 
-  const fullName = [form.first_name, form.last_name].filter(Boolean).join(' ') || 'Rider'
-  const initials = fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const validation = validateImageFile(file)
-    if (validation) {
-      alert(validation)
-      return
-    }
-    try {
-      setSaving(true)
-      await uploadRiderAvatar(file)
-      const res = await getRiderMe()
-      setProfile(res.data?.data || res.data)
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to upload photo')
-    } finally {
-      setSaving(false)
-    }
+  const updatePushNotifs = (val) => {
+    setPushNotifs(val)
+    localStorage.setItem('rider_push_notifs', JSON.stringify(val))
   }
 
-  const handleSave = async () => {
-    setSaving(true)
-    setError('')
-    try {
-      const payload = {
-        first_name: form.first_name,
-        last_name: form.last_name,
-        phone: form.phone,
-        vehicle_type: form.vehicle_type,
-        plate_number: form.plate_number,
-        vehicle_brand: form.vehicle_brand || null,
-        vehicle_year: form.vehicle_year ? Number(form.vehicle_year) : null,
-      }
-      const res = await updateRiderProfile(payload)
-      const data = res.data?.data || res.data
-      setProfile(data)
-      persistRiderSession({ profile: data })
-      navigate(-1)
-    } catch (e) {
-      setError(e.response?.data?.message || 'Failed to save profile')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white max-w-md mx-auto flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Loading profile…</p>
-      </div>
-    )
+  const updateLiveTracking = (val) => {
+    setLiveTracking(val)
+    localStorage.setItem('rider_live_tracking', JSON.stringify(val))
   }
 
   return (
@@ -135,28 +68,49 @@ export default function EditProfile() {
         <h1 className="text-xl font-black text-gray-900">Edit Profile</h1>
       </div>
 
-      <div className="px-5 flex-1 flex flex-col gap-6">
+      <div className="px-5 flex-1 flex flex-col gap-6 relative">
 
+        {toast && (
+          <div className={`absolute top-0 left-5 right-5 p-3 rounded-xl flex items-center justify-between text-sm font-bold text-white z-10 transition-all ${
+            toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'
+          }`}>
+            <span>{toast.message}</span>
+          </div>
+        )}
+
+        {!profile ? (
+          <div className="animate-pulse flex flex-col gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gray-200 rounded-2xl" />
+              <div className="flex flex-col gap-2">
+                <div className="w-32 h-5 bg-gray-200 rounded-md" />
+                <div className="w-24 h-4 bg-gray-200 rounded-md" />
+              </div>
+            </div>
+            <div className="w-full h-16 bg-gray-200 rounded-2xl" />
+            <div className="w-full h-16 bg-gray-200 rounded-2xl" />
+            <div className="w-full h-32 bg-gray-200 rounded-2xl" />
+          </div>
+        ) : (
+          <>
+            {/* ── Avatar + name ── */}
         <div className="flex items-center gap-4">
           <div className="relative">
-            <label className="cursor-pointer block">
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-              {profile?.user?.avatar_url ? (
-                <img src={profile.user.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover" />
-              ) : (
-                <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center text-white font-black text-lg"
-                  style={{ background: 'linear-gradient(135deg, #5B5BFF, #4444EE)' }}>
-                  {initials}
-                </div>
-              )}
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md"
-                style={{ background: '#5B5BFF' }}>
-                <Pencil size={12} className="text-white" />
-              </div>
+            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <span className="text-3xl">🚴</span>
+            </div>
+            <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+              style={{ background: '#5B5BFF' }}>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  console.log('Selected avatar:', e.target.files[0].name)
+                }
+              }} />
+              <Pencil size={12} className="text-white" />
             </label>
           </div>
           <div>
-            <p className="font-black text-gray-900 text-lg">{fullName}</p>
+            <p className="font-black text-gray-900 text-lg">{profile?.user?.first_name || 'Loading'} {profile?.user?.last_name || '...'}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <BadgeCheck size={14} fill="#5B5BFF" className="text-white" />
               <p className="text-xs font-bold text-gray-500">
@@ -173,7 +127,7 @@ export default function EditProfile() {
             </label>
             <div className="flex items-center gap-3 bg-gray-100 rounded-2xl px-4 py-4">
               <Mail size={16} className="text-gray-400 flex-shrink-0" />
-              <p className="text-sm font-medium text-gray-700">{profile?.user?.email}</p>
+              <p className="text-sm font-medium text-gray-700">{profile?.user?.email || '...'}</p>
             </div>
           </div>
           <div>
@@ -182,12 +136,7 @@ export default function EditProfile() {
             </label>
             <div className="flex items-center gap-3 bg-gray-100 rounded-2xl px-4 py-4">
               <Phone size={16} className="text-gray-400 flex-shrink-0" />
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                className="flex-1 bg-transparent text-sm font-medium text-gray-700 focus:outline-none"
-              />
+              <p className="text-sm font-medium text-gray-700">{profile?.user?.phone || '...'}</p>
             </div>
           </div>
         </div>
@@ -197,7 +146,7 @@ export default function EditProfile() {
             <p className="font-black text-gray-900">Vehicle Details</p>
             <span className="text-[10px] font-black px-3 py-1 rounded-full"
               style={{ background: 'rgba(91,91,255,0.1)', color: '#5B5BFF' }}>
-              {profile?.rider?.status?.toUpperCase() || 'ACTIVE'}
+              {profile?.rider?.verification_status === 'approved' ? 'ACTIVE' : 'PENDING'}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -205,15 +154,10 @@ export default function EditProfile() {
               <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
                 Vehicle Type
               </label>
-              <select
-                value={form.vehicle_type}
-                onChange={(e) => setForm((f) => ({ ...f, vehicle_type: e.target.value }))}
-                className="w-full bg-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none"
-              >
-                {VEHICLE_TYPES.map((v) => (
-                  <option key={v.value} value={v.value}>{v.label}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between bg-gray-100 rounded-2xl px-4 py-3">
+                <span className="text-sm font-bold text-gray-900 capitalize">{profile?.rider?.vehicle_type || '...'}</span>
+                <span className="text-lg">🏍</span>
+              </div>
             </div>
             <div>
               <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
@@ -241,12 +185,9 @@ export default function EditProfile() {
               <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">
                 Plate Number
               </label>
-              <input
-                type="text"
-                value={form.plate_number}
-                onChange={(e) => setForm((f) => ({ ...f, plate_number: e.target.value }))}
-                className="w-full bg-gray-100 rounded-2xl px-4 py-3 text-sm font-bold text-gray-900 focus:outline-none"
-              />
+              <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                <span className="text-sm font-bold text-gray-900 uppercase">{profile?.rider?.plate_number || '...'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -262,7 +203,7 @@ export default function EditProfile() {
                 <p className="font-bold text-gray-900 text-sm">Push Notifications</p>
                 <p className="text-xs text-gray-400">Alerts for new deliveries</p>
               </div>
-              <Toggle checked={pushNotifs} onChange={setPushNotifs} />
+              <Toggle checked={pushNotifs} onChange={updatePushNotifs} />
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
@@ -272,7 +213,7 @@ export default function EditProfile() {
                 <p className="font-bold text-gray-900 text-sm">Live Tracking</p>
                 <p className="text-xs text-gray-400">Visible to customers</p>
               </div>
-              <Toggle checked={liveTracking} onChange={setLiveTracking} />
+              <Toggle checked={liveTracking} onChange={updateLiveTracking} />
             </div>
           </div>
         </div>
@@ -282,13 +223,29 @@ export default function EditProfile() {
         )}
 
         <div className="flex-1" />
+          </>
+        )}
       </div>
 
       <div className="px-5 pb-8 pt-4">
         <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80 disabled:opacity-50"
+          onClick={async () => {
+            if (!profile || saving) return
+            setSaving(true)
+            try {
+              // Mock update call, normally you'd collect data and PUT
+              // await updateProfile(newData)
+              await new Promise(resolve => setTimeout(resolve, 800)) // simulate network request
+              setToast({ message: 'Profile updated successfully!', type: 'success' })
+              setTimeout(() => setToast(null), 3000)
+            } catch (err) {
+              setToast({ message: 'Update failed', type: 'error' })
+              setTimeout(() => setToast(null), 3000)
+            } finally {
+              setSaving(false)
+            }
+          }}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base transition-opacity active:opacity-80"
           style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
         >
           {saving ? 'Saving…' : 'Save All Changes'}

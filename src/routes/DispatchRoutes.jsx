@@ -21,7 +21,9 @@ import ActiveDelivery from '../apps/dispatch/pages/ActiveDelivery'
 import DeliverySuccess from '../apps/dispatch/pages/DeliverySuccess'
 import Earnings from '../apps/dispatch/pages/Earnings'
 import Withdraw from '../apps/dispatch/pages/Withdraw'
+import PayoutHistory from '../apps/dispatch/pages/PayoutHistory'
 import Deliveries from '../apps/dispatch/pages/Deliveries'
+import CustomerChat from '../apps/dispatch/pages/CustomerChat'
 import RiderProfile from '../apps/dispatch/pages/RiderProfile'
 import EditProfile from '../apps/dispatch/pages/EditProfile'
 import HelpCenter from '../apps/dispatch/pages/HelpCenter'
@@ -47,6 +49,7 @@ export default function DispatchRoutes() {
 
       {/* Active Delivery Flow (Full screen, no bottom nav) */}
       <Route path="delivery/:id" element={<ActiveDelivery />} />
+      <Route path="delivery/:id/chat" element={<CustomerChat />} />
       <Route path="delivery/:id/success" element={<DeliverySuccess />} />
 
       {/* Main rider app — with layout */}
@@ -55,6 +58,7 @@ export default function DispatchRoutes() {
         <Route path="deliveries" element={<Deliveries />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="earnings/withdraw" element={<Withdraw />} />
+        <Route path="earnings/history" element={<PayoutHistory />} />
         <Route path="profile" element={<RiderProfile />} />
         <Route path="profile/edit" element={<EditProfile />} />
         <Route path="profile/help" element={<HelpCenter />} />

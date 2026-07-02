@@ -247,7 +247,7 @@ export default function Profile() {
                   <ChevronRight size={18} className="text-gray-300" />
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group">
+                <div onClick={() => navigate('/app/legal')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-[#F4F5F7] rounded-xl flex items-center justify-center text-gray-600">
                       <Shield size={18} />

@@ -29,7 +29,13 @@ export default function Home() {
   const { location } = useLocation()
   const { data: discovery, loading: discoveryLoading, error: discoveryError } = useDiscovery()
   const { data: dashboard, loading: dashboardLoading } = useDashboard()
-  const { items: cartItems = [] } = useCart()
+  const { items: cartItems = [], add: addToCart } = useCart()
+  const [favorites, setFavorites] = useState([])
+
+  const toggleFavorite = (e, id) => {
+    e.stopPropagation()
+    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
+  }
   
   const [activeTab, setActiveTab] = useState('Food')
   const [bannerIndex, setBannerIndex] = useState(0)
@@ -73,7 +79,7 @@ export default function Home() {
               {activeTab === 'Food' ? '50% off your first grocery haul' : 'Fresh groceries, 50% off today'}
             </h2>
             <p className="text-white/80 text-[11px] font-medium mb-3">Fresh items delivered fast to your door</p>
-            <button className="bg-white text-gray-900 px-4 py-2 rounded-full text-[12px] font-bold w-max flex items-center gap-1 hover:scale-105 transition-transform shadow-lg shadow-black/10">
+            <button onClick={() => navigate('/app/promotions')} className="bg-white text-gray-900 px-4 py-2 rounded-full text-[12px] font-bold w-max flex items-center gap-1 hover:scale-105 transition-transform shadow-lg shadow-black/10">
               Order now <ChevronRight size={16} />
             </button>
           </div>
@@ -116,7 +122,7 @@ export default function Home() {
               <span className="text-[28px]">🧺</span>
               <span className={`text-[12px] font-semibold ${activeTab === 'Groceries' ? 'text-white' : 'text-gray-700'}`}>Groceries</span>
             </div>
-            <div className="flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#F0F0F5] rounded-2xl h-[85px]">
+            <div onClick={() => navigate('/app/categories')} className="flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#F0F0F5] rounded-2xl h-[85px]">
               <div className="w-8 h-8 bg-[#2E7D32] rounded-full flex items-center justify-center">
                 <Plus size={18} className="text-white" strokeWidth={2.5} />
               </div>
@@ -159,8 +165,8 @@ export default function Home() {
                   <div className="w-full h-[120px] bg-gray-100 overflow-hidden relative">
                     <img src={store.img} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm">{store.time}</div>
-                    <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
-                      <Heart size={14} className="fill-[#4F46E5] text-[#4F46E5]" />
+                    <button onClick={(e) => toggleFavorite(e, store.id)} className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
+                      <Heart size={14} className={favorites.includes(store.id) ? "fill-[#4F46E5] text-[#4F46E5]" : "text-[#4F46E5]"} />
                     </button>
                   </div>
                   <div className="p-3.5">
@@ -207,8 +213,8 @@ export default function Home() {
                 <div className="w-full h-[120px] bg-gray-100 overflow-hidden relative">
                   <img src={store.img} alt={store.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm">{store.time}</div>
-                  <button className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
-                    <Heart size={14} className={i === 0 ? "fill-[#4F46E5]" : ""} />
+                  <button onClick={(e) => toggleFavorite(e, store.id)} className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] transition-colors shadow-sm">
+                    <Heart size={14} className={favorites.includes(store.id) ? "fill-[#4F46E5] text-[#4F46E5]" : "text-[#4F46E5]"} />
                   </button>
                 </div>
                 <div className="p-3.5">
@@ -262,15 +268,15 @@ export default function Home() {
               <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md border border-gray-100 flex flex-col group cursor-pointer transition-all hover:-translate-y-1">
                 <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-gray-50">
                   <img src={item.img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <button onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] shadow-sm">
-                    <Heart size={14} />
+                  <button onClick={(e) => toggleFavorite(e, item.id)} className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white rounded-full flex items-center justify-center text-[#4F46E5] shadow-sm">
+                    <Heart size={14} className={favorites.includes(item.id) ? "fill-[#4F46E5] text-[#4F46E5]" : "text-[#4F46E5]"} />
                   </button>
                 </div>
                 <h4 className="font-bold text-gray-900 text-[13px] mb-0.5 truncate group-hover:text-[#4F46E5] transition-colors">{item.name}</h4>
                 <p className="text-[10px] font-medium text-gray-400 mb-3 truncate">{item.store}</p>
                 <div className="flex items-center justify-between mt-auto pt-1 border-t border-gray-50">
                   <span className="font-bold text-gray-900 text-[14px]">{item.price}</span>
-                  <button onClick={(e) => e.stopPropagation()} className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
+                  <button onClick={(e) => { e.stopPropagation(); addToCart(item); alert(item.name + ' added to cart'); }} className="w-7 h-7 bg-[#4F46E5] hover:bg-indigo-700 rounded-full flex items-center justify-center text-white transition-colors">
                     <Plus size={16} />
                   </button>
                 </div>
@@ -325,7 +331,7 @@ export default function Home() {
             <p className="text-gray-200 text-[18px] mb-8 font-medium">
               Freshness delivered from the farm to your doorstep in 30 minutes.
             </p>
-            <button className="bg-[#2D2AEE] hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-[15px] font-bold transition-all shadow-lg shadow-blue-900/30">
+            <button onClick={() => navigate('/app/promotions')} className="bg-[#2D2AEE] hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-[15px] font-bold transition-all shadow-lg shadow-blue-900/30">
               Shop Groceries Now
             </button>
           </div>

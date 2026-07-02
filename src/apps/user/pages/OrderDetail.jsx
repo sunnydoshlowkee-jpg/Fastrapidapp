@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, MapPin, Download, CheckCircle2, Info, Search, Home, Clock, Wallet, User, ShoppingCart, CreditCard, Copy, PhoneCall } from 'lucide-react'
 import { getOrder } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import { echo } from '../../../services/echo'
 
 export default function OrderDetail() {
   const navigate = useNavigate()
@@ -24,10 +27,30 @@ export default function OrderDetail() {
       }
     }
     fetchOrder()
+
+    const channel = echo.channel(`orders.${id}`)
+    channel.listen('OrderUpdated', (e) => {
+      console.log('Real-time order update received:', e)
+      if (e.order) {
+        setOrder(e.order)
+      }
+    })
+
+    return () => {
+      echo.leaveChannel(`orders.${id}`)
+    }
   }, [id])
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const getOrderDate = () => {
+    return order?.created_at ? new Date(order.created_at) : new Date(Date.now() - ((100 - (order?.id || 0)) * 86400000));
+  }
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   const getOrderVendor = () => {
@@ -80,13 +103,13 @@ export default function OrderDetail() {
               {getOrderVendor().charAt(0)}
             </div>
             <h2 className="text-lg font-bold text-gray-900 mb-1">{getOrderVendor()}</h2>
-            <p className="text-[11px] text-gray-500 font-medium">Placed on {new Date(order.created_at).toLocaleString()}</p>
+            <p className="text-[11px] text-gray-500 font-medium">Placed on {getOrderDate().toLocaleString()}</p>
             
             <div className="flex gap-4 w-full mt-6">
               <button className="flex-1 bg-[#4F46E5] text-white py-3.5 rounded-2xl font-semibold shadow-sm hover:bg-indigo-700 transition-colors text-[13px]">
                 Reorder
               </button>
-              <button className="flex-1 bg-white text-red-500 py-3.5 rounded-2xl font-semibold hover:bg-red-50 transition-colors text-[13px] border border-red-100">
+              <button onClick={() => navigate('/app/profile/help')} className="flex-1 bg-white text-red-500 py-3.5 rounded-2xl font-semibold hover:bg-red-50 transition-colors text-[13px] border border-red-100">
                 Need Help?
               </button>
             </div>
@@ -141,10 +164,31 @@ export default function OrderDetail() {
               
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex gap-5 items-start">
-                  <div className="w-2 h-2 rounded-full bg-[#A0AAB2] mt-1.5 ring-4 ring-[#FAFAFA]"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#4F46E5] mt-1.5 ring-4 ring-[#FAFAFA] z-10"></div>
                   <div>
                     <h4 className="font-bold text-gray-900 text-sm mb-0.5">Ordered</h4>
-                    <p className="text-[11px] text-gray-400">{new Date(order.created_at).toLocaleTimeString()}</p>
+                    <p className="text-[11px] text-gray-400">{formatTime(getOrderDate())}</p>
+                  </div>
+                </div>
+                <div className="flex gap-5 items-start">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 ring-4 ring-[#FAFAFA] z-10 ${order.status !== 'pending' ? 'bg-[#4F46E5]' : 'bg-[#A0AAB2]'}`}></div>
+                  <div>
+                    <h4 className={`font-bold text-sm mb-0.5 ${order.status !== 'pending' ? 'text-gray-900' : 'text-gray-400'}`}>Accepted</h4>
+                    {order.status !== 'pending' && <p className="text-[11px] text-gray-400">{formatTime(new Date(getOrderDate().getTime() + 2 * 60000))}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-5 items-start">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 ring-4 ring-[#FAFAFA] z-10 ${order.status === 'en_route' || order.status === 'delivered' ? 'bg-[#4F46E5]' : 'bg-[#A0AAB2]'}`}></div>
+                  <div>
+                    <h4 className={`font-bold text-sm mb-0.5 ${order.status === 'en_route' || order.status === 'delivered' ? 'text-gray-900' : 'text-gray-400'}`}>On the way</h4>
+                    {(order.status === 'en_route' || order.status === 'delivered') && <p className="text-[11px] text-gray-400">{formatTime(new Date(getOrderDate().getTime() + 15 * 60000))}</p>}
+                  </div>
+                </div>
+                <div className="flex gap-5 items-start">
+                  <div className={`w-2 h-2 rounded-full mt-1.5 ring-4 ring-[#FAFAFA] z-10 ${order.status === 'delivered' ? 'bg-[#4F46E5]' : 'bg-[#A0AAB2]'}`}></div>
+                  <div>
+                    <h4 className={`font-bold text-sm mb-0.5 ${order.status === 'delivered' ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</h4>
+                    {order.status === 'delivered' && <p className="text-[11px] text-gray-400">{formatTime(new Date(getOrderDate().getTime() + 25 * 60000))}</p>}
                   </div>
                 </div>
               </div>
@@ -159,18 +203,18 @@ export default function OrderDetail() {
                 <MapPin size={18} />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">{order.deliveryAddress?.label || 'Address'}</h4>
-                <p className="text-[11px] text-gray-500 leading-snug">{order.deliveryAddress?.address || 'N/A'}</p>
+                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">{order.delivery_address?.label || 'Address'}</h4>
+                <p className="text-[11px] text-gray-500 leading-snug">{order.delivery_address?.address || 'N/A'}</p>
               </div>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex flex-col items-center gap-4 mt-2">
-            <button className="w-full bg-[#E8EAE6] text-gray-900 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-[13px]">
+            <button onClick={() => window.print()} className="w-full bg-[#E8EAE6] text-gray-900 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors text-[13px]">
               <Download size={16} /> Download Receipt
             </button>
-            <button className="text-red-500 text-[13px] font-bold hover:underline mb-4">
+            <button onClick={() => navigate('/app/profile/help')} className="text-red-500 text-[13px] font-bold hover:underline mb-4">
               Need Help?
             </button>
           </div>
@@ -235,30 +279,31 @@ export default function OrderDetail() {
                         <CheckCircle2 size={16} />
                       </div>
                       <p className="font-bold text-gray-900 text-[14px] text-center mb-1">Ordered</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">12:00 PM</p>
+                      <p className="text-[12px] text-gray-500 text-center font-medium">{formatTime(getOrderDate())}</p>
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-[#2D2AEE] border-[4px] border-white mb-3 flex items-center justify-center text-white">
-                        <CheckCircle2 size={16} />
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white ${order.status === 'delivered' || order.status === 'en_route' || order.status === 'preparing' ? 'bg-[#2D2AEE]' : 'bg-gray-200'}`}>
+                        {order.status !== 'pending' && <CheckCircle2 size={16} />}
                       </div>
-                      <p className="font-bold text-gray-900 text-[14px] text-center mb-1">Accepted</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">12:05 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status !== 'pending' ? 'text-gray-900' : 'text-gray-400'}`}>Accepted</p>
+                      {order.status !== 'pending' && <p className="text-[12px] text-gray-500 text-center font-medium">{formatTime(new Date(getOrderDate().getTime() + 2 * 60000))}</p>}
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-[#2D2AEE] border-[4px] border-white mb-3 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-                        <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white shadow-md ${order.status === 'delivered' || order.status === 'en_route' ? 'bg-[#2D2AEE] shadow-blue-500/20' : 'bg-gray-200 shadow-none'}`}>
+                        {order.status === 'en_route' ? <div className="w-2.5 h-2.5 bg-white rounded-full"></div> : order.status === 'delivered' ? <CheckCircle2 size={16} /> : null}
                       </div>
-                      <p className="font-bold text-[#2D2AEE] text-[14px] text-center mb-1">On the way</p>
-                      <p className="text-[12px] text-gray-500 text-center font-medium">1:20 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status === 'en_route' || order.status === 'delivered' ? 'text-[#2D2AEE]' : 'text-gray-400'}`}>On the way</p>
+                      {(order.status === 'en_route' || order.status === 'delivered') && <p className="text-[12px] text-gray-500 text-center font-medium">{formatTime(new Date(getOrderDate().getTime() + 15 * 60000))}</p>}
                     </div>
                     
                     <div className="flex flex-col items-center relative z-10 w-24">
-                      <div className="w-9 h-9 rounded-full bg-gray-200 border-[4px] border-white mb-3 flex items-center justify-center text-white">
+                      <div className={`w-9 h-9 rounded-full border-[4px] border-white mb-3 flex items-center justify-center text-white ${order.status === 'delivered' ? 'bg-[#2D2AEE]' : 'bg-gray-200'}`}>
+                         {order.status === 'delivered' && <CheckCircle2 size={16} />}
                       </div>
-                      <p className="font-bold text-gray-400 text-[14px] text-center mb-1">Arriving</p>
-                      <p className="text-[12px] text-gray-400 text-center font-medium">Est. 1:35 PM</p>
+                      <p className={`font-bold text-[14px] text-center mb-1 ${order.status === 'delivered' ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</p>
+                      {order.status === 'delivered' && <p className="text-[12px] text-gray-500 text-center font-medium">{formatTime(new Date(getOrderDate().getTime() + 25 * 60000))}</p>}
                     </div>
                   </div>
                 </div>
@@ -273,9 +318,9 @@ export default function OrderDetail() {
                       <h3 className="text-[16px] font-bold text-gray-900">Delivery Address</h3>
                     </div>
                     <div className="bg-[#F4F5F7] rounded-2xl p-5 border border-transparent hover:border-gray-200 transition-colors">
-                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">{order.deliveryAddress?.label || 'Address'}</h4>
+                      <h4 className="font-bold text-gray-900 text-[14px] mb-1">{order.delivery_address?.label || 'Address'}</h4>
                       <p className="text-[13px] text-gray-500 leading-relaxed font-medium">
-                        {order.deliveryAddress?.address || 'N/A'}
+                        {order.delivery_address?.address || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -304,24 +349,31 @@ export default function OrderDetail() {
                 <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col h-[320px]">
                   <h3 className="text-[16px] font-bold text-gray-900 mb-4">Delivery Map</h3>
                   <div className="w-full flex-1 rounded-2xl overflow-hidden relative border border-gray-200 bg-gray-100 group cursor-pointer">
-                    {/* Simulated Map Background */}
-                    <div className="absolute inset-0 bg-[#e8eae6] opacity-50"></div>
-                    <div className="absolute w-full h-full" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M0 50 Q 25 25, 50 50 T 100 50\' fill=\'none\' stroke=\'%23d1d5db\' stroke-width=\'2\'/%3E%3C/svg%3E")', backgroundSize: '100px 100px' }}></div>
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="absolute w-[60%] h-[60%] border-[3px] border-dashed border-[#2D2AEE] opacity-40 transform -skew-x-12 -skew-y-12 rounded-[40px]"></div>
-                    </div>
-                    
-                    {/* Courier Pin */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                      <div className="bg-white rounded-full p-1 shadow-lg mb-1">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full overflow-hidden border border-gray-200">
-                           <img src="/driver.png" className="w-full h-full object-cover" />
-                        </div>
-                      </div>
-                      <div className="bg-gray-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-                        Tunde is 5 mins away
-                      </div>
-                    </div>
+                    <MapContainer 
+                      center={[6.5244, 3.3792]} 
+                      zoom={13} 
+                      zoomControl={false}
+                      style={{ width: '100%', height: '100%' }}
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      />
+                      <Marker position={[6.5244, 3.3792]}>
+                        <Popup>
+                          Delivery Location<br/>
+                          {order.delivery_address?.address || 'N/A'}
+                        </Popup>
+                      </Marker>
+                      
+                      {order.delivery?.rider && (
+                        <Marker position={[6.51, 3.37]}>
+                          <Popup>
+                            Rider: {order.delivery.rider.first_name || 'Assigned'}
+                          </Popup>
+                        </Marker>
+                      )}
+                    </MapContainer>
                   </div>
                 </div>
 
@@ -339,7 +391,7 @@ export default function OrderDetail() {
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-[16px] mb-1">{getOrderVendor()}</h3>
-                      <p className="text-[13px] text-gray-500 font-medium">{new Date(order.created_at).toLocaleString()}</p>
+                      <p className="text-[13px] text-gray-500 font-medium">{getOrderDate().toLocaleString()}</p>
                     </div>
                   </div>
 
@@ -373,7 +425,7 @@ export default function OrderDetail() {
                   <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center justify-between">
                     <div>
                       <p className="text-[11px] font-bold tracking-widest uppercase text-gray-400 mb-1">Transaction ID</p>
-                      <p className="text-[14px] font-bold text-gray-900">#TRX-8829-441-A</p>
+                      <p className="text-[14px] font-bold text-gray-900">{order.transaction_id || order.reference || `#ORD-${(order.id || 0).toString().padStart(5, '0')}`}</p>
                     </div>
                     <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#2D2AEE] shadow-sm hover:bg-gray-100 transition-colors">
                       <Copy size={16} />
@@ -382,10 +434,10 @@ export default function OrderDetail() {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <button className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors text-[14px]">
+                  <button onClick={() => window.print()} className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors text-[14px]">
                     <Download size={18} /> Download Receipt
                   </button>
-                  <button className="w-full bg-white border border-gray-200 text-red-500 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors text-[14px]">
+                  <button onClick={() => navigate('/app/profile/help')} className="w-full bg-white border border-gray-200 text-red-500 py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors text-[14px]">
                     Need Help?
                   </button>
                 </div>

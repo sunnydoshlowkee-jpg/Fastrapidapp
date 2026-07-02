@@ -86,6 +86,11 @@ export default function RiderIdentity() {
       return
     }
 
+    sessionStorage.setItem('rider_reg_identity', JSON.stringify({
+      govIdUploaded: !!govId,
+      selfieUploaded: !!selfie,
+      profilePhotoUploaded: !!profilePhoto
+    }))
     navigate('/dispatch/onboarding/vehicle')
   }
 
@@ -105,7 +110,7 @@ export default function RiderIdentity() {
 
       {/* Progress bar */}
       <div className="flex gap-2 mb-8">
-        <div className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
+        <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
         <div className="h-1.5 flex-1 rounded-full" style={{ background: '#5B5BFF' }} />
         <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
         <div className="h-1.5 flex-1 rounded-full bg-gray-200" />
@@ -265,8 +270,7 @@ export default function RiderIdentity() {
       {/* Continue */}
       <button
         onClick={handleContinue}
-        disabled={!isValid || Boolean(savingField)}
-        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80 disabled:opacity-40"
+        className="w-full py-4 rounded-2xl text-white font-bold text-base transition-all active:opacity-80"
         style={{ background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
       >
         Continue

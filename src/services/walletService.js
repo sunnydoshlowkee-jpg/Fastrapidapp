@@ -5,6 +5,48 @@ export async function getWalletData() {
   return api.get('/user/wallet')
 }
 
+export async function getWalletTransactions(params) {
+  return api.get('/user/wallet/transactions', { params })
+}
+
+
+
+export async function getBanks() {
+  try {
+    const { data } = await api.get('/user/wallet/banks')
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function resolveAccountName(bankCode, accountNumber) {
+  try {
+    const { data } = await api.post('/user/wallet/resolve-account', {
+      bank_code: bankCode,
+      account_number: accountNumber
+    })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function sendBankTransfer(payload) {
+  try {
+    const { data } = await api.post('/user/wallet/transfer/bank', {
+      amount: payload.amount,
+      account_number: payload.accountNumber,
+      bank_code: payload.bankCode,
+      bank_name: payload.bankName,
+      pin: payload.pin,
+    })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export async function provisionVirtualAccount() {
   try {
     const { data } = await api.post('/user/wallet/virtual-account')
@@ -52,6 +94,42 @@ export async function setWalletPin(pin) {
 export async function purchaseAirtime({ network, phone, amount }) {
   try {
     const { data } = await api.post('/user/wallet/bills/airtime', { network, phone, amount })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function getDataPlans(network) {
+  try {
+    const { data } = await api.get('/user/wallet/bills/data-plans', { params: { network } })
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseData({ network, phone, planId }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/data', { network, phone, plan_id: planId })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function verifyMeter({ serviceId, meterNumber, type }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/electricity/verify', { service_id: serviceId, meter_number: meterNumber, type })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseElectricity({ serviceId, meterNumber, type, amount, phone }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/electricity', { service_id: serviceId, meter_number: meterNumber, type, amount, phone })
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))

@@ -1,8 +1,31 @@
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera, Check, Share2 } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Camera, Check, Download, Info } from 'lucide-react'
 
 export default function WalletReceipt() {
   const navigate = useNavigate()
+  const { state } = useLocation()
+  const tx = state?.tx
+
+  if (!tx) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+        <p className="text-gray-500 mb-4">Transaction not found.</p>
+        <button onClick={() => navigate(-1)} className="text-[#4F46E5] font-bold">Go Back</button>
+      </div>
+    )
+  }
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
+  }
+
+  const formatTime = (isoString) => {
+    return new Intl.DateTimeFormat('en-NG', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }).format(new Date(isoString))
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
@@ -29,42 +52,49 @@ export default function WalletReceipt() {
             <div className="w-5 h-5 md:w-6 md:h-6 bg-green-500 rounded-full flex items-center justify-center shadow-sm shadow-green-200">
               <Check size={12} className="text-white md:w-3.5 md:h-3.5" strokeWidth={3} />
             </div>
-            <span className="text-green-600 font-semibold text-[14px] md:text-[15px]">Successful</span>
+            <span className="text-green-600 font-semibold text-[14px] md:text-[15px] capitalize">{tx.status || 'Successful'}</span>
           </div>
 
           {/* Amount */}
-          <h2 className="text-[36px] md:text-[42px] font-bold text-gray-900 mb-1 tracking-tight">₦45,000.00</h2>
-          <p className="text-[13px] md:text-[14px] font-medium text-gray-400 mb-8 px-3 py-1 bg-gray-100 rounded-full">RD-TX-9921</p>
+          <h2 className="text-[36px] md:text-[42px] font-bold text-gray-900 mb-1 tracking-tight">{formatCurrency(tx.amount)}</h2>
+          <p className="text-[13px] md:text-[14px] font-medium text-gray-400 mb-8 px-3 py-1 bg-gray-100 rounded-full uppercase">{tx.reference || `RD-TX-${tx.id}`}</p>
 
           {/* Details Card */}
           <div className="w-full bg-white md:bg-gray-50 rounded-2xl border border-gray-100 shadow-sm md:shadow-none divide-y divide-gray-100 md:divide-white">
             <div className="flex items-center justify-between px-5 py-4">
               <span className="text-[13px] md:text-[14px] font-medium text-gray-500">Date</span>
-              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">24 Oct 2023</span>
+              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">{new Date(tx.created_at).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center justify-between px-5 py-4">
               <span className="text-[13px] md:text-[14px] font-medium text-gray-500">Time</span>
-              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">14:45 PM</span>
+              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">{formatTime(tx.created_at)}</span>
             </div>
             <div className="flex items-center justify-between px-5 py-4">
               <span className="text-[13px] md:text-[14px] font-medium text-gray-500">Payment Method</span>
               <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">Wallet Balance</span>
             </div>
             <div className="flex items-center justify-between px-5 py-4">
-              <span className="text-[13px] md:text-[14px] font-medium text-gray-500">Fee</span>
-              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900">₦0.00</span>
+              <span className="text-[13px] md:text-[14px] font-medium text-gray-500">Type</span>
+              <span className="text-[13px] md:text-[14px] font-semibold text-gray-900 capitalize">{tx.type}</span>
             </div>
           </div>
 
           {/* Buttons */}
           <div className="w-full mt-8 md:mt-10 flex flex-col items-center gap-3 md:gap-4">
-            <button className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
-              <Share2 size={18} className="group-hover:scale-110 transition-transform" />
-              Share Receipt
+            <button onClick={() => window.print()} className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group">
+              <Download size={18} className="group-hover:scale-110 transition-transform" />
+              Download Receipt
+            </button>
+            <button 
+              onClick={() => navigate('/app/profile/help')}
+              className="w-full border border-gray-200 bg-white text-red-500 py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+            >
+              <Info size={18} />
+              Need Help?
             </button>
             <button 
               onClick={() => navigate('/app/wallet')}
-              className="text-[14px] md:text-[15px] font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2"
+              className="text-[14px] md:text-[15px] font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2 mt-2"
             >
               Back to Wallet
             </button>

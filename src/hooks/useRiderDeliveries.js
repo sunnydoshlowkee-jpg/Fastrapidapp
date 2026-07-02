@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import {
   getAvailableDeliveries,
   getActiveDeliveries,
+  getDeliveryHistory,
   getDeliveryDetails,
   acceptDelivery as acceptDeliveryService,
   updateDeliveryStatus as updateDeliveryStatusService,
@@ -27,12 +28,17 @@ export const useRiderDeliveries = () => {
     }
   }, []);
 
-  const refresh = useCallback(async (lat, lng) => {
+  const refresh = useCallback(async (lat = null, lng = null) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getAvailableDeliveries(lat, lng);
-      setDeliveries(normalizeDeliveries(response));
+      if (lat != null && lng != null) {
+        const response = await getAvailableDeliveries(lat, lng);
+        setDeliveries(normalizeDeliveries(response));
+      } else {
+        const response = await getDeliveryHistory();
+        setDeliveries(normalizeDeliveries(response));
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch deliveries');
     } finally {
