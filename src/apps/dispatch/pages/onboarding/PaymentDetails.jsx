@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Info, ShieldCheck } from 'lucide-react'
-import { register } from '../../../../services/riderAuthService'
+import { register, extractRiderSession, persistRiderSession } from '../../../../services/riderAuthService'
 import { uploadStoredRiderIdentityAssets } from '../../../../services/riderOnboardingService'
 
 const BANKS = ['GTBank', 'Access Bank', 'First Bank', 'Zenith Bank', 'UBA', 'Kuda Bank', 'Opay', 'Palmpay']
@@ -52,11 +52,8 @@ export default function RiderPayment() {
     setError('')
     try {
       const response = await register(registerData)
-      const token = response.data?.data?.token || response.data?.token || response.token
-      const profile = response.data?.data || response.data
-
-      localStorage.setItem('rapid_token', token)
-      localStorage.setItem('rider_user', JSON.stringify(profile))
+      const { token, profile } = extractRiderSession(response)
+      persistRiderSession({ token, profile })
 
       try {
         await uploadStoredRiderIdentityAssets()

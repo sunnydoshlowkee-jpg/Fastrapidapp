@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock } from 'lucide-react'
 import Logo from '../../../../components/brand/Logo'
-import { login } from '../../../../services/riderAuthService'
+import { login, extractRiderSession, persistRiderSession } from '../../../../services/riderAuthService'
 
 export default function RiderLogin() {
   const navigate = useNavigate()
@@ -19,11 +19,8 @@ export default function RiderLogin() {
     setError('')
     try {
       const response = await login({ email, password })
-      const token = response.data?.token || response.token
-      const user = response.data?.user || response.user
-
-      localStorage.setItem('rapid_token', token)
-      localStorage.setItem('rider_user', JSON.stringify(user))
+      const { token, profile } = extractRiderSession(response)
+      persistRiderSession({ token, profile })
 
       // Redirect to rider dashboard index
       navigate('/dispatch')

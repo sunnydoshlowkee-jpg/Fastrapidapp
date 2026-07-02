@@ -50,9 +50,9 @@ export default function Earnings() {
   const stats = STATS[period]
   const tierProgress = 72  // % toward Gold
   
-  const balance = earnings?.balance || 0
-  const totalDeliveries = earnings?.deliveries_count || stats.deliveries
-  const totalEarnings = earnings?.total_earnings || 0
+  const balance = earnings?.wallet?.balance ?? 0
+  const totalDeliveries = earnings?.earnings?.recent?.length ?? stats.deliveries
+  const totalEarnings = earnings?.earnings?.total ?? 0
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-6">

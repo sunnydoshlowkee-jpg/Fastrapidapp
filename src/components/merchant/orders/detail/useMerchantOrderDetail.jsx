@@ -50,6 +50,7 @@ export function MerchantOrderDetailProvider({ children }) {
         return true
       } catch (err) {
         setError(err.message || 'Could not update order.')
+        alert(err.message || 'Could not update order.')
         return false
       } finally {
         setActionLoading(false)

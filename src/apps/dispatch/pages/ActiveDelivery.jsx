@@ -1,10 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
+import { useWatchPosition } from '../../../hooks/useWatchPosition'
 import { getCurrentPosition } from '../../../utils/geolocation'
+import { getPickupTarget, getDropoffTarget } from '../../../utils/deliveryRoute'
+import { openGoogleMapsDirections } from '../../../utils/googleMapsNavigation'
+import { pingLocation } from '../../../services/riderLocationService'
+import RiderNavigationMap from '../components/RiderNavigationMap'
 import {
-  ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
-  Navigation, Package, Camera, CheckSquare, Square, ChevronRight
+  getMerchantFromDelivery,
+  getDeliveryAddress,
+  getCustomerFromDelivery,
+  formatMerchantName,
+  formatMerchantCity,
+  formatMerchantAddress,
+  formatMerchantPhone,
+  formatCustomerName,
+  formatCustomerAddress,
+  countOrderItems,
+} from '../../../utils/riderDeliveryDisplay'
+import {
+  ArrowLeft, Bell, Phone, MessageSquare,
+  Navigation, Package, Camera, CheckSquare, Square,
 } from 'lucide-react'
 
 // ─── Step constants ───────────────────────────────────────────────
@@ -16,44 +33,46 @@ const STEPS = {
   CONFIRM_DELIVERY:'confirm-delivery',
 }
 
-// ─── Shared dark map background ──────────────────────────────────
-function MapBg({ height = '45%', children }) {
-  return (
-    <div className="relative flex-shrink-0" style={{ height }}>
-      {/* Dark grid map */}
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #0d1117 0%, #0a1628 50%, #0d1117 100%)' }}>
-        <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 400 300" preserveAspectRatio="none">
-          {/* Grid */}
-          {Array.from({ length: 16 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 20} x2="400" y2={i * 20} stroke="#1d4ed8" strokeWidth="0.4" />
-          ))}
-          {Array.from({ length: 22 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20} y2="300" stroke="#1d4ed8" strokeWidth="0.4" />
-          ))}
-          {/* Route line */}
-          <path d="M 200 10 C 210 80, 190 150, 205 290" stroke="#3b82f6" strokeWidth="4"
-            fill="none" strokeLinecap="round" opacity="0.9" />
-          {/* Start dot */}
-          <circle cx="200" cy="14" r="5" fill="#5B5BFF" />
-          {/* End dot */}
-          <circle cx="205" cy="286" r="5" fill="#22c55e" />
-        </svg>
-      </div>
-      {children}
-    </div>
-  )
-}
+function DirectionsBanner({ directions, variant = 'dark' }) {
+  const instruction = directions?.instruction || 'Waiting for your location…'
+  const secondary = directions?.nextInstruction
+    ? (directions.nextDistanceText
+      ? `${directions.nextDistanceText} • ${directions.nextInstruction}`
+      : directions.nextInstruction)
+    : 'Route updates as you move'
 
-// ─── FAB map controls ─────────────────────────────────────────────
-function MapFabs() {
+  if (variant === 'floating') {
+    return (
+      <div className="absolute left-4 right-4 z-20" style={{ top: '90px' }}>
+        <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: '#5B5BFF' }}>
+            <Navigation size={18} className="text-white" />
+          </div>
+          <div>
+            {directions?.nextDistanceText ? (
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#5B5BFF' }}>
+                {directions.nextDistanceText}
+              </p>
+            ) : null}
+            <p className="font-bold text-gray-900 text-sm">{instruction}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="absolute right-4 top-4 flex flex-col gap-2 z-10">
-      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-        <Crosshair size={18} className="text-gray-700" />
-      </button>
-      <button className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-        <Layers size={18} className="text-gray-700" />
-      </button>
+    <div className="mx-4 mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
+      style={{ background: '#0d1628' }}>
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: '#5B5BFF' }}>
+        <Navigation size={18} className="text-white" />
+      </div>
+      <div>
+        <p className="text-white font-bold text-sm">{instruction}</p>
+        <p className="text-gray-400 text-xs">{secondary}</p>
+      </div>
     </div>
   )
 }
@@ -103,6 +122,29 @@ export default function ActiveDelivery() {
   const [photoTaken, setPhotoTaken] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [navDirections, setNavDirections] = useState(null)
+  const lastPingAtRef = useRef(0)
+
+  const isNavigating = [STEPS.HEADING_PICKUP, STEPS.EN_ROUTE].includes(step)
+
+  const handleDirectionsChange = useCallback((directions) => {
+    setNavDirections(directions)
+  }, [])
+
+  const { position: riderPosition } = useWatchPosition({
+    enabled: !loading,
+    onUpdate: (pos) => {
+      if (!isNavigating) return
+      const now = Date.now()
+      if (now - lastPingAtRef.current < 15000) return
+      lastPingAtRef.current = now
+      pingLocation(pos.lat, pos.lng).catch(() => {})
+    },
+  })
+
+  useEffect(() => {
+    setNavDirections(null)
+  }, [step])
 
   useEffect(() => {
     if (id) {
@@ -111,7 +153,7 @@ export default function ActiveDelivery() {
         setDelivery(data)
         if (data.status === 'pending' || !data.status) {
           setStep(STEPS.NEW_ORDER)
-        } else if (data.status === 'accepted') {
+        } else if (['accepted', 'ready_for_pickup'].includes(data.status)) {
           setStep(STEPS.HEADING_PICKUP)
         } else if (data.status === 'picked_up') {
           setStep(STEPS.EN_ROUTE)
@@ -167,6 +209,31 @@ export default function ActiveDelivery() {
     }
   }
 
+  const merchant = getMerchantFromDelivery(delivery)
+  const customer = getCustomerFromDelivery(delivery)
+  const address = getDeliveryAddress(delivery)
+  const merchantName = formatMerchantName(merchant)
+  const merchantCity = formatMerchantCity(merchant)
+  const merchantAddress = formatMerchantAddress(merchant)
+  const merchantPhone = formatMerchantPhone(merchant)
+  const customerName = formatCustomerName(customer)
+  const customerAddress = formatCustomerAddress(address)
+  const deliveryFee = delivery?.order?.delivery_fee || 650
+  const itemsCount = countOrderItems(delivery) || delivery?.order?.items?.length || 1
+  const pickupTarget = useMemo(() => getPickupTarget(delivery, merchant), [delivery, merchant])
+  const dropoffTarget = useMemo(
+    () => getDropoffTarget(delivery, customerAddress),
+    [delivery, customerAddress],
+  )
+  const etaText = navDirections?.durationText || (delivery?.distance ? `${delivery.distance} km` : '—')
+  const distanceText = navDirections?.distanceText || (delivery?.distance ? `${delivery.distance} km` : '—')
+
+  const openNavigation = (target) => {
+    if (!openGoogleMapsDirections(riderPosition, target)) {
+      alert('Destination address is not available for navigation.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-md mx-auto">
@@ -178,19 +245,18 @@ export default function ActiveDelivery() {
     )
   }
 
-  const merchant = delivery?.order?.items?.[0]?.product?.merchant
-  const customer = delivery?.order?.user
-  const address = delivery?.order?.delivery_address
-  const deliveryFee = delivery?.order?.delivery_fee || 650
-  const itemsCount = delivery?.order?.items?.length || 1
-
   // ── NEW ORDER MODAL ────────────────────────────────────────────
   if (step === STEPS.NEW_ORDER) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col max-w-md mx-auto overflow-hidden">
         {/* Map & Overlay behind */}
         <div className="absolute inset-0 z-0">
-          <MapBg height="100%" />
+          <RiderNavigationMap
+            height="100%"
+            destination={pickupTarget}
+            position={riderPosition}
+            onDirectionsChange={handleDirectionsChange}
+          />
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
         </div>
 
@@ -222,8 +288,8 @@ export default function ActiveDelivery() {
               <span className="text-3xl">🍔</span>
             </div>
             <div>
-              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
-              <p className="text-sm text-gray-400">{merchant?.city || 'Victoria Island'}</p>
+              <p className="font-bold text-gray-900">{merchantName}</p>
+              <p className="text-sm text-gray-400">{merchantCity || 'Pickup location'}</p>
             </div>
           </div>
 
@@ -238,12 +304,12 @@ export default function ActiveDelivery() {
             <div className="flex flex-col gap-4 flex-1">
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pickup</p>
-                <p className="font-bold text-gray-900 text-sm">{merchant?.address_line1 || 'Merchant Address'}</p>
-                <p className="text-xs text-gray-400">{delivery?.distance ? `${delivery.distance}km` : '1.5km'} away • 5 mins</p>
+                <p className="font-bold text-gray-900 text-sm">{merchantAddress}</p>
+                <p className="text-xs text-gray-400">{distanceText} away • {etaText}</p>
               </div>
               <div>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Dropoff</p>
-                <p className="font-bold text-gray-900 text-sm">{address?.address_line1 || 'Customer Address'}</p>
+                <p className="font-bold text-gray-900 text-sm">{customerAddress}</p>
                 <p className="text-xs text-gray-400">{itemsCount} items</p>
               </div>
             </div>
@@ -271,36 +337,29 @@ export default function ActiveDelivery() {
     return (
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         <div className="relative" style={{ height: '55vh' }}>
-          <MapBg height="100%">
+          <RiderNavigationMap
+            height="100%"
+            destination={pickupTarget}
+            position={riderPosition}
+            onDirectionsChange={handleDirectionsChange}
+          >
             <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
-            <MapFabs />
-          </MapBg>
+          </RiderNavigationMap>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 px-4 py-3 bg-gray-50">
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimated Arrival</p>
-            <p className="text-xl font-black text-gray-900">5 mins</p>
+            <p className="text-xl font-black text-gray-900">{etaText}</p>
           </div>
           <div className="bg-white rounded-2xl px-4 py-3 shadow-sm">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Distance</p>
-            <p className="text-xl font-black text-gray-900">{delivery?.distance ? `${delivery.distance}km` : '1.5km'}</p>
+            <p className="text-xl font-black text-gray-900">{distanceText}</p>
           </div>
         </div>
 
-        {/* Turn instruction */}
-        <div className="mx-4 mb-4 rounded-2xl px-4 py-3 flex items-center gap-3"
-          style={{ background: '#0d1628' }}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: '#5B5BFF' }}>
-            <Navigation size={18} className="text-white" />
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm">Head East on Ozumba Mbadiwe Rd</p>
-            <p className="text-gray-400 text-xs">Then turn right in 400m</p>
-          </div>
-        </div>
+        <DirectionsBanner directions={navDirections} />
 
         {/* Bottom sheet */}
         <div className="bg-white rounded-t-3xl px-5 pt-5 pb-6 flex-1 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
@@ -317,13 +376,19 @@ export default function ActiveDelivery() {
               <span className="text-2xl">🍔</span>
             </div>
             <div className="flex-1">
-              <p className="font-bold text-gray-900">{merchant?.name || 'Fastrapid Merchant'}</p>
-              <p className="text-xs text-gray-400">{merchant?.address_line1 || 'Merchant Address'}</p>
+              <p className="font-bold text-gray-900">{merchantName}</p>
+              <p className="text-xs text-gray-400">{merchantAddress}</p>
             </div>
-            <a href={`tel:${merchant?.phone || '000'}`} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Phone size={16} style={{ color: '#5B5BFF' }} />
-            </a>
-            <button className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+            {merchantPhone ? (
+              <a href={`tel:${merchantPhone}`} className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                <Phone size={16} style={{ color: '#5B5BFF' }} />
+              </a>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => openNavigation(pickupTarget)}
+              className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center"
+            >
               <Navigation size={16} style={{ color: '#5B5BFF' }} />
             </button>
           </div>
@@ -354,9 +419,14 @@ export default function ActiveDelivery() {
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         {/* Map */}
         <div className="relative" style={{ height: '28vh' }}>
-          <MapBg height="100%">
+          <RiderNavigationMap
+            height="100%"
+            destination={pickupTarget}
+            position={riderPosition}
+            showRecenter={false}
+          >
             <OrderHeader onBack={() => setStep(STEPS.HEADING_PICKUP)} orderId={delivery?.order_id || id} />
-          </MapBg>
+          </RiderNavigationMap>
         </div>
 
         {/* Bottom sheet */}
@@ -374,7 +444,7 @@ export default function ActiveDelivery() {
             </div>
             <div className="flex-1">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Delivering To</p>
-              <p className="font-bold text-gray-900">{customer?.full_name || 'Customer'}</p>
+              <p className="font-bold text-gray-900">{customerName}</p>
             </div>
             <button className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
               <MessageSquare size={14} className="text-white" />
@@ -426,31 +496,16 @@ export default function ActiveDelivery() {
       <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
         {/* Map full top */}
         <div className="relative flex-1" style={{ minHeight: '50vh' }}>
-          <MapBg height="100%">
+          <RiderNavigationMap
+            height="100%"
+            destination={dropoffTarget}
+            position={riderPosition}
+            showLivePill
+            onDirectionsChange={handleDirectionsChange}
+          >
             <OrderHeader onBack={() => navigate('/dispatch')} orderId={delivery?.order_id || id} />
-
-            {/* Floating turn card */}
-            <div className="absolute left-4 right-4 z-20" style={{ top: '90px' }}>
-              <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: '#5B5BFF' }}>
-                  <Navigation size={18} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#5B5BFF' }}>400 Meters</p>
-                  <p className="font-bold text-gray-900 text-sm">Turn right onto Admiralty Way</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Live tracking pill */}
-            <div className="absolute bottom-4 left-4 z-10">
-              <div className="flex items-center gap-2 bg-gray-900/70 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-white text-xs font-bold">Live Tracking Active</span>
-              </div>
-            </div>
-          </MapBg>
+            <DirectionsBanner directions={navDirections} variant="floating" />
+          </RiderNavigationMap>
         </div>
 
         {/* Bottom sheet */}
@@ -468,8 +523,8 @@ export default function ActiveDelivery() {
           {/* Customer info */}
           <div className="flex items-start justify-between mb-5">
             <div>
-              <p className="text-xl font-black text-gray-900">{customer?.full_name || 'Customer'}</p>
-              <p className="text-sm text-gray-400 mt-0.5">{address?.address_line1 || 'Customer Address'}</p>
+              <p className="text-xl font-black text-gray-900">{customerName}</p>
+              <p className="text-sm text-gray-400 mt-0.5">{customerAddress}</p>
             </div>
             <div className="flex gap-2">
               <a href={`tel:${customer?.phone || '000'}`} className="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center">
@@ -485,7 +540,7 @@ export default function ActiveDelivery() {
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div className="bg-gray-50 rounded-2xl px-4 py-3">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Time to Dropoff</p>
-              <p className="text-xl font-black text-gray-900">12 mins</p>
+              <p className="text-xl font-black text-gray-900">{etaText}</p>
             </div>
             <div className="bg-gray-50 rounded-2xl px-4 py-3">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Earnings</p>
@@ -508,14 +563,19 @@ export default function ActiveDelivery() {
     <div className="flex flex-col min-h-screen max-w-md mx-auto overflow-hidden">
       {/* Map */}
       <div className="relative" style={{ height: '30vh' }}>
-        <MapBg height="100%">
+        <RiderNavigationMap
+          height="100%"
+          destination={dropoffTarget}
+          position={riderPosition}
+          showRecenter={false}
+        >
           <div className="absolute top-12 left-4 z-10">
             <button onClick={() => setStep(STEPS.EN_ROUTE)}
               className="w-9 h-9 flex items-center justify-center">
               <ArrowLeft size={20} className="text-white" />
             </button>
           </div>
-        </MapBg>
+        </RiderNavigationMap>
       </div>
 
       {/* Bottom sheet */}
@@ -533,7 +593,7 @@ export default function ActiveDelivery() {
           </div>
           <div>
             <p className="font-bold text-gray-900 text-sm">Order #{delivery?.order_id || id}</p>
-            <p className="text-xs text-gray-400">{itemsCount} Items • {merchant?.name || 'Merchant'}</p>
+            <p className="text-xs text-gray-400">{itemsCount} Items • {merchantName}</p>
           </div>
         </div>
 

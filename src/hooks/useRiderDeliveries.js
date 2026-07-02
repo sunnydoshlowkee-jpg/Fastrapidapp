@@ -1,18 +1,38 @@
 import { useState, useCallback } from 'react';
-import { getAvailableDeliveries, getDeliveryDetails, acceptDelivery as acceptDeliveryService, updateDeliveryStatus as updateDeliveryStatusService } from '../services/riderDeliveryService';
+import {
+  getAvailableDeliveries,
+  getActiveDeliveries,
+  getDeliveryDetails,
+  acceptDelivery as acceptDeliveryService,
+  updateDeliveryStatus as updateDeliveryStatusService,
+} from '../services/riderDeliveryService';
+
+function normalizeDeliveries(response) {
+  return response.data?.deliveries || response.deliveries || response.data || response;
+}
 
 export const useRiderDeliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
+  const [activeDeliveries, setActiveDeliveries] = useState([]);
   const [deliveryDetails, setDeliveryDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const refreshActive = useCallback(async () => {
+    try {
+      const response = await getActiveDeliveries();
+      setActiveDeliveries(normalizeDeliveries(response));
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to fetch active deliveries');
+    }
+  }, []);
 
   const refresh = useCallback(async (lat, lng) => {
     setLoading(true);
     setError(null);
     try {
       const response = await getAvailableDeliveries(lat, lng);
-      setDeliveries(response.data?.deliveries || response.deliveries || response.data || response);
+      setDeliveries(normalizeDeliveries(response));
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch deliveries');
     } finally {
@@ -39,6 +59,7 @@ export const useRiderDeliveries = () => {
   const accept = async (id) => {
     try {
       await acceptDeliveryService(id);
+      await refreshActive();
       return true;
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to accept delivery');
@@ -49,6 +70,7 @@ export const useRiderDeliveries = () => {
   const updateStatus = async (id, status, coords = null) => {
     try {
       await updateDeliveryStatusService(id, status, coords);
+      await refreshActive();
       return true;
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to update status');
@@ -56,5 +78,16 @@ export const useRiderDeliveries = () => {
     }
   };
 
-  return { deliveries, deliveryDetails, loading, error, refresh, fetchDetails, accept, updateStatus };
+  return {
+    deliveries,
+    activeDeliveries,
+    deliveryDetails,
+    loading,
+    error,
+    refresh,
+    refreshActive,
+    fetchDetails,
+    accept,
+    updateStatus,
+  };
 };

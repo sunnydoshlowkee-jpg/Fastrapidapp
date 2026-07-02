@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { Home, Truck, BarChart2, User } from 'lucide-react'
 
 const navItems = [
@@ -9,6 +9,13 @@ const navItems = [
 ]
 
 export default function DispatchLayout() {
+  const location = useLocation()
+  const isAuthed = Boolean(localStorage.getItem('rapid_token'))
+
+  if (!isAuthed) {
+    return <Navigate to="/dispatch/login" replace state={{ from: location.pathname }} />
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 max-w-md mx-auto relative">
       <main className="flex-1 overflow-y-auto pb-20">

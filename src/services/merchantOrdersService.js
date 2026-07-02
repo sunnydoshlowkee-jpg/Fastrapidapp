@@ -146,8 +146,11 @@ export function mapMerchantOrderFromApi(order) {
 export function mapLiveOrderFromApi(order) {
   if (!order) return null
 
+  const apiId = order.order_id != null ? String(order.order_id) : String(order.id).replace(/\D+/g, '')
+
   return {
     id: order.id,
+    apiId,
     orderId: order.order_id,
     customer: order.customer,
     items: order.items,
@@ -156,6 +159,14 @@ export function mapLiveOrderFromApi(order) {
     status: order.status,
     timeRemaining: order.time_remaining,
   }
+}
+
+export function resolveMerchantOrderApiId(orderOrId) {
+  if (orderOrId == null) return ''
+  if (typeof orderOrId === 'object') {
+    return String(orderOrId.apiId ?? orderOrId.orderId ?? orderOrId.id ?? '').replace(/\D+/g, '')
+  }
+  return String(orderOrId).replace(/\D+/g, '')
 }
 
 export async function getMerchantDashboard() {

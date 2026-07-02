@@ -4,6 +4,7 @@ import MerchantDashboardHeader from './MerchantDashboardHeader'
 import MerchantStatCard from './MerchantStatCard'
 import MerchantLiveOrdersPanel from './MerchantLiveOrdersPanel'
 import MerchantStockAlertsPanel from './MerchantStockAlertsPanel'
+import { resolveMerchantOrderApiId } from '../../../services/merchantOrdersService'
 import { MERCHANT_DASHBOARD_ACTIVE } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardActiveDesktop({
@@ -22,25 +23,34 @@ export default function MerchantDashboardActiveDesktop({
   }, [initialLiveOrders])
 
   const handleRowReject = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'reject')
-    setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'reject')
+      setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    } catch (err) {
+      alert(err?.message || 'Could not reject order.')
+    }
   }
 
   const handleAccept = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'accept')
-    setLiveOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId ? { ...o, status: 'preparing', timeRemaining: '15 min' } : o
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'accept')
+      setLiveOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: 'preparing', timeRemaining: '15 min' } : o
+        )
       )
-    )
+    } catch (err) {
+      alert(err?.message || 'Could not accept order.')
+    }
   }
 
   const handleReady = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'ready')
-    setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'ready')
+      setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    } catch (err) {
+      alert(err?.message || 'Could not mark order as ready.')
+    }
   }
 
   return (

@@ -3,6 +3,7 @@ import MerchantMobileHeader from './MerchantMobileHeader'
 import MerchantMobileStatCard from './MerchantMobileStatCard'
 import MerchantLiveOrdersMobilePanel from './MerchantLiveOrdersMobilePanel'
 import MerchantStockAlertsMobilePanel from './MerchantStockAlertsMobilePanel'
+import { resolveMerchantOrderApiId } from '../../../services/merchantOrdersService'
 import { MERCHANT_DASHBOARD_ACTIVE } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardActiveMobile({
@@ -18,23 +19,32 @@ export default function MerchantDashboardActiveMobile({
   }, [initialLiveOrders])
 
   const handleRowReject = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'reject')
-    setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'reject')
+      setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    } catch (err) {
+      alert(err?.message || 'Could not reject order.')
+    }
   }
 
   const handleAccept = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'accept')
-    setLiveOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: 'ready', badge: 'Ready' } : o))
-    )
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'accept')
+      setLiveOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'ready', badge: 'Ready' } : o))
+      )
+    } catch (err) {
+      alert(err?.message || 'Could not accept order.')
+    }
   }
 
   const handleDelivered = async (orderId) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
-    await onOrderAction?.(numericId, 'ready')
-    setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    try {
+      await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'ready')
+      setLiveOrders((prev) => prev.filter((o) => o.id !== orderId))
+    } catch (err) {
+      alert(err?.message || 'Could not update order.')
+    }
   }
 
   return (

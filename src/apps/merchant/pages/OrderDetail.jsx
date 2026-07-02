@@ -4,9 +4,11 @@ import { MerchantOrderDetailProvider } from '../../../components/merchant/orders
 
 export default function OrderDetail() {
   return (
-    <MerchantOrderDetailProvider>
-      <MerchantOrderDetailMobile />
-      <MerchantOrderDetailDesktop />
-    </MerchantOrderDetailProvider>
+    <div className="flex min-h-full flex-1 flex-col">
+      <MerchantOrderDetailProvider>
+        <MerchantOrderDetailMobile />
+        <MerchantOrderDetailDesktop />
+      </MerchantOrderDetailProvider>
+    </div>
   )
 }

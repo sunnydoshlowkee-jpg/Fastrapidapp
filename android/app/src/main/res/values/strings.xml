@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fast Rapid</string>
+    <string name="title_activity_main">Fast Rapid</string>
+    <string name="package_name">com.fastrapid.app</string>
+    <string name="custom_url_scheme">com.fastrapid.app</string>
+</resources>

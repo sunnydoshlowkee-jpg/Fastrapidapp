@@ -142,3 +142,10 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 .DS_Store
+
+# Android build outputs
+releases/*.apk
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties

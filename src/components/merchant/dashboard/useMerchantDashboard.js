@@ -3,6 +3,7 @@ import {
   buildDashboardStats,
   getMerchantDashboard,
   mapLiveOrderFromApi,
+  resolveMerchantOrderApiId,
   updateMerchantOrderStatus,
 } from '../../../services/merchantOrdersService'
 
@@ -34,7 +35,10 @@ export default function useMerchantDashboard() {
   const stats = buildDashboardStats(dashboard?.stats, liveOrders)
 
   const handleOrderAction = async (orderId, action) => {
-    const numericId = String(orderId).replace(/\D+/g, '')
+    const numericId = resolveMerchantOrderApiId(orderId)
+    if (!numericId) {
+      throw new Error('Invalid order id.')
+    }
     await updateMerchantOrderStatus(numericId, action)
     await refresh()
   }

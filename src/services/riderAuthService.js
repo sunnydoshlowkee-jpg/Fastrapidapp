@@ -20,3 +20,48 @@ export const updateRiderProfile = (data) => api.put('/rider/profile', data);
 export const getRiderDocuments = () => api.get('/rider/documents');
 
 export const uploadRiderAvatar = uploadProfileAvatar;
+
+export function extractRiderSession(response) {
+  const data = response.data?.data ?? response.data ?? response;
+
+  return {
+    token: data.token ?? response.data?.token ?? response.token,
+    profile: {
+      user: data.user,
+      rider: data.rider,
+    },
+  };
+}
+
+export function persistRiderSession({ token, profile }) {
+  if (token) {
+    localStorage.setItem('rapid_token', token);
+  }
+  if (profile?.user || profile?.rider) {
+    localStorage.setItem('rider_user', JSON.stringify(profile));
+  }
+}
+
+export function getCachedRiderProfile() {
+  try {
+    const raw = localStorage.getItem('rider_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getRiderGreetingName(profile) {
+  return (
+    profile?.user?.first_name
+    || profile?.user?.full_name?.split(' ')?.[0]
+    || 'Rider'
+  );
+}
+
+export function getTimeGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}

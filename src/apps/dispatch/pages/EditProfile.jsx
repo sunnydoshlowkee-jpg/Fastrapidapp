@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Mail, Phone, Pencil, BadgeCheck, Bell, MapPin } from 'lucide-react'
-import { getRiderMe, updateRiderProfile, uploadRiderAvatar } from '../../../services/riderAuthService'
+import { getRiderMe, updateRiderProfile, uploadRiderAvatar, persistRiderSession } from '../../../services/riderAuthService'
 import { validateImageFile } from '../../../utils/imageUpload'
 
 function Toggle({ checked, onChange }) {
@@ -108,7 +108,7 @@ export default function EditProfile() {
       const res = await updateRiderProfile(payload)
       const data = res.data?.data || res.data
       setProfile(data)
-      localStorage.setItem('rider_user', JSON.stringify(data))
+      persistRiderSession({ profile: data })
       navigate(-1)
     } catch (e) {
       setError(e.response?.data?.message || 'Failed to save profile')

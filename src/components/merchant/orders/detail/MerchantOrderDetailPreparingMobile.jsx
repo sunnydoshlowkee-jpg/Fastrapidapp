@@ -11,7 +11,6 @@ import useMerchantOrderDetail from './useMerchantOrderDetail'
 export default function MerchantOrderDetailPreparingMobile() {
   const navigate = useNavigate()
   const { order, loading, error, actionLoading, markReady } = useMerchantOrderDetail()
-  const { mobile } = order || {}
 
   const handleMarkReady = async () => {
     const ok = await markReady()
@@ -20,40 +19,44 @@ export default function MerchantOrderDetailPreparingMobile() {
     }
   }
 
+  if (loading || error || !order) {
+    return <MerchantOrderDetailState loading={loading} error={error} order={order} />
+  }
+
+  const { mobile } = order
+
   return (
-    <MerchantOrderDetailState loading={loading} error={error} order={order}>
-      <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas lg:hidden">
-        <MerchantOrderDetailPreparingMobileHeader
-          displayId={order.displayId}
-          statusBadge={mobile.statusBadge}
+    <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas lg:hidden">
+      <MerchantOrderDetailPreparingMobileHeader
+        displayId={order.displayId}
+        statusBadge={mobile.statusBadge}
+      />
+
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-52 pt-3">
+        <MerchantOrderDetailProgressStepperMobile
+          steps={mobile.progressSteps}
+          currentStepId={order.progress.currentStep}
         />
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-52 pt-3">
-          <MerchantOrderDetailProgressStepperMobile
-            steps={mobile.progressSteps}
-            currentStepId={order.progress.currentStep}
-          />
+        <MerchantOrderDetailMobileCustomerNote note={mobile.customerNote} />
 
-          <MerchantOrderDetailMobileCustomerNote note={mobile.customerNote} />
+        <MerchantOrderDetailMobilePreparingOrderDetails
+          lineItems={mobile.preparingLineItems}
+          pricing={mobile.pricingPreparing}
+        />
 
-          <MerchantOrderDetailMobilePreparingOrderDetails
-            lineItems={mobile.preparingLineItems}
-            pricing={mobile.pricingPreparing}
-          />
-
-          <MerchantOrderDetailMobilePreparingCustomerInfo
-            customer={mobile.customer}
-            delivery={mobile.delivery}
-          />
-        </div>
-
-        <MerchantOrderDetailMobilePreparingFooter
-          title={order.preparing.title}
-          targetCompletion={order.preparing.targetCompletion}
-          onMarkReady={handleMarkReady}
-          disabled={actionLoading || order.dbStatus === 'ready_for_pickup'}
+        <MerchantOrderDetailMobilePreparingCustomerInfo
+          customer={mobile.customer}
+          delivery={mobile.delivery}
         />
       </div>
-    </MerchantOrderDetailState>
+
+      <MerchantOrderDetailMobilePreparingFooter
+        title={order.preparing.title}
+        targetCompletion={order.preparing.targetCompletion}
+        onMarkReady={handleMarkReady}
+        disabled={actionLoading || order.dbStatus === 'ready_for_pickup'}
+      />
+    </div>
   )
 }

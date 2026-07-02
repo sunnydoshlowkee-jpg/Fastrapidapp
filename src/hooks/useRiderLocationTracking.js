@@ -1,46 +1,36 @@
-import { useEffect, useRef } from 'react';
-import { pingLocation } from '../services/riderLocationService';
+import { useEffect, useRef } from 'react'
+import { pingLocation } from '../services/riderLocationService'
+import { watchPosition } from '../utils/geolocation'
+
+const PING_INTERVAL_MS = 15000
 
 export const useRiderLocationTracking = (isOnline) => {
-  const intervalRef = useRef(null);
+  const lastPingAtRef = useRef(0)
+  const lastPositionRef = useRef(null)
 
   useEffect(() => {
     if (!isOnline) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
+      lastPingAtRef.current = 0
+      lastPositionRef.current = null
+      return undefined
     }
 
-    const sendLocation = () => {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            pingLocation(latitude, longitude).catch((err) => {
-              console.error('Failed to ping location', err);
-            });
-          },
-          (error) => {
-            console.error('Geolocation error', error);
-          },
-          { enableHighAccuracy: true }
-        );
-      }
-    };
+    const maybePing = (position) => {
+      const now = Date.now()
+      if (now - lastPingAtRef.current < PING_INTERVAL_MS) return
 
-    // Send immediately when online
-    sendLocation();
+      lastPingAtRef.current = now
+      lastPositionRef.current = position
+      pingLocation(position.lat, position.lng).catch((err) => {
+        console.error('Failed to ping location', err)
+      })
+    }
 
-    // Set up interval for every 30 seconds
-    intervalRef.current = setInterval(sendLocation, 30000);
+    const stop = watchPosition(
+      maybePing,
+      (error) => console.error('Geolocation error', error),
+    )
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [isOnline]);
-};
+    return stop
+  }, [isOnline])
+}

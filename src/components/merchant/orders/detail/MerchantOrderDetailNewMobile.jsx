@@ -11,12 +11,11 @@ import useMerchantOrderDetail from './useMerchantOrderDetail'
 export default function MerchantOrderDetailNewMobile() {
   const navigate = useNavigate()
   const { order, loading, error, actionLoading, acceptOrder, rejectOrder } = useMerchantOrderDetail()
-  const mobile = order?.mobile
 
   const handleAccept = async () => {
     const ok = await acceptOrder()
-    if (ok) {
-      navigate(`/merchant/orders/${order.id}`)
+    if (ok && order) {
+      navigate(`/merchant/orders/${order.id}`, { replace: true })
     }
   }
 
@@ -27,38 +26,42 @@ export default function MerchantOrderDetailNewMobile() {
     }
   }
 
+  if (loading || error || !order) {
+    return <MerchantOrderDetailState loading={loading} error={error} order={order} />
+  }
+
+  const { mobile } = order
+
   return (
-    <MerchantOrderDetailState loading={loading} error={error} order={order}>
-      <>
-        <MerchantOrderDetailMobileHeader
-          displayId={order.displayId}
-          statusBadge={order.statusBadge}
+    <>
+      <MerchantOrderDetailMobileHeader
+        displayId={order.displayId}
+        statusBadge={order.statusBadge}
+      />
+
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-44 pt-3">
+        {order.dbStatus === 'pending' ? (
+          <MerchantOrderDetailMobileUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
+        ) : null}
+
+        <MerchantOrderDetailMobileCustomerCard customer={order.customer} />
+
+        <MerchantOrderDetailMobileItemsCard
+          lineItems={mobile.lineItems}
+          totalValue={mobile.totalValue}
         />
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-44 pt-3">
-          {order.dbStatus === 'pending' ? (
-            <MerchantOrderDetailMobileUrgencyBanner respondWithinSeconds={order.respondWithinSeconds} />
-          ) : null}
+        <MerchantOrderDetailMobilePricingCard pricing={mobile.pricing} />
+      </div>
 
-          <MerchantOrderDetailMobileCustomerCard customer={order.customer} />
-
-          <MerchantOrderDetailMobileItemsCard
-            lineItems={mobile.lineItems}
-            totalValue={mobile.totalValue}
-          />
-
-          <MerchantOrderDetailMobilePricingCard pricing={mobile.pricing} />
-        </div>
-
-        {order.dbStatus === 'pending' ? (
-          <MerchantOrderDetailMobileActionBar
-            disclaimer={order.acceptDisclaimer}
-            onAccept={handleAccept}
-            onReject={handleReject}
-            disabled={actionLoading}
-          />
-        ) : null}
-      </>
-    </MerchantOrderDetailState>
+      {order.dbStatus === 'pending' ? (
+        <MerchantOrderDetailMobileActionBar
+          disclaimer={order.acceptDisclaimer}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          disabled={actionLoading}
+        />
+      ) : null}
+    </>
   )
 }
