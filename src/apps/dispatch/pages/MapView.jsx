@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Star, Calendar, BarChart2, Gift, ChevronRight, MapPin, Utensils, ShoppingBasket } from 'lucide-react'
+import { Star, Calendar, BarChart2, Gift, ChevronRight, MapPin, Utensils, ShoppingBasket } from 'lucide-react'
 import { getMe } from '../../../services/authService'
-import { toggleStatus } from '../../../services/riderAuthService'
+import { toggleStatus, isRiderApproved, refreshRiderSession } from '../../../services/riderAuthService'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
+import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet'
 
 const ZONES = [
@@ -22,8 +25,14 @@ export default function RiderDashboard() {
   const navigate = useNavigate()
   const [riderName, setRiderName] = useState('Chidi')
   const [online, setOnline] = useState(false)
+  const [approved, setApproved] = useState(isRiderApproved())
   const { deliveries, refresh: refreshDeliveries, accept } = useRiderDeliveries()
   const { earnings, refresh: refreshEarnings } = useRiderEarnings()
+  const { position: riderPosition, error: locationError } = useRiderLocationTracking(online)
+  const { unread } = useUnreadNotifications({
+    role: 'rider',
+    enabled: Boolean(localStorage.getItem('rider_token') || localStorage.getItem('rapid_token')),
+  })
 
   const [activeZone, setActiveZone] = useState(() => {
     const saved = localStorage.getItem('rider_zone')
@@ -33,28 +42,45 @@ export default function RiderDashboard() {
   const [showHeatmap, setShowHeatmap] = useState(false)
 
   useEffect(() => {
-    getMe().then(res => {
-      const u = res.data?.user || res.user || res.data
-      if (u) {
-        setRiderName(u.first_name || u.name?.split(' ')[0] || 'Rider')
-      }
-      
-      const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
-      setOnline(riderInfo.is_online || false)
-    }).catch(err => {
-      console.error('Error fetching rider user', err)
-      setRiderName('Rider')
-    })
+    refreshRiderSession()
+      .then((profile) => {
+        const u = profile?.user
+        if (u) {
+          setRiderName(u.first_name || u.full_name?.split(' ')?.[0] || 'Rider')
+        }
+        setOnline(profile?.rider?.is_online || false)
+        setApproved(profile?.rider?.status === 'approved')
+      })
+      .catch(() => {
+        getMe().then(res => {
+          const u = res.data?.user || res.user || res.data
+          if (u) {
+            setRiderName(u.first_name || u.name?.split(' ')[0] || 'Rider')
+          }
+
+          const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
+          setOnline(riderInfo.rider?.is_online || false)
+          setApproved(riderInfo.rider?.status === 'approved')
+        }).catch(err => {
+          console.error('Error fetching rider user', err)
+          setRiderName('Rider')
+        })
+      })
   }, [])
 
   const toggle = async () => {
+    if (!approved) {
+      alert('Your account is pending admin approval. You cannot go online yet.')
+      return
+    }
+
     try {
       const response = await toggleStatus()
       const newStatus = response.data?.is_online ?? !online
       setOnline(newStatus)
       
       const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
-      riderInfo.is_online = newStatus
+      riderInfo.rider = { ...(riderInfo.rider || {}), is_online: newStatus }
       localStorage.setItem('rider_user', JSON.stringify(riderInfo))
     } catch (err) {
       console.error('Error toggling rider status', err)
@@ -63,22 +89,29 @@ export default function RiderDashboard() {
   }
 
   useEffect(() => {
-    if (online) {
-      refreshDeliveries(6.5244, 3.3792)
-      const interval = setInterval(() => {
-        refreshDeliveries(6.5244, 3.3792)
-      }, 10000)
-      return () => clearInterval(interval)
-    }
-  }, [online, refreshDeliveries])
+    if (!online) return undefined
+
+    if (riderPosition?.lat == null || riderPosition?.lng == null) return undefined
+
+    refreshDeliveries(riderPosition.lat, riderPosition.lng)
+    const interval = setInterval(() => {
+      refreshDeliveries(riderPosition.lat, riderPosition.lng)
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [online, riderPosition?.lat, riderPosition?.lng, refreshDeliveries])
 
   useEffect(() => {
     refreshEarnings()
   }, [refreshEarnings])
 
   const handleAccept = async (deliveryId) => {
+    if (riderPosition?.lat == null || riderPosition?.lng == null) {
+      alert(locationError || 'Enable location to accept nearby deliveries within 10km.')
+      return
+    }
+
     try {
-      await accept(deliveryId)
+      await accept(deliveryId, { lat: riderPosition.lat, lng: riderPosition.lng })
       navigate(`/dispatch/delivery/${deliveryId}`)
     } catch (err) {
       console.error(err)
@@ -100,12 +133,27 @@ export default function RiderDashboard() {
             Good morning, {riderName} 👋
           </p>
         </div>
-        <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
-          <Bell size={20} className="text-gray-500" />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/dispatch/notifications')}
+          count={unread}
+          className="w-10 h-10 rounded-full bg-white shadow-sm"
+          iconSize={20}
+        />
       </div>
 
       <div className="px-5 space-y-4">
+
+        {online && locationError ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {locationError} Nearby jobs only appear within 10km of your live GPS.
+          </div>
+        ) : null}
+
+        {online && riderPosition?.lat == null ? (
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+            Waiting for your location so we can show deliveries within 10km…
+          </div>
+        ) : null}
 
         {/* ── Online / Offline card ── */}
         <div

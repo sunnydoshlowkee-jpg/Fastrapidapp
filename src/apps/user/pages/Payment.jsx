@@ -7,14 +7,20 @@ import { createOrder } from '../../../services/orderService'
 import { initializePaystackCheckout, openPaystackCheckout } from '../../../services/paystackService'
 import { trackEvent } from '../../../services/analyticsService'
 import { useDashboard } from '../../../hooks/useDashboard'
+import { useAuth } from '../../../context/AuthContext'
+import SecurityAuthPanel from '../../../components/security/SecurityAuthPanel'
 
 export default function Payment() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const orderMethod = user?.security?.order_method || 'email'
   const { items, subtotal, deliveryFee, serviceCharge, total, clear } = useCart()
   const [paymentMethod, setPaymentMethod] = useState('wallet')
   const [addresses, setAddresses] = useState([])
   const [selectedAddressId, setSelectedAddressId] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showOrderAuth, setShowOrderAuth] = useState(false)
+  const [authError, setAuthError] = useState('')
   const [showAddressDropdown, setShowAddressDropdown] = useState(false)
   const { data: dashboard } = useDashboard()
 
@@ -53,18 +59,9 @@ export default function Payment() {
     })),
   })
 
-  const handlePayment = async () => {
-    if (!selectedAddressId) {
-      alert('Please select a delivery address.')
-      return
-    }
-
-    if (paymentMethod === 'crypto') {
-      navigate('/app/payment/crypto')
-      return
-    }
-
+  const processCheckout = async (authPayload = {}) => {
     setLoading(true)
+    setAuthError('')
 
     try {
       const basePayload = buildCheckoutPayload()
@@ -85,11 +82,13 @@ export default function Payment() {
           ...basePayload,
           payment_method: 'card',
           paystack_reference: paymentResult.reference,
+          auth_code: authPayload.auth_code,
         })
       } else {
         orderResponse = await createOrder({
           ...basePayload,
           payment_method: paymentMethod,
+          auth_code: authPayload.auth_code,
         })
       }
 
@@ -102,14 +101,64 @@ export default function Payment() {
     } catch (err) {
       const message = err?.message || err.response?.data?.message || 'Checkout failed'
       if (message !== 'Payment cancelled.') {
-        alert(message)
+        if (showOrderAuth) {
+          setAuthError(message)
+        } else {
+          alert(message)
+        }
       }
     } finally {
       setLoading(false)
     }
   }
 
+  const handlePayment = async () => {
+    if (!selectedAddressId) {
+      alert('Please select a delivery address.')
+      return
+    }
+
+    if (paymentMethod === 'crypto') {
+      navigate('/app/payment/crypto')
+      return
+    }
+
+    setAuthError('')
+    setShowOrderAuth(true)
+  }
+
+  const handleOrderAuthVerified = (payload) => {
+    processCheckout(payload)
+  }
+
   const selectedAddress = addresses.find(a => a.id === selectedAddressId)
+
+  if (showOrderAuth) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12 items-center md:justify-center">
+        <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
+          <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+            <button
+              onClick={() => { setShowOrderAuth(false); setAuthError('') }}
+              className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-[17px] md:text-[20px] font-bold text-gray-900">Confirm Order</h1>
+          </div>
+          <SecurityAuthPanel
+            purpose="order"
+            method={orderMethod}
+            title="Authorize Order"
+            subtitle={`Confirm payment of ₦${total.toLocaleString()}`}
+            onCancel={() => { setShowOrderAuth(false); setAuthError('') }}
+            onVerified={handleOrderAuthVerified}
+          />
+          {authError ? <p className="px-5 pb-6 text-sm text-red-600 text-center">{authError}</p> : null}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">

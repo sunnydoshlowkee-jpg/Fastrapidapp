@@ -19,16 +19,25 @@ import MenuImportSuccess from '../apps/merchant/pages/MenuImportSuccess'
 import MerchantOrders from '../apps/merchant/pages/Orders'
 import OrderDetail from '../apps/merchant/pages/OrderDetail'
 import Analytics from '../apps/merchant/pages/Analytics'
+import MerchantWallet from '../apps/merchant/pages/Wallet'
+import MerchantSendMoney from '../apps/merchant/pages/SendMoney'
 import Settings from '../apps/merchant/pages/Settings'
 import SettingsAccount from '../apps/merchant/pages/SettingsAccount'
 import SettingsBusiness from '../apps/merchant/pages/SettingsBusiness'
 import SettingsOperatingHours from '../apps/merchant/pages/SettingsOperatingHours'
 import HelpSupport from '../apps/merchant/pages/HelpSupport'
+import MerchantNotifications from '../apps/merchant/pages/Notifications'
+import MerchantPrivacySecurity from '../apps/merchant/pages/PrivacySecurity'
+import MerchantSplash from '../apps/merchant/pages/Splash'
+import BiometricUnlock from '../apps/user/pages/auth/BiometricUnlock'
+import { APP_ROLES } from '../utils/appRole'
 
 export default function MerchantRoutes() {
   return (
     <Routes>
       <Route element={<MerchantOnboardingRouteGuard />}>
+        <Route path="splash" element={<MerchantSplash />} />
+        <Route path="auth/biometric-unlock" element={<BiometricUnlock role={APP_ROLES.merchant} />} />
         <Route path="login" element={<MerchantLogin />} />
         <Route path="signup" element={<MerchantRegister />} />
         <Route path="signup/verify" element={<VerifyEmail />} />
@@ -49,11 +58,15 @@ export default function MerchantRoutes() {
             <Route path="menu/import/success" element={<MenuImportSuccess />} />
             <Route path="orders" element={<MerchantOrders />} />
             <Route path="orders/:orderId" element={<OrderDetail />} />
+            <Route path="notifications" element={<MerchantNotifications />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="wallet" element={<MerchantWallet />} />
+            <Route path="wallet/send" element={<MerchantSendMoney />} />
             <Route path="settings" element={<Settings />} />
             <Route path="settings/account" element={<SettingsAccount />} />
             <Route path="settings/business" element={<SettingsBusiness />} />
             <Route path="settings/hours" element={<SettingsOperatingHours />} />
+            <Route path="settings/privacy-security" element={<MerchantPrivacySecurity />} />
             <Route path="support" element={<HelpSupport />} />
           </Route>
         </Route>

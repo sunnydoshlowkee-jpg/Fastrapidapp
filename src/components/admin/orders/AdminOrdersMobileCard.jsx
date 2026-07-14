@@ -38,7 +38,7 @@ export default function AdminOrdersMobileCard({ order, trackRiderLabel }) {
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center gap-2">
             <Link
-              to={`/admin/orders/${order.id}`}
+              to={`/admin/orders/${order.numericId ?? order.id}`}
               className="text-xs font-bold text-[#584237] transition-colors hover:text-rapid-orange"
             >
               #{order.id}

@@ -1,5 +1,6 @@
 import api from './api';
 import { uploadProfileAvatar } from './authService';
+import { clearPushTokenOnLogout, syncPushTokenAfterLogin } from './pushNotifications';
 
 export const requestRegistrationEmail = (email) =>
   api.post('/rider/auth/email', { email });
@@ -18,6 +19,20 @@ export const requestEmailOtp = (email) => api.post('/rider/auth/email', { email 
 export const verifyEmailOtp = (email, code) => api.post('/rider/auth/email/verify', { email, code });
 export const requestPhoneOtp = (phone) => api.post('/rider/auth/phone', { phone });
 export const verifyPhoneOtp = (phone, code) => api.post('/rider/auth/phone/verify', { phone, code });
+
+export const getRiderBanks = async () => {
+  const { data } = await api.get('/rider/banks')
+  return data?.data || []
+}
+
+export const resolveRiderAccountName = async (bankCode, accountNumber) => {
+  const { data } = await api.post('/rider/resolve-account', {
+    bank_code: bankCode,
+    account_number: accountNumber,
+  })
+  return data?.data
+}
+
 export const getDocuments = () => api.get('/rider/documents');
 export const uploadDocument = (data) => api.post('/rider/documents', data, {
   headers: { 'Content-Type': 'multipart/form-data' },
@@ -45,10 +60,52 @@ export function extractRiderSession(response) {
 
 export function persistRiderSession({ token, profile }) {
   if (token) {
-    localStorage.setItem('rapid_token', token);
+    localStorage.setItem('rider_token', token)
+    localStorage.setItem('rapid_token', token)
   }
   if (profile?.user || profile?.rider) {
-    localStorage.setItem('rider_user', JSON.stringify(profile));
+    localStorage.setItem('rider_user', JSON.stringify(profile))
+  }
+  window.dispatchEvent(new Event('rapid-auth-changed'))
+  syncPushTokenAfterLogin()
+}
+
+export async function clearRiderSession() {
+  await clearPushTokenOnLogout()
+  localStorage.removeItem('rider_token')
+  localStorage.removeItem('rapid_token')
+  localStorage.removeItem('rider_user')
+  window.dispatchEvent(new Event('rapid-auth-changed'))
+}
+
+export async function refreshRiderSession() {
+  const { data } = await getProfile()
+  const profile = data?.data ?? data
+
+  if (profile?.user || profile?.rider) {
+    localStorage.setItem('rider_user', JSON.stringify(profile))
+  }
+
+  return profile
+}
+
+export function getRiderApprovalStatus() {
+  try {
+    const raw = localStorage.getItem('rider_user')
+    const parsed = raw ? JSON.parse(raw) : null
+    return parsed?.rider?.status || 'pending'
+  } catch {
+    return 'pending'
+  }
+}
+
+export function isRiderApproved() {
+  return getRiderApprovalStatus() === 'approved'
+}
+
+export function updateCachedRiderProfile(profile) {
+  if (profile?.user || profile?.rider) {
+    localStorage.setItem('rider_user', JSON.stringify(profile))
   }
 }
 

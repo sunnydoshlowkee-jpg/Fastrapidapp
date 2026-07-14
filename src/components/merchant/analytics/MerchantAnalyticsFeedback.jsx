@@ -26,32 +26,42 @@ export default function MerchantAnalyticsFeedback({ feedback }) {
       <div className="mt-4 flex items-center gap-4 border-b border-merchant-divider pb-4">
         <p className="text-4xl font-bold text-merchant-ink">{rating}</p>
         <div>
-          <StarRating count={5} />
-          <p className="mt-1 text-sm text-merchant-muted">Based on {reviewCount} reviews</p>
+          {reviews.length > 0 ? <StarRating count={5} /> : null}
+          <p className="mt-1 text-sm text-merchant-muted">
+            {reviews.length > 0 ? `Based on ${reviewCount} reviews` : 'Reviews are not available yet.'}
+          </p>
         </div>
       </div>
 
-      <ul className="mt-4 flex flex-col gap-4">
-        {reviews.map((review) => (
-          <li key={review.id} className="border-b border-merchant-divider pb-4 last:border-0 last:pb-0">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-merchant-ink">{review.name}</p>
-              <p className="text-xs text-merchant-muted">{review.timeAgo}</p>
-            </div>
-            <StarRating count={review.stars} />
-            <p className="mt-2 inline-block rounded-md bg-merchant-input px-2 py-1 text-xs text-merchant-muted">
-              {review.orderLabel}
-            </p>
-            <p className="mt-2 text-sm text-merchant-body">{review.text}</p>
-            <button
-              type="button"
-              className="mt-2 text-sm font-semibold text-merchant-primary hover:underline"
-            >
-              Reply
-            </button>
-          </li>
-        ))}
-      </ul>
+      {reviews.length === 0 ? (
+        <p className="mt-4 text-sm text-merchant-muted">
+          Customer reviews will appear here once review collection is enabled.
+        </p>
+      ) : (
+        <ul className="mt-4 flex flex-col gap-4">
+          {reviews.map((review) => (
+            <li key={review.id} className="border-b border-merchant-divider pb-4 last:border-0 last:pb-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-merchant-ink">{review.name}</p>
+                <p className="text-xs text-merchant-muted">{review.timeAgo}</p>
+              </div>
+              <StarRating count={review.stars} />
+              {review.orderLabel ? (
+                <p className="mt-2 inline-block rounded-md bg-merchant-input px-2 py-1 text-xs text-merchant-muted">
+                  {review.orderLabel}
+                </p>
+              ) : null}
+              <p className="mt-2 text-sm text-merchant-body">{review.text}</p>
+              <button
+                type="button"
+                className="mt-2 text-sm font-semibold text-merchant-primary hover:underline"
+              >
+                Reply
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </article>
   )
 }

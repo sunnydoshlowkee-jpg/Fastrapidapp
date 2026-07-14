@@ -80,10 +80,32 @@ export default function Addresses() {
 
     setSaving(true)
     try {
+      let latitude
+      let longitude
+      try {
+        const position = await new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(new Error('Geolocation unavailable'))
+            return
+          }
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 60_000,
+          })
+        })
+        latitude = position.coords.latitude
+        longitude = position.coords.longitude
+      } catch {
+        // Coordinates are optional; delivery can still be created without them.
+      }
+
       await createAddress({
         type: newAddress.type,
         address: newAddress.address.trim(),
         is_default: newAddress.is_default,
+        latitude,
+        longitude,
       })
       closeAddModal()
       await fetchAddresses()

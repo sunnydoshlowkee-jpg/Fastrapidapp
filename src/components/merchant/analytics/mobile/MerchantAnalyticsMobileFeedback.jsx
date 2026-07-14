@@ -30,6 +30,11 @@ export default function MerchantAnalyticsMobileFeedback({ feedback }) {
         </div>
       </div>
 
+      {reviews.length === 0 ? (
+        <p className="mt-4 text-sm text-merchant-muted">
+          Customer reviews will appear here once review collection is enabled.
+        </p>
+      ) : (
       <ul className="mt-4 flex flex-col gap-3">
         {reviews.map((review) => (
           <li key={review.id} className="rounded-lg bg-merchant-input p-3">
@@ -44,6 +49,7 @@ export default function MerchantAnalyticsMobileFeedback({ feedback }) {
           </li>
         ))}
       </ul>
+      )}
     </article>
   )
 }

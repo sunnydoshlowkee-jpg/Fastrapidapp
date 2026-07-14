@@ -16,9 +16,9 @@ export default function WalletTransactions() {
       try {
         setLoading(true)
         const { data } = await getWalletTransactions({ page: 1 })
-        const txList = data?.data?.transactions || data?.data || []
+        const txList = data?.data || []
         setTransactions(Array.isArray(txList) ? txList : [])
-        setHasMore(false)
+        setHasMore((data?.meta?.current_page ?? 1) < (data?.meta?.last_page ?? 1))
         setPage(1)
       } catch (err) {
         console.error('Failed to fetch transactions', err)
@@ -35,8 +35,9 @@ export default function WalletTransactions() {
       setLoadingMore(true)
       const nextPage = page + 1
       const { data } = await getWalletTransactions({ page: nextPage })
-      setTransactions(prev => [...prev, ...(data.data || [])])
-      setHasMore(data.current_page < data.last_page)
+      const txList = data?.data || []
+      setTransactions(prev => [...prev, ...(Array.isArray(txList) ? txList : [])])
+      setHasMore((data?.meta?.current_page ?? nextPage) < (data?.meta?.last_page ?? nextPage))
       setPage(nextPage)
     } catch (err) {
       console.error('Failed to load more transactions', err)

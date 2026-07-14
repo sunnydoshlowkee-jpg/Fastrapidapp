@@ -1,16 +1,24 @@
-import { useEffect, useState } from 'react'
-import { getDiscovery } from '../services/discoveryService'
+import { useEffect, useMemo, useState } from 'react'
+import { getDiscovery, getDiscoveryBrowse } from '../services/discoveryService'
 import { useLocation } from '../context/LocationContext'
+import { cacheKey, getCached, setCached } from '../utils/requestCache'
 
 const EMPTY = {
   food: [],
   grocery: [],
+  more: [],
+  vendors: [],
   trending_food: [],
   trending_grocery: [],
+  trending_more: [],
+  recommended_for_you: [],
   nearby_count: 0,
-  radius_km: 20,
+  more_count: 0,
+  radius_km: 10,
   city: 'Lagos',
 }
+
+const DISCOVERY_TTL_MS = 5 * 60 * 1000
 
 function parseDiscoveryPayload(response) {
   const payload = response?.data?.data
@@ -22,44 +30,102 @@ function parseDiscoveryPayload(response) {
   return payload
 }
 
-export function useDiscovery() {
+function parseBrowsePayload(response) {
+  const payload = response?.data?.data
+
+  if (!payload || !Array.isArray(payload.vendors)) {
+    throw new Error('Browse API returned an unexpected response.')
+  }
+
+  return {
+    ...EMPTY,
+    vendors: payload.vendors,
+    radius_km: payload.radius_km ?? 10,
+    city: payload.city ?? 'Lagos',
+  }
+}
+
+function buildDiscoveryCacheKey({ location, storeFormat, vertical, isBrowseVertical }) {
+  return cacheKey([
+    isBrowseVertical ? 'discovery-browse' : 'discovery',
+    location?.latitude,
+    location?.longitude,
+    location?.city,
+    storeFormat || '',
+    vertical || '',
+  ])
+}
+
+export function useDiscovery({ storeFormat = null, vertical = null } = {}) {
   const { location, loading: locationLoading } = useLocation()
-  const [data, setData] = useState(EMPTY)
-  const [loading, setLoading] = useState(true)
+  const isBrowseVertical = Boolean(vertical && !['food', 'grocery'].includes(vertical))
+
+  const key = useMemo(() => {
+    if (location?.latitude == null || location?.longitude == null) return null
+    return buildDiscoveryCacheKey({ location, storeFormat, vertical, isBrowseVertical })
+  }, [location, storeFormat, vertical, isBrowseVertical])
+
+  const initialCached = key ? getCached(key, { ttlMs: DISCOVERY_TTL_MS }) : null
+  const [data, setData] = useState(initialCached?.data ?? EMPTY)
+  const [loading, setLoading] = useState(!initialCached)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (locationLoading || location?.latitude == null || location?.longitude == null) {
+    if (locationLoading || location?.latitude == null || location?.longitude == null || !key) {
       return
     }
 
     let cancelled = false
+    const cached = getCached(key, { ttlMs: DISCOVERY_TTL_MS })
+
+    if (cached?.data) {
+      setData(cached.data)
+      setLoading(false)
+      if (cached.fresh) {
+        return () => {
+          cancelled = true
+        }
+      }
+    } else {
+      setLoading(true)
+    }
 
     const load = async () => {
-      setLoading(true)
       setError(null)
 
       try {
-        const response = await getDiscovery({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          city: location.city,
-          country_code: location.country_code,
-          location_label: location.location_label,
-        })
+        const response = isBrowseVertical
+          ? await getDiscoveryBrowse({
+              latitude: location.latitude,
+              longitude: location.longitude,
+              city: location.city,
+              location_label: location.location_label,
+              vertical,
+              store_format: storeFormat || undefined,
+            })
+          : await getDiscovery({
+              latitude: location.latitude,
+              longitude: location.longitude,
+              city: location.city,
+              country_code: location.country_code,
+              location_label: location.location_label,
+              store_format: storeFormat || undefined,
+            })
 
-        if (!cancelled) {
-          setData(parseDiscoveryPayload(response))
-        }
+        if (cancelled) return
+
+        const next = isBrowseVertical ? parseBrowsePayload(response) : parseDiscoveryPayload(response)
+        setCached(key, next)
+        setData(next)
       } catch (err) {
-        if (!cancelled) {
-          const message =
-            err?.response?.data?.message ||
-            err?.message ||
-            'Could not load nearby results.'
-          setError(message)
-          setData(EMPTY)
-        }
+        if (cancelled) return
+
+        const message =
+          err?.response?.data?.message ||
+          err?.message ||
+          'Could not load nearby results.'
+        setError(message)
+        if (!cached?.data) setData(EMPTY)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -70,7 +136,10 @@ export function useDiscovery() {
     return () => {
       cancelled = true
     }
-  }, [location, locationLoading])
+  }, [location, locationLoading, storeFormat, vertical, isBrowseVertical, key])
 
-  return { data, loading: loading || locationLoading, error }
+  // Keep showing cached content while location resolves or a background refresh runs.
+  const showLoading = (loading || locationLoading) && data === EMPTY
+
+  return { data, loading: showLoading, error }
 }

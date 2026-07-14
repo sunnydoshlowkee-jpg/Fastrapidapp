@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock } from 'lucide-react'
 import Logo from '../../../../components/brand/Logo'
-import { login } from '../../../../services/riderAuthService'
+import { login, persistRiderSession, extractRiderSession, refreshRiderSession } from '../../../../services/riderAuthService'
 
 export default function RiderLogin() {
   const navigate = useNavigate()
@@ -19,14 +19,12 @@ export default function RiderLogin() {
     setError('')
     try {
       const response = await login({ email, password })
-      const token = response.data?.token || response.token
-      const user = response.data?.user || response.user
+      const session = extractRiderSession(response)
+      persistRiderSession(session)
 
-      localStorage.setItem('rider_token', token)
-      localStorage.setItem('rider_user', JSON.stringify(user))
-
-      // Redirect to rider dashboard index
-      navigate('/dispatch')
+      const profile = await refreshRiderSession()
+      const isApproved = profile?.rider?.status === 'approved'
+      navigate(isApproved ? '/dispatch' : '/dispatch/pending')
     } catch (err) {
       console.error(err)
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.')

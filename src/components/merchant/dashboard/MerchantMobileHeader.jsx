@@ -1,6 +1,10 @@
-import { Bell } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import NotificationBellButton from '../../notifications/NotificationBellButton'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 
 export default function MerchantMobileHeader({ variant = 'inline' }) {
+  const navigate = useNavigate()
+  const { unread } = useUnreadNotifications({ role: 'merchant' })
   const isBar = variant === 'bar'
 
   return (
@@ -20,13 +24,15 @@ export default function MerchantMobileHeader({ variant = 'inline' }) {
       >
         {isBar ? 'MERCHANT PORTAL' : 'Merchant Portal'}
       </h1>
-      <button
-        type="button"
-        className="flex h-10 w-10 items-center justify-center rounded-full text-merchant-link"
-        aria-label="Notifications"
-      >
-        <Bell size={18} strokeWidth={1.75} />
-      </button>
+      <NotificationBellButton
+        onClick={() => navigate('/merchant/notifications')}
+        count={unread}
+        tone="indigo"
+        iconSize={18}
+        iconClassName="text-merchant-link"
+        className="h-10 w-10 rounded-full"
+        ariaLabel={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
+      />
     </header>
   )
 }

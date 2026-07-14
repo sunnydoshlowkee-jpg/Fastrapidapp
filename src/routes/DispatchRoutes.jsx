@@ -16,7 +16,7 @@ import RiderPayment from '../apps/dispatch/pages/onboarding/PaymentDetails'
 import RiderSuccess from '../apps/dispatch/pages/onboarding/Success'
 
 // Main app screens
-import MapView from '../apps/dispatch/pages/MapView'
+import DispatchHome from '../apps/dispatch/pages/DispatchHome'
 import ActiveDelivery from '../apps/dispatch/pages/ActiveDelivery'
 import DeliverySuccess from '../apps/dispatch/pages/DeliverySuccess'
 import Earnings from '../apps/dispatch/pages/Earnings'
@@ -25,16 +25,21 @@ import PayoutHistory from '../apps/dispatch/pages/PayoutHistory'
 import Deliveries from '../apps/dispatch/pages/Deliveries'
 import CustomerChat from '../apps/dispatch/pages/CustomerChat'
 import RiderProfile from '../apps/dispatch/pages/RiderProfile'
+import RiderPrivacySecurity from '../apps/dispatch/pages/PrivacySecurity'
 import EditProfile from '../apps/dispatch/pages/EditProfile'
 import HelpCenter from '../apps/dispatch/pages/HelpCenter'
 import MyDocuments from '../apps/dispatch/pages/MyDocuments'
 import Notifications from '../apps/dispatch/pages/Notifications'
+import PendingApproval from '../apps/dispatch/pages/PendingApproval'
+import BiometricUnlock from '../apps/user/pages/auth/BiometricUnlock'
+import { APP_ROLES } from '../utils/appRole'
 
 export default function DispatchRoutes() {
   return (
     <Routes>
       {/* Auth */}
       <Route path="login" element={<RiderLogin />} />
+      <Route path="auth/biometric-unlock" element={<BiometricUnlock role={APP_ROLES.rider} />} />
 
       {/* Onboarding — no layout wrapper */}
       <Route path="splash" element={<RiderSplash />} />
@@ -49,17 +54,20 @@ export default function DispatchRoutes() {
 
       {/* Active Delivery Flow (Full screen, no bottom nav) */}
       <Route path="delivery/:id" element={<ActiveDelivery />} />
+      <Route path="active-delivery/:id" element={<ActiveDelivery />} />
       <Route path="delivery/:id/chat" element={<CustomerChat />} />
       <Route path="delivery/:id/success" element={<DeliverySuccess />} />
 
       {/* Main rider app — with layout */}
       <Route element={<DispatchLayout />}>
-        <Route index element={<MapView />} />
+        <Route path="pending" element={<PendingApproval />} />
+        <Route index element={<DispatchHome />} />
         <Route path="deliveries" element={<Deliveries />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="earnings/withdraw" element={<Withdraw />} />
         <Route path="earnings/history" element={<PayoutHistory />} />
         <Route path="profile" element={<RiderProfile />} />
+        <Route path="profile/privacy-security" element={<RiderPrivacySecurity />} />
         <Route path="profile/edit" element={<EditProfile />} />
         <Route path="profile/help" element={<HelpCenter />} />
         <Route path="profile/documents" element={<MyDocuments />} />

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bell, ShoppingBag, Gift, Info } from 'lucide-react'
+import { ArrowLeft, Bell, MessageSquare, ShoppingBag, Gift, Info } from 'lucide-react'
 import { getNotifications, markAsRead } from '../../../services/notificationService'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 
 export default function Notifications() {
   const navigate = useNavigate()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
+  const { refresh: refreshUnread } = useUnreadNotifications({ role: 'user' })
 
   useEffect(() => {
     const fetchNotifs = async () => {
@@ -21,18 +23,36 @@ export default function Notifications() {
       }
     }
     fetchNotifs()
+    const timer = window.setInterval(fetchNotifs, 10000)
+    return () => window.clearInterval(timer)
   }, [])
 
-  const handleMarkAsRead = async (id) => {
+  const openNotification = async (notif) => {
     try {
-      await markAsRead(id)
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+      if (!notif.is_read) {
+        await markAsRead(notif.id)
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, is_read: true } : n)),
+        )
+        refreshUnread()
+      }
     } catch (err) {
       console.error(err)
+    }
+
+    const path = notif?.data?.path
+    if (path) {
+      navigate(path)
+      return
+    }
+
+    if (notif.type === 'chat' && notif?.data?.order_id) {
+      navigate(`/app/order/${notif.data.order_id}/chat`)
     }
   }
 
   const getIcon = (type) => {
+    if (type === 'chat') return <MessageSquare size={20} className="text-[#4F46E5]" />
     if (type === 'order') return <ShoppingBag size={20} className="text-[#4F46E5]" />
     if (type === 'promo') return <Gift size={20} className="text-orange-500" />
     if (type === 'system') return <Info size={20} className="text-blue-500" />
@@ -40,7 +60,7 @@ export default function Notifications() {
   }
 
   const getBgColor = (type) => {
-    if (type === 'order') return 'bg-indigo-50'
+    if (type === 'chat' || type === 'order') return 'bg-indigo-50'
     if (type === 'promo') return 'bg-orange-50'
     if (type === 'system') return 'bg-blue-50'
     return 'bg-gray-50'
@@ -70,26 +90,45 @@ export default function Notifications() {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {notifications.map(notif => (
-              <div 
-                key={notif.id} 
-                onClick={() => !notif.is_read && handleMarkAsRead(notif.id)}
-                className={`bg-white rounded-2xl p-4 shadow-sm border flex gap-4 cursor-pointer transition-colors ${notif.is_read ? 'border-gray-100 opacity-70' : 'border-[#4F46E5]/20 hover:border-[#4F46E5]/40'}`}
+            {notifications.map((notif) => (
+              <button
+                key={notif.id}
+                type="button"
+                onClick={() => openNotification(notif)}
+                className={`bg-white rounded-2xl p-4 shadow-sm border flex gap-4 text-left cursor-pointer transition-colors ${
+                  notif.is_read
+                    ? 'border-gray-100 opacity-70'
+                    : 'border-[#4F46E5]/20 hover:border-[#4F46E5]/40'
+                }`}
               >
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getBgColor(notif.type)}`}>
                   {getIcon(notif.type)}
                 </div>
                 <div className="flex-1 pt-1">
                   <div className="flex justify-between items-start mb-1">
-                    <h4 className={`text-[14px] ${notif.is_read ? 'font-semibold text-gray-700' : 'font-bold text-gray-900'}`}>{notif.title}</h4>
-                    <span className="text-[10px] text-gray-400 shrink-0 mt-0.5">{new Date(notif.created_at).toLocaleDateString()}</span>
+                    <h4
+                      className={`text-[14px] ${
+                        notif.is_read ? 'font-semibold text-gray-700' : 'font-bold text-gray-900'
+                      }`}
+                    >
+                      {notif.title}
+                    </h4>
+                    <span className="text-[10px] text-gray-400 shrink-0 mt-0.5">
+                      {notif.created_at ? new Date(notif.created_at).toLocaleDateString() : ''}
+                    </span>
                   </div>
-                  <p className={`text-[12px] leading-relaxed ${notif.is_read ? 'text-gray-500' : 'text-gray-600'}`}>{notif.message}</p>
+                  <p
+                    className={`text-[12px] leading-relaxed ${
+                      notif.is_read ? 'text-gray-500' : 'text-gray-600'
+                    }`}
+                  >
+                    {notif.message}
+                  </p>
                 </div>
                 {!notif.is_read && (
                   <div className="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-sm" />
                 )}
-              </div>
+              </button>
             ))}
           </div>
         )}

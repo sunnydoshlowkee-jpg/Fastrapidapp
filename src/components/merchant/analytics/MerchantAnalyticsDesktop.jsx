@@ -1,9 +1,4 @@
-import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import {
-  MERCHANT_ANALYTICS,
-  MERCHANT_ANALYTICS_PERIODS,
-} from '../../../services/data/merchantAnalytics.mock'
 import MerchantAnalyticsCustomerInsights from './MerchantAnalyticsCustomerInsights'
 import MerchantAnalyticsFeedback from './MerchantAnalyticsFeedback'
 import MerchantAnalyticsHeader from './MerchantAnalyticsHeader'
@@ -13,10 +8,13 @@ import MerchantAnalyticsQuickStats from './MerchantAnalyticsQuickStats'
 import MerchantAnalyticsRevenueCard from './MerchantAnalyticsRevenueCard'
 import MerchantAnalyticsTopPerformers from './MerchantAnalyticsTopPerformers'
 
-export default function MerchantAnalyticsDesktop() {
+export default function MerchantAnalyticsDesktop({
+  data,
+  periods,
+  activePeriod,
+  onPeriodChange,
+}) {
   const { openMobileNav } = useOutletContext()
-  const [activePeriod, setActivePeriod] = useState('today')
-  const data = MERCHANT_ANALYTICS
 
   return (
     <div className="hidden flex-1 flex-col gap-6 p-6 lg:flex lg:gap-8 lg:p-8">
@@ -28,9 +26,9 @@ export default function MerchantAnalyticsDesktop() {
       />
 
       <MerchantAnalyticsPeriodTabs
-        periods={MERCHANT_ANALYTICS_PERIODS}
+        periods={periods}
         activePeriod={activePeriod}
-        onChange={setActivePeriod}
+        onChange={onPeriodChange}
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

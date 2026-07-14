@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bell, MapPin, CreditCard, Gift, HelpCircle, LogOut, ChevronRight, Shield, Edit2 } from 'lucide-react'
+import { ArrowLeft, MapPin, CreditCard, Gift, HelpCircle, LogOut, ChevronRight, Shield, Edit2 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
 import { useProfileAvatarUpload } from '../../../hooks/useProfileAvatarUpload'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 import ProfileAvatar from '../../../components/profile/ProfileAvatar'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -18,10 +20,20 @@ export default function Profile() {
     openFilePicker,
     handleFileChange,
   } = useProfileAvatarUpload()
+  const { unread, refresh: refreshUnread } = useUnreadNotifications({
+    role: 'user',
+    enabled: Boolean(localStorage.getItem('rapid_token')),
+  })
 
   useEffect(() => {
-    refreshUser()
-  }, [refreshUser])
+    if (!user) {
+      refreshUser()
+    }
+  }, [refreshUser, user])
+
+  useEffect(() => {
+    refreshUnread()
+  }, [refreshUnread])
 
   useEffect(() => {
     if (!loading && !localStorage.getItem('rapid_token')) {
@@ -64,10 +76,14 @@ export default function Profile() {
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-        <button type="button" onClick={() => navigate('/app/notifications')} className="p-1 -mr-1 text-[#4F46E5] rounded-full transition-colors relative hover:bg-indigo-50">
-          <Bell size={22} />
-          <div className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/app/notifications')}
+          count={unread}
+          className="p-1 -mr-1 rounded-full transition-colors relative hover:bg-indigo-50 w-10 h-10"
+          iconSize={22}
+          iconClassName="text-[#4F46E5]"
+          tone="indigo"
+        />
       </div>
 
       <div className="md:hidden px-6 w-full max-w-md mx-auto pt-4 flex flex-col items-center">
@@ -120,6 +136,13 @@ export default function Profile() {
               <Gift size={20} className="text-gray-400 group-hover:text-gray-600" />
               <span className="text-[13px] font-semibold text-gray-800">Refer & Earn</span>
               <span className="bg-yellow-400 text-yellow-900 text-[9px] font-bold px-2 py-0.5 rounded-full">Earn ₦2,000</span>
+            </div>
+            <ChevronRight size={16} className="text-gray-300" />
+          </div>
+          <div onClick={() => navigate('/app/profile/privacy-security')} className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 rounded-2xl transition-colors group">
+            <div className="flex items-center gap-4">
+              <Shield size={20} className="text-gray-400 group-hover:text-gray-600" />
+              <span className="text-[13px] font-semibold text-gray-800">Privacy & Security</span>
             </div>
             <ChevronRight size={16} className="text-gray-300" />
           </div>
@@ -234,6 +257,19 @@ export default function Profile() {
             <div>
               <p className="text-[12px] font-bold tracking-widest text-gray-400 uppercase mb-4 pl-1">Support & Info</p>
               <div className="flex flex-col gap-3">
+                <div onClick={() => navigate('/app/profile/privacy-security')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-[#2D2AEE]">
+                      <Shield size={18} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-[15px] mb-0.5 group-hover:text-[#2D2AEE] transition-colors">Privacy & Security</h4>
+                      <p className="text-[12px] text-gray-400 font-medium">Login, transactions, and order confirmation</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={18} className="text-gray-300" />
+                </div>
+
                 <div onClick={() => navigate('/app/profile/help')} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-[#F4F5F7] rounded-xl flex items-center justify-center text-[#2D2AEE]">

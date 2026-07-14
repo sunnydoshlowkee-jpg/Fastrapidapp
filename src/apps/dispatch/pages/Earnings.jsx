@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Truck, TrendingUp, Star, Building2, Clock } from 'lucide-react'
+import { Truck, TrendingUp, Star, Building2, Clock } from 'lucide-react'
 import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 
 const PERIOD_TABS = ['Today', 'This Week', 'This Month']
 
@@ -9,6 +11,10 @@ export default function Earnings() {
   const navigate = useNavigate()
   const { earnings, loading, refresh } = useRiderEarnings()
   const [period, setPeriod] = useState('This Week')
+  const { unread } = useUnreadNotifications({
+    role: 'rider',
+    enabled: Boolean(localStorage.getItem('rider_token') || localStorage.getItem('rapid_token')),
+  })
 
   useEffect(() => {
     refresh()
@@ -33,9 +39,12 @@ export default function Earnings() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">My Earnings</h1>
-        <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 flex items-center justify-center">
-          <Bell size={22} className="text-gray-500" />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/dispatch/notifications')}
+          count={unread}
+          className="w-10 h-10"
+          iconSize={22}
+        />
       </div>
 
       <div className="px-5 space-y-4">

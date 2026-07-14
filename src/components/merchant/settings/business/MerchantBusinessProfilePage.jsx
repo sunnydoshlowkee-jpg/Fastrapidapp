@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMerchantBusinessProfile } from '../../../../services/merchantBusinessProfileService'
+import {
+  getMerchantBusinessProfile,
+  updateMerchantBusinessCategory,
+} from '../../../../services/merchantBusinessProfileService'
 import { getStoredMerchantSession } from '../../../../services/merchantAuthService'
 import MerchantBusinessProfileDesktop from './MerchantBusinessProfileDesktop'
 import MerchantBusinessProfileMobile from './MerchantBusinessProfileMobile'
@@ -9,6 +12,7 @@ export default function MerchantBusinessProfilePage() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [savingCategory, setSavingCategory] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -45,6 +49,21 @@ export default function MerchantBusinessProfilePage() {
     }
   }, [navigate])
 
+  const handleSaveCategory = useCallback(async ({ businessType, storeFormat }) => {
+    setSavingCategory(true)
+    try {
+      const next = await updateMerchantBusinessCategory({ businessType, storeFormat })
+      setProfile(next)
+      return next
+    } finally {
+      setSavingCategory(false)
+    }
+  }, [])
+
+  const handleLogoUpdated = useCallback((next) => {
+    setProfile(next)
+  }, [])
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-sm text-merchant-muted">
@@ -70,8 +89,18 @@ export default function MerchantBusinessProfilePage() {
 
   return (
     <>
-      <MerchantBusinessProfileMobile profile={profile} />
-      <MerchantBusinessProfileDesktop profile={profile} />
+      <MerchantBusinessProfileMobile
+        profile={profile}
+        onSaveCategory={handleSaveCategory}
+        savingCategory={savingCategory}
+        onLogoUpdated={handleLogoUpdated}
+      />
+      <MerchantBusinessProfileDesktop
+        profile={profile}
+        onSaveCategory={handleSaveCategory}
+        savingCategory={savingCategory}
+        onLogoUpdated={handleLogoUpdated}
+      />
     </>
   )
 }

@@ -33,7 +33,7 @@ export default function RiderSignUp() {
       sessionStorage.setItem('rider_reg_password', password)
       
       navigate('/dispatch/onboarding/verify', { 
-        state: { method, email, phone } 
+        state: { method, email, phone, nextStep: 'personal' } 
       })
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to request verification code.')

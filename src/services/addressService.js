@@ -5,13 +5,15 @@ export async function getAddresses() {
   return api.get('/user/addresses')
 }
 
-export async function createAddress({ type, address, city, state, is_default }) {
+export async function createAddress({ type, address, city, state, latitude, longitude, is_default }) {
   try {
     const { data } = await api.post('/user/addresses', {
       type,
       address: address?.trim(),
       city: city?.trim() || undefined,
       state: state?.trim() || undefined,
+      latitude: latitude ?? undefined,
+      longitude: longitude ?? undefined,
       is_default: Boolean(is_default),
     })
     return data

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, ArrowRight, Clock, SlidersHorizontal, Search } from 'lucide-react'
+import { ArrowRight, Clock, SlidersHorizontal, Search } from 'lucide-react'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 
 const TABS = ['All', 'Completed', 'Declined', 'Cancelled']
 
@@ -17,6 +19,10 @@ export default function Deliveries() {
   const { deliveries, loading, error, refresh } = useRiderDeliveries()
   const [activeTab, setActiveTab] = useState('All')
   const [search, setSearch] = useState('')
+  const { unread } = useUnreadNotifications({
+    role: 'rider',
+    enabled: Boolean(localStorage.getItem('rider_token') || localStorage.getItem('rapid_token')),
+  })
 
   useEffect(() => {
     refresh()
@@ -40,9 +46,12 @@ export default function Deliveries() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">My Deliveries</h1>
-        <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 flex items-center justify-center">
-          <Bell size={22} className="text-gray-500" />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/dispatch/notifications')}
+          count={unread}
+          className="w-10 h-10"
+          iconSize={22}
+        />
       </div>
 
       {/* Filter tabs */}
@@ -132,7 +141,7 @@ export default function Deliveries() {
                     {/* Route bar */}
                     <div className="rounded-2xl px-4 py-3 flex items-center gap-2 mb-3 cursor-pointer hover:bg-gray-200 transition-colors"
                       style={{ background: '#F0F0F8' }}
-                      onClick={() => navigate(`/dispatch/active-delivery/${d.id}`)}
+                      onClick={() => navigate(`/dispatch/delivery/${d.id}`)}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Pickup</p>

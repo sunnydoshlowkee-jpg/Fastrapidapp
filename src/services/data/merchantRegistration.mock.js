@@ -51,8 +51,20 @@ export const MERCHANT_REGISTRATION = {
       },
       businessType: {
         label: 'Business Type',
-        options: ['Restaurant', 'Retail', 'Grocery', 'Pharmacy', 'Other'],
+        options: ['Restaurant', 'Retail', 'Grocery', 'Pharmacy', 'Fashion', 'Other'],
         defaultValue: 'Restaurant',
+      },
+      storeFormat: {
+        label: 'Store Format',
+        placeholder: 'Select format (optional)',
+        options: [
+          { value: 'supermarket', label: 'Supermarket' },
+          { value: 'minimart', label: 'Minimart' },
+          { value: 'local_market', label: 'Local Market' },
+          { value: 'warehouse', label: 'Warehouse' },
+          { value: 'variety', label: 'Variety Store' },
+        ],
+        helper: 'For grocery and retail stores only. Helps customers find the right store type.',
       },
       businessEmail: {
         label: 'Business Email',
@@ -125,7 +137,19 @@ export const MERCHANT_REGISTRATION = {
         businessType: {
           label: 'Business Type',
           placeholder: 'Select Type',
-          options: ['Restaurant', 'Retail', 'Grocery', 'Pharmacy', 'Other'],
+          options: ['Restaurant', 'Retail', 'Grocery', 'Pharmacy', 'Fashion', 'Other'],
+        },
+        storeFormat: {
+          label: 'Store Format',
+          placeholder: 'Select format (optional)',
+          options: [
+            { value: 'supermarket', label: 'Supermarket' },
+            { value: 'minimart', label: 'Minimart' },
+            { value: 'local_market', label: 'Local Market' },
+            { value: 'warehouse', label: 'Warehouse' },
+            { value: 'variety', label: 'Variety Store' },
+          ],
+          helper: 'For grocery and retail stores only.',
         },
         businessEmail: {
           label: 'Business Email',

@@ -3,36 +3,68 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, PhoneCall, MapPin, ShoppingCart, Home, Clock, Wallet, User, ChevronDown, Minus, Plus, Trash2, ArrowRight } from 'lucide-react'
 import { getOrders } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
+import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+
+const ORDERS_TTL_MS = 2 * 60 * 1000
 
 export default function Orders() {
   const navigate = useNavigate()
   const { items: cartItems = [], total, count, subtotal, deliveryFee, serviceCharge, updateQty, remove } = useCart()
   const [activeTab, setActiveTab] = useState('Ongoing') // Cart | Ongoing | Completed
   const [activeTabDesktop, setActiveTabDesktop] = useState('Orders') // Just for sidebar
-  
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+
+  const ordersCacheKey = cacheKey(['orders', 1])
+  const initialCached = getCached(ordersCacheKey, { ttlMs: ORDERS_TTL_MS })
+  const [orders, setOrders] = useState(initialCached?.data?.orders || [])
+  const [loading, setLoading] = useState(!initialCached?.data)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
+  const [page, setPage] = useState(initialCached?.data?.page || 1)
+  const [hasMore, setHasMore] = useState(initialCached?.data?.hasMore || false)
   const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
+    let cancelled = false
+    const key = cacheKey(['orders', 1])
+    const cached = getCached(key, { ttlMs: ORDERS_TTL_MS })
+
+    if (cached?.data) {
+      setOrders(cached.data.orders || [])
+      setPage(cached.data.page || 1)
+      setHasMore(Boolean(cached.data.hasMore))
+      setLoading(false)
+      if (cached.fresh) {
+        return () => {
+          cancelled = true
+        }
+      }
+    } else {
+      setLoading(true)
+    }
+
     const fetchOrders = async () => {
       try {
-        setLoading(true)
         const { data } = await getOrders({ page: 1 })
-        setOrders(data.data || [])
-        setHasMore(data.current_page < data.last_page)
-        setPage(1)
+        if (cancelled) return
+        const nextOrders = data.data || []
+        const nextPage = 1
+        const nextHasMore = data.current_page < data.last_page
+        setCached(key, { orders: nextOrders, page: nextPage, hasMore: nextHasMore })
+        setOrders(nextOrders)
+        setHasMore(nextHasMore)
+        setPage(nextPage)
       } catch (err) {
         console.error('Failed to fetch orders', err)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
     fetchOrders()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const loadMore = async () => {
@@ -146,28 +178,64 @@ export default function Orders() {
           {activeTab === 'Cart' && (
             <div className="flex flex-col gap-6">
               {cartItems.length > 0 ? (
-                <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex flex-col gap-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center">
-                        <ShoppingCart className="text-orange-500" />
+                <>
+                  <div className="flex flex-col gap-4">
+                    {cartItems.map((item) => (
+                      <div key={item.id} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 shrink-0">
+                          <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-gray-900 text-sm mb-1">{item.name}</h3>
+                          <p className="text-xs text-gray-500 truncate">{item.desc || 'Menu item'}</p>
+                          <div className="flex items-center justify-between mt-3 gap-3">
+                            <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2 py-1 border border-gray-200">
+                              <button onClick={() => updateQty(item.id, item.qty - 1)} className="w-6 h-6 flex items-center justify-center text-gray-600">
+                                <Minus size={14} />
+                              </button>
+                              <span className="text-sm font-bold text-gray-900 w-4 text-center">{item.qty}</span>
+                              <button onClick={() => updateQty(item.id, item.qty + 1)} className="w-6 h-6 flex items-center justify-center text-gray-600">
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                            <button onClick={() => remove(item.id)} className="text-red-500 p-1.5 rounded-lg hover:bg-red-50">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="shrink-0 font-bold text-sm text-gray-900">{item.price}</div>
                       </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900 text-sm mb-0.5">Your Cart</h3>
-                        <p className="text-[11px] font-medium text-gray-500">{count} items • {formatCurrency(total)}</p>
+                    ))}
+                  </div>
+
+                  <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+                    <h3 className="font-bold text-gray-900 text-sm mb-4">Order Summary</h3>
+                    <div className="flex flex-col gap-3 text-sm mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Subtotal</span>
+                        <span className="font-bold text-gray-900">{formatCurrency(subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Delivery Fee</span>
+                        <span className="font-bold text-gray-900">{formatCurrency(deliveryFee)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Service Charge</span>
+                        <span className="font-bold text-gray-900">{formatCurrency(serviceCharge)}</span>
                       </div>
                     </div>
-                    <button onClick={() => navigate('/app/cart')} className="text-[#4F46E5] text-[11px] font-bold">
-                      View items
-                    </button>
-                  </div>
-                  
-                  <div className="flex flex-col gap-3">
-                    <button onClick={() => navigate('/app/checkout')} className="w-full bg-[#4F46E5] text-white py-3.5 rounded-2xl font-semibold hover:bg-indigo-700 transition-colors text-[13px]">
+                    <div className="flex justify-between items-center py-4 border-t border-gray-100 mb-4">
+                      <span className="font-bold text-gray-900">Total</span>
+                      <span className="font-bold text-[#4F46E5]">{formatCurrency(total)}</span>
+                    </div>
+                    <button
+                      onClick={() => navigate('/app/checkout')}
+                      className="w-full bg-[#4F46E5] text-white py-3.5 rounded-2xl font-semibold hover:bg-indigo-700 transition-colors text-sm"
+                    >
                       Checkout
                     </button>
                   </div>
-                </div>
+                </>
               ) : (
                 <div className="text-center py-10 text-gray-500 text-sm">Your cart is empty.</div>
               )}

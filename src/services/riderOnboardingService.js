@@ -41,14 +41,6 @@ export async function uploadStoredRiderIdentityAssets() {
   const stored = getStoredRiderIdentity()
   const uploads = []
 
-  if (stored.profilePhoto?.dataUrl) {
-    const file = await dataUrlToFile(
-      stored.profilePhoto.dataUrl,
-      stored.profilePhoto.name || 'profile-photo.jpg',
-    )
-    uploads.push(uploadProfileAvatar(file))
-  }
-
   if (stored.govId?.dataUrl) {
     const file = await dataUrlToFile(stored.govId.dataUrl, stored.govId.name || 'government-id.jpg')
     uploads.push(uploadRiderDocument(IDENTITY_FIELDS.govId, file))
@@ -59,12 +51,31 @@ export async function uploadStoredRiderIdentityAssets() {
     uploads.push(uploadRiderDocument(IDENTITY_FIELDS.selfie, file))
   }
 
-  if (uploads.length === 0) {
-    return
+  if (stored.profilePhoto?.dataUrl) {
+    const file = await dataUrlToFile(
+      stored.profilePhoto.dataUrl,
+      stored.profilePhoto.name || 'profile-photo.jpg',
+    )
+    uploads.push(uploadProfileAvatar(file))
   }
 
-  await Promise.all(uploads)
-  clearStoredRiderIdentity()
+  if (uploads.length === 0) {
+    return { uploaded: 0, failed: 0 }
+  }
+
+  const results = await Promise.allSettled(uploads)
+  const failed = results.filter((result) => result.status === 'rejected').length
+
+  if (failed === 0) {
+    clearStoredRiderIdentity()
+  }
+
+  if (failed > 0) {
+    const firstError = results.find((result) => result.status === 'rejected')
+    throw firstError?.reason ?? new Error('Document upload failed.')
+  }
+
+  return { uploaded: results.length, failed }
 }
 
 export { IDENTITY_FIELDS }

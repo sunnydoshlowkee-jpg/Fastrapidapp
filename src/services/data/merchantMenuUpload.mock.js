@@ -21,7 +21,6 @@ export const MERCHANT_MENU_UPLOAD = {
     browseLabel: 'browse',
     uploadLabel: 'Upload',
     templateLabel: 'Download Template',
-    templateUrl: '#',
     documentationUrl: '#',
   },
   help: {

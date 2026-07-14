@@ -1,24 +1,47 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ShoppingCart, Search, Navigation, Star, Truck, SlidersHorizontal, MapPin, Heart } from 'lucide-react'
 import { useDiscovery } from '../../../hooks/useDiscovery'
 import { useCart } from '../../../context/CartContext'
+import { normalizeVendorType, storeFormatFromFilter, browseCategoryTitle } from '../../../utils/merchantBusinessType'
 
 export default function Vendors() {
   const { type } = useParams()
   const navigate = useNavigate()
-  const { data, loading } = useDiscovery()
-  const { count } = useCart()
-  const isFood = type === 'food'
-  
-  const title = isFood ? 'Food Vendors' : 'Grocery Stores'
-  const vendors = isFood ? data.food : data.grocery
-  
-  const filters = isFood 
+  const vertical = normalizeVendorType(type) || 'food'
+  const isFood = vertical === 'food'
+  const isGrocery = vertical === 'grocery'
+  const isBrowseVertical = !isFood && !isGrocery
+  const filters = isFood
     ? ['All', 'Nearest', 'Top Rated', 'Free Delivery']
-    : ['Nearest', 'Supermarkets', 'Local Markets']
+    : isGrocery
+      ? ['All', 'Nearest', 'Supermarkets', 'Minimarts', 'Local Markets', 'Warehouses']
+      : ['All', 'Nearest', 'Top Rated']
 
-  const [activeFilter, setActiveFilter] = useState(filters[0])
+  const [activeFilter, setActiveFilter] = useState('All')
+  const storeFormat = isGrocery ? storeFormatFromFilter(activeFilter) : null
+  const { data, loading } = useDiscovery({
+    storeFormat: isGrocery ? storeFormat : null,
+    vertical: isBrowseVertical ? vertical : null,
+  })
+  const { count } = useCart()
+
+  const title = browseCategoryTitle(vertical)
+  const sourceVendors = isBrowseVertical
+    ? (data.vendors ?? [])
+    : (isFood ? data.food : data.grocery)
+
+  const vendors = useMemo(() => {
+    let list = [...(sourceVendors || [])]
+    if (activeFilter === 'Nearest') {
+      list.sort((a, b) => (a.distance_km ?? 999) - (b.distance_km ?? 999))
+    } else if (activeFilter === 'Top Rated') {
+      list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+    } else if (activeFilter === 'Free Delivery') {
+      list = list.filter((v) => String(v.fee || v.delivery || '').toLowerCase().includes('free'))
+    }
+    return list
+  }, [sourceVendors, activeFilter])
 
   if (loading) {
     return (

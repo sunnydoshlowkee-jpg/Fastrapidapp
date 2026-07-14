@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { getCurrentPosition } from '../../../utils/geolocation'
+import { resolveStorageUrl } from '../../../utils/mediaUrl'
 import L from 'leaflet'
 import {
   ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
@@ -217,14 +218,17 @@ export default function ActiveDelivery() {
       setLoading(true)
       fetchDetails(id).then(data => {
         setDelivery(data)
-        if (data.status === 'pending' || !data.status) setStep(STEPS.NEW_ORDER)
-        else if (data.status === 'accepted') setStep(STEPS.HEADING_PICKUP)
-        else if (data.status === 'picked_up') {
+        const status = (data.status || '').toLowerCase()
+        if (status === 'pending' || !status) setStep(STEPS.NEW_ORDER)
+        else if (status === 'accepted' || status === 'ready_for_pickup' || status === 'arrived_at_pickup') setStep(STEPS.HEADING_PICKUP)
+        else if (status === 'picked_up' || status === 'on_the_way') {
           setStep(STEPS.EN_ROUTE)
           setChecks({ collected: true, sealed: true, matches: true })
         }
-        else if (data.status === 'delivered') navigate(`/dispatch/delivery/${id}/success`)
-      }).catch(err => console.error(err)).finally(() => setLoading(false))
+        else if (status === 'delivered') navigate(`/dispatch/delivery/${id}/success`)
+      }).catch(() => {
+        setDelivery(null)
+      }).finally(() => setLoading(false))
     }
   }, [id, fetchDetails, navigate])
 
@@ -232,13 +236,14 @@ export default function ActiveDelivery() {
   const allChecked = Object.values(checks).every(Boolean)
 
   const handleAccept = async () => {
+    const deliveryId = delivery?.id || id
     try {
       setIsProcessing(true)
-      await accept(id)
+      await accept(deliveryId)
       setStep(STEPS.HEADING_PICKUP)
       try {
          const coords = await getCurrentPosition()
-         await updateStatus(id, 'accepted', coords)
+         await updateStatus(deliveryId, 'accepted', coords)
       } catch(e) {} 
     } catch (e) {
       alert(e.response?.data?.message || "Failed to accept delivery")
@@ -247,10 +252,24 @@ export default function ActiveDelivery() {
     }
   }
 
-  const handleStatusUpdate = async (status, nextStep, coords = null) => {
+  const handleArrivedAtPickup = async () => {
+    const deliveryId = delivery?.id || id
     try {
       setIsProcessing(true)
-      await updateStatus(id, status, coords)
+      await updateStatus(deliveryId, 'arrived_at_pickup')
+      setStep(STEPS.CONFIRM_PICKUP)
+    } catch (e) {
+      alert(e.response?.data?.message || 'Failed to record arrival at pickup')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleStatusUpdate = async (status, nextStep, coords = null) => {
+    const deliveryId = delivery?.id || id
+    try {
+      setIsProcessing(true)
+      await updateStatus(deliveryId, status, coords)
       if (nextStep) setStep(nextStep)
     } catch (e) {
       alert(e.response?.data?.message || 'Failed to update status')
@@ -285,10 +304,32 @@ export default function ActiveDelivery() {
     )
   }
 
+  if (!delivery) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3 max-w-md mx-auto px-6 text-center">
+        <p className="text-sm font-semibold text-gray-700">Could not load this delivery.</p>
+        <button
+          type="button"
+          onClick={() => navigate('/dispatch/deliveries')}
+          className="rounded-xl bg-[#5B5BFF] px-5 py-3 text-sm font-bold text-white"
+        >
+          Back to deliveries
+        </button>
+      </div>
+    )
+  }
+
   const merchant = delivery?.order?.items?.[0]?.product?.merchant
+  const merchantLogo = resolveStorageUrl(merchant?.logo_path || merchant?.logo_url)
+  const merchantPhone =
+    merchant?.representative_phone ||
+    merchant?.phone ||
+    merchant?.user?.phone ||
+    null
   const customer = delivery?.order?.user
   const customerName = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Customer' : 'Customer'
-  const address = delivery?.order?.delivery_address
+  const customerPhone = customer?.phone || null
+  const address = delivery?.order?.delivery_address || delivery?.order?.deliveryAddress
   const deliveryFee = delivery?.fee || delivery?.order?.delivery_fee || 0
   const itemsCount = delivery?.order?.items?.length || 1
 
@@ -384,15 +425,32 @@ export default function ActiveDelivery() {
             <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6" />
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center shrink-0 border border-gray-200">
-                {merchant?.logo_path ? <img src={merchant.logo_path} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl">🍔</span>}
+                {merchantLogo ? (
+                  <img src={merchantLogo} alt={merchant?.business_name || 'Merchant'} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl">🍔</span>
+                )}
               </div>
               <div className="flex-1">
                 <p className="font-black text-lg text-gray-900">{merchant?.business_name || 'Restaurant'}</p>
                 <p className="text-sm text-gray-500 truncate">{merchant?.registered_address || 'Merchant Address'}</p>
               </div>
-              <a href={`tel:${merchant?.phone || '000'}`} className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition-colors">
-                <Phone size={18} />
-              </a>
+              {merchantPhone ? (
+                <a
+                  href={`tel:${merchantPhone}`}
+                  aria-label={`Call ${merchant?.business_name || 'merchant'}`}
+                  className="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition-colors"
+                >
+                  <Phone size={18} />
+                </a>
+              ) : (
+                <span
+                  aria-label="Merchant phone unavailable"
+                  className="w-10 h-10 bg-gray-100 text-gray-300 rounded-full flex items-center justify-center"
+                >
+                  <Phone size={18} />
+                </span>
+              )}
             </div>
             <div className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 mb-6">
               <div className="flex items-center gap-3">
@@ -401,8 +459,8 @@ export default function ActiveDelivery() {
               </div>
               <button onClick={() => setStep(STEPS.CONFIRM_PICKUP)} className="text-xs font-black text-[#5B5BFF] uppercase tracking-wider">Checklist</button>
             </div>
-            <button onClick={() => setStep(STEPS.CONFIRM_PICKUP)} className="w-full py-[18px] rounded-2xl text-white font-black text-base bg-gradient-to-r from-[#5B5BFF] to-[#4444EE] shadow-[0_8px_20px_rgba(91,91,255,0.3)] active:scale-[0.98] transition-all">
-              Arrived at Pickup
+            <button onClick={handleArrivedAtPickup} disabled={isProcessing} className="w-full py-[18px] rounded-2xl text-white font-black text-base bg-gradient-to-r from-[#5B5BFF] to-[#4444EE] shadow-[0_8px_20px_rgba(91,91,255,0.3)] active:scale-[0.98] transition-all disabled:opacity-50">
+              {isProcessing ? 'Recording arrival...' : 'Arrived at Pickup'}
             </button>
           </div>
         )}
@@ -458,9 +516,22 @@ export default function ActiveDelivery() {
                 <p className="text-sm text-gray-500 font-medium mt-1 truncate max-w-[250px]">{address?.address || 'Customer Address'}</p>
               </div>
               <div className="flex flex-col gap-2 shrink-0">
-                <a href={`tel:${customer?.phone || '000'}`} className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-100">
-                  <Phone size={18} />
-                </a>
+                {customerPhone ? (
+                  <a
+                    href={`tel:${customerPhone}`}
+                    aria-label={`Call ${customerName}`}
+                    className="w-10 h-10 rounded-full bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-100"
+                  >
+                    <Phone size={18} />
+                  </a>
+                ) : (
+                  <span
+                    aria-label="Customer phone unavailable"
+                    className="w-10 h-10 rounded-full bg-gray-100 text-gray-300 flex items-center justify-center"
+                  >
+                    <Phone size={18} />
+                  </span>
+                )}
                 <button onClick={() => navigate(`/dispatch/delivery/${id}/chat`)} className="w-10 h-10 rounded-full bg-blue-50 text-[#5B5BFF] flex items-center justify-center hover:bg-blue-100">
                   <MessageSquare size={18} />
                 </button>

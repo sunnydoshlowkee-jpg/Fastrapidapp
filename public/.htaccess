@@ -1,0 +1,19 @@
+<IfModule mod_headers.c>
+    # Allow same-origin Geolocation (browser permission prompt).
+    Header always unset Permissions-Policy
+    Header always set Permissions-Policy "geolocation=(self), microphone=(), camera=()"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Serve existing files and directories as-is
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # SPA fallback for client-side routes like /merchant, /admin, /app
+    RewriteRule ^ index.html [L]
+</IfModule>
+

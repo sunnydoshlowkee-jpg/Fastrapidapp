@@ -3,9 +3,31 @@ import { useAuth } from '../context/AuthContext'
 import { uploadProfileAvatar } from '../services/authService'
 import { getApiFieldError } from '../utils/apiErrors'
 import { resolveStorageUrl } from '../utils/mediaUrl'
+import { setCached } from '../utils/requestCache'
 
 const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024
 const ACCEPTED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+const UPLOAD_TIMEOUT_MS = 60_000
+const AUTH_USER_CACHE_KEY = 'auth-user'
+
+function clearPreview(previewUrlRef) {
+  if (previewUrlRef.current) {
+    URL.revokeObjectURL(previewUrlRef.current)
+    previewUrlRef.current = null
+  }
+}
+
+async function uploadWithTimeout(file) {
+  return Promise.race([
+    uploadProfileAvatar(file),
+    new Promise((_, reject) => {
+      window.setTimeout(
+        () => reject(new Error('Upload timed out. Check your connection and try again.')),
+        UPLOAD_TIMEOUT_MS,
+      )
+    }),
+  ])
+}
 
 export function useProfileAvatarUpload() {
   const fileInputRef = useRef(null)
@@ -62,27 +84,29 @@ export function useProfileAvatarUpload() {
 
     setUploading(true)
     try {
-      const { data } = await uploadProfileAvatar(file)
+      const { data } = await uploadWithTimeout(file)
       const updatedUser = data?.data?.user
+      clearPreview(previewUrlRef)
+
       if (updatedUser) {
         setUser(updatedUser)
+        setCached(AUTH_USER_CACHE_KEY, updatedUser)
         setAvatarUrl(resolveStorageUrl(updatedUser.avatar_url))
-      }
-      await refreshUser()
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-        previewUrlRef.current = null
+      } else {
+        setAvatarUrl(resolveStorageUrl(user?.avatar_url))
       }
     } catch (err) {
+      clearPreview(previewUrlRef)
       setAvatarUrl(resolveStorageUrl(user?.avatar_url))
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-        previewUrlRef.current = null
-      }
-      setError(getApiFieldError(err, 'avatar') || 'Could not upload profile photo. Try again.')
+      const message = err?.message === 'Upload timed out. Check your connection and try again.'
+        ? err.message
+        : getApiFieldError(err, 'avatar') || 'Could not upload profile photo. Try again.'
+      setError(message)
     } finally {
       setUploading(false)
     }
+
+    refreshUser().catch(() => {})
   }
 
   return {

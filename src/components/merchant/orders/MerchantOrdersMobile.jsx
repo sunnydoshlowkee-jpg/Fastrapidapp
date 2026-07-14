@@ -13,6 +13,7 @@ export default function MerchantOrdersMobile() {
     filterCounts,
     paginatedOrders,
     searchQuery,
+    summaryMobile,
     handleFilterChange,
     handleSearchChange,
     pagination,
@@ -23,7 +24,7 @@ export default function MerchantOrdersMobile() {
     <div className="flex flex-1 flex-col gap-4 px-4 pb-8 pt-5">
       <MerchantOrdersMobileHeader />
 
-      <MerchantOrdersMobileSummaryCards />
+      <MerchantOrdersMobileSummaryCards summary={summaryMobile} />
 
       <MerchantOrdersMobileFilterBar
         filters={MERCHANT_ORDERS_FILTERS}

@@ -1,9 +1,4 @@
-import { useState } from 'react'
 import { Download } from 'lucide-react'
-import {
-  MERCHANT_ANALYTICS,
-  MERCHANT_ANALYTICS_PERIODS,
-} from '../../../services/data/merchantAnalytics.mock'
 import MerchantAnalyticsMobileCustomerInsights from './mobile/MerchantAnalyticsMobileCustomerInsights'
 import MerchantAnalyticsMobileFeedback from './mobile/MerchantAnalyticsMobileFeedback'
 import MerchantAnalyticsMobileHeader from './mobile/MerchantAnalyticsMobileHeader'
@@ -13,9 +8,12 @@ import MerchantAnalyticsMobileQuickStats from './mobile/MerchantAnalyticsMobileQ
 import MerchantAnalyticsMobileRevenueCard from './mobile/MerchantAnalyticsMobileRevenueCard'
 import MerchantAnalyticsMobileTopPerformers from './mobile/MerchantAnalyticsMobileTopPerformers'
 
-export default function MerchantAnalyticsMobile() {
-  const [activePeriod, setActivePeriod] = useState('today')
-  const data = MERCHANT_ANALYTICS
+export default function MerchantAnalyticsMobile({
+  data,
+  periods,
+  activePeriod,
+  onPeriodChange,
+}) {
   const mobile = data.mobile
 
   return (
@@ -24,16 +22,17 @@ export default function MerchantAnalyticsMobile() {
 
       <button
         type="button"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-merchant-primary py-3.5 text-sm font-semibold text-white shadow-merchant-btn"
+        disabled
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-merchant-primary/60 py-3.5 text-sm font-semibold text-white shadow-merchant-btn"
       >
         <Download size={18} strokeWidth={2} aria-hidden />
         Export Data
       </button>
 
       <MerchantAnalyticsMobilePeriodTabs
-        periods={MERCHANT_ANALYTICS_PERIODS}
+        periods={periods}
         activePeriod={activePeriod}
-        onChange={setActivePeriod}
+        onChange={onPeriodChange}
       />
 
       <MerchantAnalyticsMobileRevenueCard

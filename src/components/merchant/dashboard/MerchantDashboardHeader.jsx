@@ -1,4 +1,6 @@
-import { Bell } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import NotificationBellButton from '../../notifications/NotificationBellButton'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 
 export default function MerchantDashboardHeader({
   title,
@@ -7,6 +9,8 @@ export default function MerchantDashboardHeader({
   showMenuButton = false,
   variant = 'inline',
 }) {
+  const navigate = useNavigate()
+  const { unread } = useUnreadNotifications({ role: 'merchant' })
   const isBar = variant === 'bar'
 
   return (
@@ -44,17 +48,15 @@ export default function MerchantDashboardHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-4">
-        <button
-          type="button"
-          className="relative flex h-9 w-8 items-center justify-center text-[#64748B] transition-colors hover:text-merchant-ink-slate"
-          aria-label="Notifications"
-        >
-          <Bell size={18} strokeWidth={1.75} />
-          <span
-            className="absolute right-1 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-merchant-warning"
-            aria-hidden
-          />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/merchant/notifications')}
+          count={unread}
+          tone="indigo"
+          iconSize={18}
+          iconClassName="text-[#64748B]"
+          className="h-9 w-8"
+          ariaLabel={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
+        />
         {isBar ? <span className="h-8 w-px bg-merchant-divider" aria-hidden /> : null}
         <p className="text-xs font-medium leading-4 text-merchant-header-muted">
           Merchant ID: <span className="text-merchant-header-muted">#{merchantId}</span>

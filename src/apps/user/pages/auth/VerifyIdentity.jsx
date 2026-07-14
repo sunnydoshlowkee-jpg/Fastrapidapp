@@ -98,6 +98,7 @@ export default function VerifyIdentity() {
       const user = data?.data?.user
       if (token) {
         localStorage.setItem('rapid_token', token)
+        window.dispatchEvent(new Event('rapid-auth-changed'))
       }
 
       if (user?.status === 'pending_profile') {

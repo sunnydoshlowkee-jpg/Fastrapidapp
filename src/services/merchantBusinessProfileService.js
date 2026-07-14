@@ -1,7 +1,30 @@
 import api from './api'
 import { getApiFieldError } from '../utils/apiErrors'
+import { BUSINESS_TYPES, STORE_FORMATS, allowsStoreFormat, storeFormatLabel } from '../utils/merchantBusinessType'
+
+function mapStoreFormatOptions(options) {
+  if (Array.isArray(options) && options.length > 0) {
+    return options.map((option) =>
+      typeof option === 'string'
+        ? { value: option, label: storeFormatLabel(option) || option }
+        : {
+            value: option.value,
+            label: option.label ?? storeFormatLabel(option.value) ?? option.value,
+          },
+    )
+  }
+
+  return STORE_FORMATS
+}
 
 function mapBusinessInfo(info = {}) {
+  const businessType = info.business_type ?? ''
+  const storeFormat = info.store_format ?? ''
+  const typeOptions =
+    Array.isArray(info.business_type_options) && info.business_type_options.length > 0
+      ? info.business_type_options
+      : BUSINESS_TYPES
+
   return {
     name: info.name ?? '',
     verified: Boolean(info.verified),
@@ -11,6 +34,22 @@ function mapBusinessInfo(info = {}) {
     phone: info.phone ?? '',
     location: info.location ?? '',
     logoUrl: info.logo_url ?? null,
+    businessType,
+    storeFormat,
+    storeFormatLabel: info.store_format_label ?? storeFormatLabel(storeFormat),
+    categoryLabel:
+      info.category_label ||
+      (businessType
+        ? storeFormatLabel(storeFormat)
+          ? `${businessType} · ${storeFormatLabel(storeFormat)}`
+          : businessType
+        : 'Not set'),
+    allowsStoreFormat:
+      typeof info.allows_store_format === 'boolean'
+        ? info.allows_store_format
+        : allowsStoreFormat(businessType),
+    businessTypeOptions: typeOptions,
+    storeFormatOptions: mapStoreFormatOptions(info.store_format_options),
   }
 }
 
@@ -73,5 +112,38 @@ export async function getMerchantBusinessProfile() {
     return mapProfileFromApi(data?.data ?? {})
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function updateMerchantBusinessCategory({ businessType, storeFormat }) {
+  try {
+    const { data } = await api.put('/merchant/business-profile/category', {
+      business_type: businessType,
+      store_format: allowsStoreFormat(businessType) ? storeFormat || null : null,
+    })
+    return mapProfileFromApi(data?.data ?? {})
+  } catch (err) {
+    const apiErrors = err.response?.data?.errors ?? {}
+    const fieldErrors = {}
+    if (apiErrors.business_type?.[0]) fieldErrors.businessType = apiErrors.business_type[0]
+    if (apiErrors.store_format?.[0]) fieldErrors.storeFormat = apiErrors.store_format[0]
+
+    const error = new Error(getApiFieldError(err, 'form') || 'Unable to update business category.')
+    if (Object.keys(fieldErrors).length > 0) {
+      error.fieldErrors = fieldErrors
+    }
+    throw error
+  }
+}
+
+export async function uploadMerchantBusinessLogo(file) {
+  try {
+    const formData = new FormData()
+    formData.append('logo', file)
+
+    const { data } = await api.post('/merchant/business-profile/logo', formData)
+    return mapProfileFromApi(data?.data ?? {})
+  } catch (err) {
+    throw err
   }
 }

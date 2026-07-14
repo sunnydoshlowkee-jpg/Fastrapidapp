@@ -62,14 +62,14 @@ export const useRiderDeliveries = () => {
     }
   }, []);
 
-  const accept = async (id) => {
+  const accept = async (id, coords = null) => {
     try {
-      await acceptDeliveryService(id);
-      await refreshActive();
-      return true;
+      await acceptDeliveryService(id, coords)
+      await refreshActive()
+      return true
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to accept delivery');
-      throw err;
+      setError(err.response?.data?.message || err.message || 'Failed to accept delivery')
+      throw err
     }
   };
 

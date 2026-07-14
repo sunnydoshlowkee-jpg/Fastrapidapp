@@ -1,66 +1,63 @@
 import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Send, ArrowDownLeft, PlusSquare, Phone, Globe, Receipt, Zap, ArrowDown, ArrowUpRight, Copy, Eye, EyeOff, QrCode } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { getWalletData, provisionVirtualAccount, walletTransactionLabel } from '../../../services/walletService'
+import { useState, useEffect, useCallback } from 'react'
+import { getWalletData, walletTransactionLabel, WALLET_CACHE_KEY } from '../../../services/walletService'
+import { getCached, setCached } from '../../../utils/requestCache'
+
+const WALLET_TTL_MS = 60 * 1000
 
 export default function Wallet() {
   const navigate = useNavigate()
   const [showBalance, setShowBalance] = useState(true)
-  const [balance, setBalance] = useState(0)
-  const [virtualAccount, setVirtualAccount] = useState(null)
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [provisioning, setProvisioning] = useState(false)
+  const initialCached = getCached(WALLET_CACHE_KEY, { ttlMs: WALLET_TTL_MS })
+  const [balance, setBalance] = useState(initialCached?.data?.balance || 0)
+  const [virtualAccount, setVirtualAccount] = useState(initialCached?.data?.virtual_account || null)
+  const [transactions, setTransactions] = useState(initialCached?.data?.transactions || [])
+  const [loading, setLoading] = useState(!initialCached?.data)
   const [copyMessage, setCopyMessage] = useState('')
 
-  const fetchData = async () => {
-    try {
+  const applyWalletData = useCallback((payload) => {
+    if (!payload) return
+    setBalance(payload.balance || 0)
+    setVirtualAccount(payload.virtual_account || null)
+    setTransactions(payload.transactions || [])
+    setCached(WALLET_CACHE_KEY, payload)
+  }, [])
+
+  const fetchData = useCallback(async ({ showSpinner = false } = {}) => {
+    const cached = getCached(WALLET_CACHE_KEY, { ttlMs: WALLET_TTL_MS })
+    if (cached?.data) {
+      applyWalletData(cached.data)
+      setLoading(false)
+      if (cached.fresh && !showSpinner) {
+        return cached.data.virtual_account
+      }
+    } else if (showSpinner) {
       setLoading(true)
+    }
+
+    try {
       const { data } = await getWalletData()
       if (data?.data) {
-        setBalance(data.data.balance || 0)
-        setVirtualAccount(data.data.virtual_account || null)
-        setTransactions(data.data.transactions || [])
+        applyWalletData(data.data)
         return data.data.virtual_account
-      }
-    } catch (err) {
-      console.error('Failed to fetch wallet data', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const retryVirtualAccount = async () => {
-    setProvisioning(true)
-    try {
-      const result = await provisionVirtualAccount()
-      if (result?.data) {
-        setBalance(result.data.balance || 0)
-        setVirtualAccount(result.data.virtual_account || null)
-        setTransactions(result.data.transactions || [])
-      } else {
-        await fetchData()
       }
     } catch (err) {
       setVirtualAccount((prev) => ({
         ...(prev || {}),
         status: 'failed',
-        error: err?.message || 'Could not create virtual account.',
+        error: err?.message || 'Could not load wallet.',
       }))
     } finally {
-      setProvisioning(false)
+      setLoading(false)
     }
-  }
+  }, [applyWalletData])
 
   useEffect(() => {
-    fetchData().then((acc) => {
-      if (!acc?.account_number && acc?.status !== 'failed') {
-        retryVirtualAccount()
-      }
-    })
-    const interval = window.setInterval(fetchData, 15000)
+    fetchData({ showSpinner: !initialCached?.data })
+    const interval = window.setInterval(() => fetchData(), 15000)
     return () => window.clearInterval(interval)
-  }, [])
+  }, [fetchData, initialCached?.data])
 
   const copyAccountNumber = async () => {
     if (!virtualAccount?.account_number) return
@@ -133,25 +130,11 @@ export default function Wallet() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">
-                      {virtualAccount?.status === 'failed'
-                        ? virtualAccount.error || 'Could not create your virtual account.'
-                        : provisioning
-                          ? 'Creating your virtual account…'
-                          : 'Setting up your virtual account…'}
-                    </span>
-                    {virtualAccount?.status === 'failed' ? (
-                      <button
-                        type="button"
-                        onClick={retryVirtualAccount}
-                        disabled={provisioning}
-                        className="self-start rounded-lg bg-white/20 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/30 disabled:opacity-60"
-                      >
-                        {provisioning ? 'Retrying…' : 'Retry'}
-                      </button>
-                    ) : null}
-                  </div>
+                  <span className="text-[12px] md:text-[14px] font-medium text-indigo-100">
+                    {virtualAccount?.status === 'failed'
+                      ? (virtualAccount.error || 'Could not set up your account.')
+                      : 'Setting up your transfer account…'}
+                  </span>
                 )}
               </div>
               {copyMessage ? <p className="mt-2 text-xs text-indigo-100">{copyMessage}</p> : null}
@@ -227,7 +210,7 @@ export default function Wallet() {
                   <span className="font-semibold text-gray-900 text-[13px] md:text-[14px] leading-tight">Data Bundles</span>
                 </button>
                 <button 
-                  onClick={() => navigate('/app/wallet/pay-bills')}
+                  onClick={() => navigate('/app/wallet/pay-bills?type=cable')}
                   className="bg-white rounded-2xl p-4 md:py-6 shadow-sm border border-gray-100 flex md:flex-col items-center md:justify-center gap-3 md:gap-4 hover:shadow-md hover:-translate-y-1 transition-all group"
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#EEF2FF] group-hover:bg-indigo-100 flex items-center justify-center text-[#4F46E5] shrink-0 transition-colors">

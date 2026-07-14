@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Clock, BadgeCheck, Truck, FileText } from 'lucide-react'
+import { Clock, BadgeCheck, Truck, FileText } from 'lucide-react'
 
 const CREDENTIALS = [
   {
@@ -81,11 +81,8 @@ export default function RiderSuccess() {
                 <p className="font-bold text-gray-900 text-sm">{c.title}</p>
                 <p className="text-gray-400 text-xs">{c.sub}</p>
               </div>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: '#5B5BFF' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-amber-100">
+                <Clock size={12} className="text-amber-600" strokeWidth={2.5} />
               </div>
             </div>
           ))}
@@ -94,8 +91,8 @@ export default function RiderSuccess() {
 
       {/* Check status button */}
       <button
-        onClick={() => navigate('/dispatch')}
-        className="w-full py-4 rounded-2xl font-bold text-base border-2 mb-4 transition-all active:opacity-80"
+        onClick={() => navigate('/dispatch/pending')}
+        className="w-full max-w-sm py-4 rounded-2xl font-bold text-base border-2 mb-4 transition-all active:opacity-80"
         style={{ borderColor: '#5B5BFF', color: '#5B5BFF', background: 'white' }}
       >
         Check Status Dashboard

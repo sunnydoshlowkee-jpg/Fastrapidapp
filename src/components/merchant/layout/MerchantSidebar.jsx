@@ -6,6 +6,7 @@ import {
   LogOut,
   Package,
   Settings,
+  Wallet,
   X,
 } from 'lucide-react'
 import { clearMerchantSession } from '../../../services/merchantAuthService'
@@ -14,11 +15,22 @@ const navItems = [
   { to: '/merchant', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/merchant/orders', icon: ClipboardList, label: 'Orders' },
   { to: '/merchant/menu', icon: Package, label: 'Inventory', matchPrefix: true },
+  { to: '/merchant/wallet', icon: Wallet, label: 'Wallet' },
   { to: '/merchant/analytics', icon: BarChart2, label: 'Analytics' },
   { to: '/merchant/settings', icon: Settings, label: 'Settings', matchPrefix: true },
 ]
 
-export default function MerchantSidebar({ mobileOpen, onClose }) {
+function OrdersNavBadge({ count }) {
+  if (!count) return null
+
+  return (
+    <span className="absolute right-4 top-1/2 flex h-5 min-w-5 -translate-y-1/2 items-center justify-center rounded-full bg-merchant-primary px-1.5 text-[10px] font-bold text-white shadow-[0_0_0_4px_rgba(67,66,255,0.18),0_0_14px_rgba(67,66,255,0.55)] animate-pulse">
+      {count > 9 ? '9+' : count}
+    </span>
+  )
+}
+
+export default function MerchantSidebar({ mobileOpen, onClose, newOrdersCount = 0 }) {
   const navigate = useNavigate()
 
   const handleSignOut = () => {
@@ -48,7 +60,10 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
       </div>
 
       <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Merchant navigation">
-        {navItems.map(({ to, icon: Icon, label, end, matchPrefix }) => (
+        {navItems.map(({ to, icon: Icon, label, end, matchPrefix }) => {
+          const showOrdersBadge = to === '/merchant/orders' && newOrdersCount > 0
+
+          return (
           <NavLink
             key={to}
             to={to}
@@ -75,10 +90,12 @@ export default function MerchantSidebar({ mobileOpen, onClose }) {
                 )}
                 <Icon size={18} strokeWidth={1.75} className="shrink-0" />
                 {label}
+                {showOrdersBadge ? <OrdersNavBadge count={newOrdersCount} /> : null}
               </>
             )}
           </NavLink>
-        ))}
+          )
+        })}
       </nav>
 
       <div className="mx-4 mt-6 flex flex-col gap-2 border-t border-merchant-input pt-4">

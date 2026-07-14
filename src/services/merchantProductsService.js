@@ -46,6 +46,29 @@ export async function fetchMerchantProduct(productId) {
     throw new Error(getApiFieldError(err, 'form'))
   }
 }
+export async function downloadMerchantProductImportTemplate() {
+  try {
+    const { data } = await api.get('/merchant/products/import-template', {
+      responseType: 'blob',
+    })
+
+    const blob = data instanceof Blob
+      ? data
+      : new Blob([data], { type: 'text/csv;charset=utf-8;' })
+
+    const objectUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = 'fastrapid-menu-import-template.csv'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(objectUrl)
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form') || 'Could not download template.')
+  }
+}
+
 export async function fetchMerchantInventory({ search = '', page = 1, perPage = 4 } = {}) {
   try {
     const { data } = await api.get('/merchant/products', {

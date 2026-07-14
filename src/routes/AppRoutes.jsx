@@ -7,6 +7,7 @@ import Orders from '../apps/user/pages/Orders'
 import Profile from '../apps/user/pages/Profile'
 import Wallet from '../apps/user/pages/Wallet'
 import Vendors from '../apps/user/pages/Vendors'
+import Categories from '../apps/user/pages/Categories'
 import VendorDetail from '../apps/user/pages/VendorDetail'
 import ItemDetail from '../apps/user/pages/ItemDetail'
 import CartDetail from '../apps/user/pages/CartDetail'
@@ -15,11 +16,13 @@ import CryptoCheckout from '../apps/user/pages/CryptoCheckout'
 import OrderSuccess from '../apps/user/pages/OrderSuccess'
 import TrackOrder from '../apps/user/pages/TrackOrder'
 import OrderDetail from '../apps/user/pages/OrderDetail'
+import OrderChat from '../apps/user/pages/OrderChat'
 import EditProfile from '../apps/user/pages/EditProfile'
 import Addresses from '../apps/user/pages/Addresses'
 import PaymentMethods from '../apps/user/pages/PaymentMethods'
 import ReferEarn from '../apps/user/pages/ReferEarn'
 import Help from '../apps/user/pages/Help'
+import PrivacySecurity from '../apps/user/pages/PrivacySecurity'
 import SendMoney from '../apps/user/pages/SendMoney'
 import ReceiveMoney from '../apps/user/pages/ReceiveMoney'
 import FundWallet from '../apps/user/pages/FundWallet'
@@ -33,6 +36,7 @@ export default function AppRoutes() {
     <Routes>
       <Route element={<UserLayout />}>
         <Route index element={<Home />} />
+        <Route path="categories" element={<Categories />} />
         <Route path="vendors/:type" element={<Vendors />} />
         <Route path="vendor/:id" element={<VendorDetail />} />
         <Route path="item/:id" element={<ItemDetail />} />
@@ -42,6 +46,7 @@ export default function AppRoutes() {
         <Route path="order-success/:id" element={<OrderSuccess />} />
         <Route path="track/:id" element={<TrackOrder />} />
         <Route path="order/:id" element={<OrderDetail />} />
+        <Route path="order/:id/chat" element={<OrderChat />} />
         <Route path="search" element={<Search />} />
         <Route path="promotions" element={<Promotions />} />
         <Route path="orders" element={<Orders />} />
@@ -62,6 +67,7 @@ export default function AppRoutes() {
         <Route path="profile/payment-methods" element={<PaymentMethods />} />
         <Route path="profile/refer-earn" element={<ReferEarn />} />
         <Route path="profile/help" element={<Help />} />
+        <Route path="profile/privacy-security" element={<PrivacySecurity />} />
       </Route>
     </Routes>
   )

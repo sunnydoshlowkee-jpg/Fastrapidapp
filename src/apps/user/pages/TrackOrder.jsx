@@ -267,7 +267,11 @@ export default function TrackOrder() {
                     <a href={`tel:${order.delivery.rider?.phone || '0800000000'}`} className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
                       <Phone size={16} /> Call
                     </a>
-                    <button className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/app/order/${order.id}/chat`)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-900 font-bold text-[13px] hover:border-[#4F46E5] hover:text-[#4F46E5] transition-all"
+                    >
                       <MessageSquare size={16} /> Message
                     </button>
                   </div>
@@ -400,7 +404,12 @@ export default function TrackOrder() {
                 <a href={`tel:${order.delivery.rider?.phone || '0800000000'}`} className="flex-1 bg-[#2D2AEE] text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20">
                   <Phone size={18} /> Call Driver
                 </a>
-                <button className="w-12 h-12 bg-[#F4F5F7] hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition-colors shrink-0">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/app/order/${order.id}/chat`)}
+                  className="w-12 h-12 bg-[#F4F5F7] hover:bg-gray-200 text-gray-700 rounded-xl flex items-center justify-center transition-colors shrink-0"
+                  aria-label="Message rider"
+                >
                   <MessageSquare size={20} />
                 </button>
               </div>

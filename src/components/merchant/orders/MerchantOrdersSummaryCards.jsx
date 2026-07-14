@@ -13,7 +13,9 @@ export default function MerchantOrdersSummaryCards({ summary }) {
         <p className="mt-2 text-[28px] font-semibold leading-8 tracking-[-0.02em] text-merchant-ink">
           {pending.value}
         </p>
-        <p className="mt-2 flex items-center gap-1 text-xs font-medium text-[#16A34A]">
+        <p className={`mt-2 flex items-center gap-1 text-xs font-medium ${
+          pending.subtextTone === 'positive' ? 'text-[#16A34A]' : 'text-merchant-muted'
+        }`}>
           <TrendingUp size={14} strokeWidth={2} aria-hidden />
           {pending.subtext}
         </p>
@@ -24,7 +26,9 @@ export default function MerchantOrdersSummaryCards({ summary }) {
         <p className="mt-2 text-[28px] font-semibold leading-8 tracking-[-0.02em] text-merchant-ink">
           {revenue.value}
         </p>
-        <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-merchant-primary">
+        <p className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${
+          revenue.subtextTone === 'info' ? 'text-merchant-primary' : 'text-merchant-muted'
+        }`}>
           <CreditCard size={14} strokeWidth={2} aria-hidden />
           {revenue.subtext}
         </p>

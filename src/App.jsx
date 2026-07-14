@@ -4,15 +4,22 @@ import AppRoutes from './routes/AppRoutes'
 import MerchantRoutes from './routes/MerchantRoutes'
 import DispatchRoutes from './routes/DispatchRoutes'
 import AdminRoutes from './routes/AdminRoutes'
+import BiometricAppLock from './components/auth/BiometricAppLock'
+import NativePersonaBootstrap from './components/auth/NativePersonaBootstrap'
+import PushNotificationsBootstrap from './components/auth/PushNotificationsBootstrap'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/app/*" element={<AppRoutes />} />
-      <Route path="/merchant/*" element={<MerchantRoutes />} />
-      <Route path="/dispatch/*" element={<DispatchRoutes />} />
-      <Route path="/admin/*" element={<AdminRoutes />} />
-      <Route path="/*" element={<OnboardingRoutes />} />
-    </Routes>
+    <BiometricAppLock>
+      <NativePersonaBootstrap />
+      <PushNotificationsBootstrap />
+      <Routes>
+        <Route path="/app/*" element={<AppRoutes />} />
+        <Route path="/merchant/*" element={<MerchantRoutes />} />
+        <Route path="/dispatch/*" element={<DispatchRoutes />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/*" element={<OnboardingRoutes />} />
+      </Routes>
+    </BiometricAppLock>
   )
 }

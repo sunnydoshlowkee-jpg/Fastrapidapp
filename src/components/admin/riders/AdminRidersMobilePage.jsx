@@ -95,7 +95,7 @@ function RiderCard({ rider }) {
 
   return (
     <Link
-      to={`${ADMIN_RIDERS_PATH}/${rider.id}`}
+      to={`${ADMIN_RIDERS_PATH}/${rider.numericId}`}
       className={`relative block overflow-hidden rounded-lg bg-white p-4 transition-shadow hover:shadow-sm ${
         isOffline ? 'opacity-75' : ''
       }`}
@@ -168,7 +168,7 @@ function RiderCard({ rider }) {
   )
 }
 
-export default function AdminRidersMobilePage({ data, loading = false, error = '' }) {
+export default function AdminRidersMobilePage({ data, loading = false, error = '', pendingCount = 0 }) {
   const mobile = data.mobile
   const [activeFilter, setActiveFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -197,12 +197,13 @@ export default function AdminRidersMobilePage({ data, loading = false, error = '
         <div className="flex items-center gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {mobile.filters.map((filter) => {
             const isActive = activeFilter === filter.id
+            const showBadge = filter.id === 'pending' && pendingCount > 0
             return (
               <button
                 key={filter.id}
                 type="button"
                 onClick={() => setActiveFilter(filter.id)}
-                className={`shrink-0 rounded-xl px-5 py-2 text-sm transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-5 py-2 text-sm transition-colors ${
                   isActive
                     ? 'bg-[#2419E9] font-semibold text-white shadow-[0px_1px_2px_rgba(0,0,0,0.05)]'
                     : 'bg-white font-medium text-[#191C1D] hover:bg-gray-50'
@@ -210,6 +211,15 @@ export default function AdminRidersMobilePage({ data, loading = false, error = '
                 style={{ letterSpacing: '-0.025em' }}
               >
                 {filter.label}
+                {showBadge ? (
+                  <span
+                    className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                      isActive ? 'bg-white text-[#2419E9]' : 'bg-rapid-orange text-white'
+                    }`}
+                  >
+                    {pendingCount}
+                  </span>
+                ) : null}
               </button>
             )
           })}

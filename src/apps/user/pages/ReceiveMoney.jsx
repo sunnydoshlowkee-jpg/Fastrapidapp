@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Building2, Copy } from 'lucide-react'
-import { getWalletData, provisionVirtualAccount } from '../../../services/walletService'
+import { getWalletData } from '../../../services/walletService'
 
 export default function ReceiveMoney() {
   const navigate = useNavigate()
   const [wallet, setWallet] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copyMessage, setCopyMessage] = useState('')
-  const [provisioning, setProvisioning] = useState(false)
 
   const loadWallet = async () => {
     try {
@@ -26,25 +25,6 @@ export default function ReceiveMoney() {
     const interval = window.setInterval(loadWallet, 15000)
     return () => window.clearInterval(interval)
   }, [])
-
-  const retryProvision = async () => {
-    setProvisioning(true)
-    try {
-      const result = await provisionVirtualAccount()
-      setWallet(result?.data ?? wallet)
-    } catch (err) {
-      setWallet((prev) => ({
-        ...(prev || {}),
-        virtual_account: {
-          ...(prev?.virtual_account || {}),
-          status: 'failed',
-          error: err?.message || 'Could not create virtual account.',
-        },
-      }))
-    } finally {
-      setProvisioning(false)
-    }
-  }
 
   const virtualAccount = wallet?.virtual_account
   const receiveTag = wallet?.receive_tag || '@rapid-user'
@@ -114,21 +94,10 @@ export default function ReceiveMoney() {
                   <p className="font-semibold text-gray-900 text-[14px]">{virtualAccount?.account_name || '—'}</p>
                 </div>
               </div>
+            ) : virtualAccount?.status === 'failed' ? (
+              <p className="text-sm text-red-600">{virtualAccount.error || 'Could not set up your transfer account.'}</p>
             ) : (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
-                <p className="font-semibold mb-2">Virtual account not ready</p>
-                <p className="mb-4">
-                  {virtualAccount?.error || 'We are still setting up your dedicated bank account.'}
-                </p>
-                <button
-                  type="button"
-                  onClick={retryProvision}
-                  disabled={provisioning}
-                  className="rounded-lg bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-                >
-                  {provisioning ? 'Retrying…' : 'Retry setup'}
-                </button>
-              </div>
+              <p className="text-sm text-gray-500">Your bank transfer account is being set up. This usually takes a moment.</p>
             )}
 
             {copyMessage ? <p className="mt-3 text-sm text-[#4F46E5] font-medium">{copyMessage}</p> : null}

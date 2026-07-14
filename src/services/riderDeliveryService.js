@@ -4,7 +4,14 @@ export const getAvailableDeliveries = (lat, lng) => api.get('/rider/deliveries/a
 export const getActiveDeliveries = () => api.get('/rider/deliveries/active');
 export const getDeliveryHistory = () => api.get('/rider/deliveries/history');
 export const getDeliveryDetails = (id) => api.get(`/rider/deliveries/${id}`);
-export const acceptDelivery = (id) => api.post(`/rider/deliveries/${id}/accept`);
+export const acceptDelivery = (id, coords = null) => {
+  const payload = {};
+  if (coords?.lat != null && coords?.lng != null) {
+    payload.latitude = coords.lat;
+    payload.longitude = coords.lng;
+  }
+  return api.post(`/rider/deliveries/${id}/accept`, payload);
+};
 export const updateDeliveryStatus = (id, status, coords = null) => {
   const payload = { status };
   if (coords?.lat != null && coords?.lng != null) {

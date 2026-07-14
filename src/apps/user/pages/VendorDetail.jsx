@@ -2,36 +2,78 @@ import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Heart, ShoppingCart, Star, Plus, Search, MapPin, Minus, ArrowRight } from 'lucide-react'
 import { useCart } from '../../../context/CartContext'
+import { useLocation } from '../../../context/LocationContext'
 import { getVendor } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
+import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+
+const VENDOR_TTL_MS = 5 * 60 * 1000
 
 export default function VendorDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { location } = useLocation()
   const { items: cartItems, add, updateQty, remove, count, total, subtotal, deliveryFee } = useCart()
   const [activeTab, setActiveTab] = useState('Menu')
   const [activeCategory, setActiveCategory] = useState('Popular')
   const [desktopActiveTab, setDesktopActiveTab] = useState('Popular')
-  
-  const [vendorData, setVendorData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const vendorCacheKey = cacheKey(['vendor', id, location?.latitude, location?.longitude])
+  const initialCached = id && location?.latitude != null
+    ? getCached(vendorCacheKey, { ttlMs: VENDOR_TTL_MS })
+    : null
+  const [vendorData, setVendorData] = useState(initialCached?.data ?? null)
+  const [loading, setLoading] = useState(!initialCached)
 
   useEffect(() => {
+    if (!id || location?.latitude == null || location?.longitude == null) return
+
+    let cancelled = false
+    const key = cacheKey(['vendor', id, location.latitude, location.longitude])
+    const cached = getCached(key, { ttlMs: VENDOR_TTL_MS })
+
+    if (cached?.data) {
+      setVendorData(cached.data)
+      setLoading(false)
+      if (cached.fresh) {
+        return () => {
+          cancelled = true
+        }
+      }
+    } else {
+      setLoading(true)
+    }
+
     const fetchVendor = async () => {
       try {
-        setLoading(true)
-        const { data } = await getVendor(id)
+        setError('')
+        const { data } = await getVendor(id, {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        })
+        if (cancelled) return
+        setCached(key, data.data)
         setVendorData(data.data)
         trackEvent('view_merchant', 'merchant', id)
       } catch (err) {
         console.error('Failed to fetch vendor details', err)
+        if (!cancelled) {
+          setError(err?.response?.data?.message || 'This merchant is outside your 10km area.')
+          if (!cached?.data) setVendorData(null)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
     fetchVendor()
-  }, [id])
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, location?.latitude, location?.longitude])
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
@@ -76,8 +118,8 @@ export default function VendorDetail() {
 
   if (!vendorData) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Vendor not found.</p>
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center px-6">
+        <p className="text-center text-gray-500">{error || 'Vendor not found.'}</p>
         <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
       </div>
     )
@@ -92,7 +134,7 @@ export default function VendorDetail() {
 
       {/* Header Image & Top Nav */}
       <div className="relative h-56 w-full shrink-0 overflow-hidden rounded-b-3xl shadow-sm md:hidden">
-        <img src={productImage(merchant.img)} alt="Vendor Cover" className="h-full w-full object-cover" />
+        <img src={productImage(merchant.img)} alt="Vendor Cover" className="h-full w-full object-cover" loading="lazy" />
         
         {/* Top actions */}
         <div className="absolute top-0 left-0 right-0 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]">

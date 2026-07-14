@@ -1,6 +1,7 @@
 import api from './api'
 import { setMerchantSignupEmail } from './merchantRegistrationService'
 import { getApiFieldError } from '../utils/apiErrors'
+import { clearPushTokenOnLogout, syncPushTokenAfterLogin } from './pushNotifications'
 
 const MERCHANT_RESET_EMAIL_KEY = 'rapid_merchant_reset_email'
 
@@ -48,6 +49,8 @@ export async function merchantLogin({ email, password, rememberMe = false }) {
     }
 
     storeMerchantSession(session)
+    window.dispatchEvent(new Event('rapid-auth-changed'))
+    syncPushTokenAfterLogin()
 
     return session
   } catch (err) {
@@ -86,12 +89,14 @@ export async function merchantGetMe() {
 }
 
 export async function merchantLogout() {
+  await clearPushTokenOnLogout()
   try {
     await api.post('/merchant/logout')
   } catch {
     // Clear local session even if the API call fails.
   } finally {
     clearMerchantSession()
+    window.dispatchEvent(new Event('rapid-auth-changed'))
   }
 }
 

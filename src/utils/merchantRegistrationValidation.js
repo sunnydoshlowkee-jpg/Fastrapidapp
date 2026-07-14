@@ -1,4 +1,4 @@
-const BUSINESS_TYPES = ['Restaurant', 'Retail', 'Grocery', 'Pharmacy', 'Other']
+import { BUSINESS_TYPES, STORE_FORMATS, allowsStoreFormat } from './merchantBusinessType'
 
 export function validateMerchantRegistration(values, options = {}) {
   const { isUpdate = false } = options
@@ -12,6 +12,13 @@ export function validateMerchantRegistration(values, options = {}) {
     errors.businessType = 'Please select a business type.'
   } else if (!BUSINESS_TYPES.includes(values.businessType)) {
     errors.businessType = 'Please select a valid business type.'
+  }
+
+  if (allowsStoreFormat(values.businessType) && values.storeFormat) {
+    const valid = STORE_FORMATS.some((item) => item.value === values.storeFormat)
+    if (!valid) {
+      errors.storeFormat = 'Please select a valid store format.'
+    }
   }
 
   const email = values.businessEmail?.trim()
@@ -69,6 +76,9 @@ export function buildMerchantRegistrationPayload(values) {
   const payload = {
     legal_name: values.legalName?.trim(),
     business_type: values.businessType?.trim(),
+    store_format: allowsStoreFormat(values.businessType)
+      ? values.storeFormat?.trim() || ''
+      : '',
     business_email: values.businessEmail?.trim(),
     phone: values.phone?.trim(),
     description: values.description?.trim() || '',

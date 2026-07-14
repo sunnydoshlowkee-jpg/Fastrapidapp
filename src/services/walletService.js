@@ -1,12 +1,35 @@
 import api from './api'
 import { getApiFieldError } from '../utils/apiErrors'
+import { cacheKey, getCached, setCached } from '../utils/requestCache'
+
+export const WALLET_CACHE_KEY = cacheKey(['wallet'])
+
+export function markWalletHasPinInCache() {
+  const cached = getCached(WALLET_CACHE_KEY)
+  if (cached?.data) {
+    setCached(WALLET_CACHE_KEY, { ...cached.data, has_pin: true })
+  }
+}
 
 export async function getWalletData() {
-  return api.get('/user/wallet')
+  try {
+    return await api.get('/user/wallet')
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
 }
 
 export async function getWalletTransactions(params) {
   return api.get('/user/wallet/transactions', { params })
+}
+
+export async function getWalletTransaction(id) {
+  try {
+    const { data } = await api.get(`/user/wallet/transactions/${id}`)
+    return data?.data ?? null
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
 }
 
 
@@ -32,6 +55,15 @@ export async function resolveAccountName(bankCode, accountNumber) {
   }
 }
 
+export async function resolveRecipient(recipient) {
+  try {
+    const { data } = await api.post('/user/wallet/resolve-recipient', { recipient })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export async function sendBankTransfer(payload) {
   try {
     const { data } = await api.post('/user/wallet/transfer/bank', {
@@ -47,9 +79,19 @@ export async function sendBankTransfer(payload) {
   }
 }
 
-export async function provisionVirtualAccount() {
+export async function getVirtualAccountBanks() {
   try {
-    const { data } = await api.post('/user/wallet/virtual-account')
+    const { data } = await api.get('/user/wallet/virtual-account/banks')
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function provisionVirtualAccount(preferredBank) {
+  try {
+    const payload = preferredBank ? { preferred_bank: preferredBank } : {}
+    const { data } = await api.post('/user/wallet/virtual-account', payload)
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
@@ -74,9 +116,12 @@ export async function verifyWalletFunding(reference) {
   }
 }
 
-export async function sendWalletTransfer({ recipient, amount, pin }) {
+export async function sendWalletTransfer({ recipient, amount, pin, auth_code }) {
   try {
-    const { data } = await api.post('/user/wallet/send', { recipient, amount, pin })
+    const payload = { recipient, amount }
+    if (pin) payload.pin = pin
+    if (auth_code) payload.auth_code = auth_code
+    const { data } = await api.post('/user/wallet/send', payload)
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
@@ -136,6 +181,42 @@ export async function purchaseElectricity({ serviceId, meterNumber, type, amount
   }
 }
 
+export async function getCablePlans(service) {
+  try {
+    const { data } = await api.get('/user/wallet/bills/cable-plans', { params: { service } })
+    return data?.data || []
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function verifySmartcard({ service, smartcardNumber }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/cable/verify', {
+      service,
+      smartcard_number: smartcardNumber,
+    })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseCable({ service, smartcardNumber, planId, phone, amount }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/cable', {
+      service,
+      smartcard_number: smartcardNumber,
+      plan_id: planId,
+      phone,
+      amount,
+    })
+    return data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
 export function walletTransactionLabel(tx) {
   if (tx.description) return tx.description
   const labels = {
@@ -144,7 +225,48 @@ export function walletTransactionLabel(tx) {
     p2p_send: 'Transfer sent',
     p2p_receive: 'Transfer received',
     airtime: 'Airtime purchase',
+    data: 'Data bundle',
+    electricity: 'Electricity',
+    cable: 'Cable TV',
     order_debit: 'Order payment',
   }
   return labels[tx.category] || tx.reference || 'Wallet transaction'
+}
+
+export function walletTransactionPaymentMethod(tx) {
+  if (tx?.payment_method) return tx.payment_method
+
+  const methods = {
+    fund_card: 'Card',
+    fund_transfer: 'Bank Transfer',
+    p2p_send: 'Rapid Wallet',
+    p2p_receive: 'Rapid Wallet',
+    airtime: 'Rapid Wallet',
+    data: 'Rapid Wallet',
+    electricity: 'Rapid Wallet',
+    cable: 'Rapid Wallet',
+    bank_transfer: 'Rapid Wallet',
+    order_debit: 'Rapid Wallet',
+  }
+
+  return methods[tx?.category] || 'Rapid Wallet'
+}
+
+export function walletTransactionCategoryLabel(tx) {
+  if (tx?.category_label) return tx.category_label
+
+  const labels = {
+    fund_card: 'Card Funding',
+    fund_transfer: 'Bank Funding',
+    p2p_send: 'Wallet Transfer',
+    p2p_receive: 'Wallet Transfer',
+    bank_transfer: 'Bank Transfer',
+    airtime: 'Airtime',
+    data: 'Data Bundle',
+    electricity: 'Electricity',
+    cable: 'Cable TV',
+    order_debit: 'Order Payment',
+  }
+
+  return labels[tx?.category] || 'Wallet Transaction'
 }

@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Star, MapPin, Pencil, FileText, Building2,
-  BellRing, HelpCircle, ScrollText, LogOut, ChevronRight, X
+import { Star, MapPin, Pencil, FileText, Building2,
+  BellRing, HelpCircle, ScrollText, LogOut, ChevronRight, X, Shield
 } from 'lucide-react'
-import { toggleStatus, getProfile } from '../../../services/riderAuthService'
+import { toggleStatus, getProfile, getRiderApprovalStatus, clearRiderSession } from '../../../services/riderAuthService'
 import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 const MENU = [
   { icon: FileText,  label: 'My Documents',        to: '/dispatch/profile/documents' },
   { icon: Building2, label: 'Bank Account',          to: '/dispatch/earnings/withdraw' },
+  { icon: Shield,    label: 'Privacy & Security',    to: '/dispatch/profile/privacy-security' },
   { icon: BellRing,  label: 'Notification Settings', to: '/dispatch/notifications' },
   { icon: HelpCircle,label: 'Help Center',           to: '/dispatch/profile/help' },
   { icon: ScrollText,label: 'Terms',                 to: '/dispatch/profile/help' },
@@ -18,6 +21,10 @@ export default function RiderProfile() {
   const [profile, setProfile] = useState(null)
   const [online, setOnline] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
+  const { unread } = useUnreadNotifications({
+    role: 'rider',
+    enabled: Boolean(localStorage.getItem('rider_token') || localStorage.getItem('rapid_token')),
+  })
   const [showZoneModal, setShowZoneModal] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [selectedZone, setSelectedZone] = useState('Yaba, Lagos')
@@ -35,9 +42,7 @@ export default function RiderProfile() {
         if (!cancelled) {
           setProfile(data)
           setOnline(data?.rider?.is_online || false)
-          const riderInfo = JSON.parse(localStorage.getItem('rider_user') || '{}')
-          riderInfo.is_online = data?.rider?.is_online || false
-          localStorage.setItem('rider_user', JSON.stringify(riderInfo))
+          localStorage.setItem('rider_user', JSON.stringify(data))
         }
       } catch (e) {
         console.error(e)
@@ -55,9 +60,17 @@ export default function RiderProfile() {
     || 'Rider'
   const initials = fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
   const rating = profile?.rider?.rating != null ? Number(profile.rider.rating).toFixed(1) : '—'
+  const approvalStatus = getRiderApprovalStatus()
+  const isPending = approvalStatus === 'pending' || approvalStatus === 'rejected'
+
   const displayId = profile?.rider?.display_id || profile?.rider?.rider_code || '—'
 
   const handleToggleOnline = async () => {
+    if (isPending) {
+      alert('Your account is pending admin approval. Upload your documents and wait for approval before going online.')
+      navigate('/dispatch/profile/documents')
+      return
+    }
     try {
       setIsToggling(true)
       const res = await toggleStatus()
@@ -90,12 +103,30 @@ export default function RiderProfile() {
 
       <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">Profile</h1>
-        <button onClick={() => navigate('/dispatch/notifications')} className="w-10 h-10 flex items-center justify-center">
-          <Bell size={22} className="text-gray-500" />
-        </button>
+        <NotificationBellButton
+          onClick={() => navigate('/dispatch/notifications')}
+          count={unread}
+          className="w-10 h-10"
+          iconSize={22}
+        />
       </div>
 
       <div className="px-5 space-y-5">
+
+        {isPending && (
+          <button
+            type="button"
+            onClick={() => navigate('/dispatch/pending')}
+            className="w-full rounded-2xl px-4 py-4 text-left"
+            style={{ background: 'rgba(91,91,255,0.06)' }}
+          >
+            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">
+              Application Under Review
+            </p>
+            <p className="text-sm font-bold text-gray-900">Your account is not approved yet</p>
+            <p className="text-xs text-gray-500 mt-1">Tap to view status or upload documents.</p>
+          </button>
+        )}
 
         <div className="bg-gray-50 rounded-3xl px-5 py-5 flex items-center gap-4">
           {/* Avatar */}
@@ -240,9 +271,8 @@ export default function RiderProfile() {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  localStorage.removeItem('rider_token')
-                  localStorage.removeItem('rider_user')
+                onClick={async () => {
+                  await clearRiderSession()
                   navigate('/dispatch/login')
                 }}
                 className="flex-1 py-4 rounded-2xl text-white font-bold text-sm bg-red-500"

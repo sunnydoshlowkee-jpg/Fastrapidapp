@@ -2,6 +2,8 @@ import { MERCHANT_SETTINGS_ACCOUNT_PATH } from './merchantAccountSettings.mock'
 import { MERCHANT_SETTINGS_BUSINESS_PATH } from './merchantBusinessProfile.mock'
 import { MERCHANT_SETTINGS_OPERATING_HOURS_PATH } from './merchantOperatingHours.mock'
 
+export const MERCHANT_SETTINGS_PRIVACY_PATH = '/merchant/settings/privacy-security'
+
 /** Desktop [272:11459](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-11459) · Mobile [622:1768](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1768) */
 export const MERCHANT_SETTINGS = {
   pageTitle: 'Settings',
@@ -40,6 +42,14 @@ export const MERCHANT_SETTINGS = {
       highlighted: true,
       to: MERCHANT_SETTINGS_ACCOUNT_PATH,
     },
+    {
+      id: 'privacy-security',
+      title: 'Privacy & Security',
+      description: 'Enable biometric unlock, authenticator app, and login preferences.',
+      icon: 'shield',
+      highlighted: false,
+      to: MERCHANT_SETTINGS_PRIVACY_PATH,
+    },
   ],
   mobile: {
     merchantId: '88291',
@@ -66,6 +76,13 @@ export const MERCHANT_SETTINGS = {
         description: 'Update contact email, phone number, and security preferences.',
         icon: 'user',
         to: MERCHANT_SETTINGS_ACCOUNT_PATH,
+      },
+      {
+        id: 'privacy-security',
+        title: 'Privacy & Security',
+        description: 'Enable biometric unlock, authenticator app, and login preferences.',
+        icon: 'shield',
+        to: MERCHANT_SETTINGS_PRIVACY_PATH,
       },
       {
         id: 'payment-methods',

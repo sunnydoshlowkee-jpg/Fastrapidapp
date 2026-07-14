@@ -86,11 +86,6 @@ export default function RiderIdentity() {
       return
     }
 
-    sessionStorage.setItem('rider_reg_identity', JSON.stringify({
-      govIdUploaded: !!govId,
-      selfieUploaded: !!selfie,
-      profilePhotoUploaded: !!profilePhoto
-    }))
     navigate('/dispatch/onboarding/vehicle')
   }
 

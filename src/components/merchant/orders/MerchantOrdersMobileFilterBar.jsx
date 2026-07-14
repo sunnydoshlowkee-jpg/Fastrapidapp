@@ -28,7 +28,7 @@ export default function MerchantOrdersMobileFilterBar({
             }`}
           >
             {filter.label}
-            {count != null && !isActive && (
+            {count != null && count > 0 && !isActive && (
               <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-merchant-primary px-1.5 text-[10px] font-bold text-white">
                 {count}
               </span>

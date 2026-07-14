@@ -5,75 +5,12 @@
 
 export const ADMIN_ORDER_DETAIL_DEFAULT_ID = 'ORD-8829'
 
-const ORDER_DETAIL = {
-  id: 'ORD-8829',
-  referenceId: '902847192',
-  placedAt: 'Placed Today at 14:32',
-  placedAtMobile: 'Placed at 12:10 PM today',
-  statusLabel: 'In Transit',
-  estimateLabel: 'Est. 12:45 PM',
-  statusBadge: { label: 'Active', tone: 'violet' },
+export const ADMIN_ORDER_DETAIL_STATIC = {
   backLabel: 'Back to orders',
   printReceiptLabel: 'Print Receipt',
   updateStatusLabel: 'Update Status',
   supportLabel: 'Support',
   actionsLabel: 'Actions',
-  steps: [
-    { id: 'placed', label: 'Placed', status: 'complete', icon: 'check' },
-    { id: 'accepted', label: 'Accepted', status: 'complete', icon: 'check' },
-    { id: 'transit', label: 'Transit', status: 'active', icon: 'bike' },
-    { id: 'delivered', label: 'Delivered', status: 'upcoming', icon: 'home' },
-  ],
-  stakeholders: {
-    merchant: {
-      title: 'Merchant',
-      name: 'The Rustic Bean',
-      initials: 'RB',
-      distanceLabel: '1.2 km away',
-      actionLabel: 'View store',
-      icon: 'store',
-      iconTone: 'orange',
-    },
-    rider: {
-      title: 'Rider',
-      name: 'Samuel K.',
-      initials: 'SK',
-      rating: '4.9',
-      tripsLabel: '120 trips',
-      actionLabel: 'Call rider',
-      icon: 'bike',
-      iconTone: 'orange',
-    },
-    customer: {
-      title: 'Customer',
-      name: 'Anita B.',
-      maskedPhone: '+234 801 *** 89',
-      actionLabel: 'View profile',
-      icon: 'user',
-      iconTone: 'purple',
-    },
-  },
-  items: {
-    title: 'Order Items',
-    lines: [
-      {
-        id: '1',
-        qty: 2,
-        name: 'Iced Caramel Macchiato',
-        note: 'Oat milk, Extra shot',
-        price: '5,400',
-      },
-      { id: '2', qty: 1, name: 'Butter Croissant', note: null, price: '1,200' },
-    ],
-    subtotalLabel: 'Subtotal',
-    subtotal: '6,600',
-    deliveryLabel: 'Delivery Fee',
-    deliveryFee: '800',
-    serviceLabel: 'Service Fee',
-    serviceCharge: '200',
-    totalLabel: 'Total',
-    total: '7,600',
-  },
   adminActions: {
     title: 'Admin Actions',
     items: [
@@ -210,6 +147,73 @@ const ORDER_DETAIL = {
     placeholder: 'Add internal admin note...',
     saveLabel: 'Save Note',
   },
+}
+
+const ORDER_DETAIL = {
+  id: 'ORD-8829',
+  referenceId: '902847192',
+  placedAt: 'Placed Today at 14:32',
+  placedAtMobile: 'Placed at 12:10 PM today',
+  statusLabel: 'In Transit',
+  estimateLabel: 'Est. 12:45 PM',
+  statusBadge: { label: 'Active', tone: 'violet' },
+  steps: [
+    { id: 'placed', label: 'Placed', status: 'complete', icon: 'check' },
+    { id: 'accepted', label: 'Accepted', status: 'complete', icon: 'check' },
+    { id: 'transit', label: 'Transit', status: 'active', icon: 'bike' },
+    { id: 'delivered', label: 'Delivered', status: 'upcoming', icon: 'home' },
+  ],
+  stakeholders: {
+    merchant: {
+      title: 'Merchant',
+      name: 'The Rustic Bean',
+      initials: 'RB',
+      distanceLabel: '1.2 km away',
+      actionLabel: 'View store',
+      icon: 'store',
+      iconTone: 'orange',
+    },
+    rider: {
+      title: 'Rider',
+      name: 'Samuel K.',
+      initials: 'SK',
+      rating: '4.9',
+      tripsLabel: '120 trips',
+      actionLabel: 'Call rider',
+      icon: 'bike',
+      iconTone: 'orange',
+    },
+    customer: {
+      title: 'Customer',
+      name: 'Anita B.',
+      maskedPhone: '+234 801 *** 89',
+      actionLabel: 'View profile',
+      icon: 'user',
+      iconTone: 'purple',
+    },
+  },
+  items: {
+    title: 'Order Items',
+    lines: [
+      {
+        id: '1',
+        qty: 2,
+        name: 'Iced Caramel Macchiato',
+        note: 'Oat milk, Extra shot',
+        price: '5,400',
+      },
+      { id: '2', qty: 1, name: 'Butter Croissant', note: null, price: '1,200' },
+    ],
+    subtotalLabel: 'Subtotal',
+    subtotal: '6,600',
+    deliveryLabel: 'Delivery Fee',
+    deliveryFee: '800',
+    serviceLabel: 'Service Fee',
+    serviceCharge: '200',
+    totalLabel: 'Total',
+    total: '7,600',
+  },
+  ...ADMIN_ORDER_DETAIL_STATIC,
 }
 
 export function getAdminOrderDetail(orderId) {

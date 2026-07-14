@@ -8,12 +8,12 @@ const OTP_LENGTH = 6
 export default function RiderVerify() {
   const navigate = useNavigate()
   const location = useLocation()
-  
-  // Default fallbacks in case of direct navigation
+
   const method = location.state?.method || 'email'
   const email = location.state?.email || ''
   const phone = location.state?.phone || ''
-  
+  const nextStep = location.state?.nextStep || 'identity'
+
   const displayTarget = method === 'email' ? email : `+234 ${phone}`
 
   const [code, setCode] = useState(Array(OTP_LENGTH).fill(''))
@@ -22,21 +22,14 @@ export default function RiderVerify() {
   const [verifying, setVerifying] = useState(false)
   const [sendingOtp, setSendingOtp] = useState(false)
   const [error, setError] = useState('')
+  const [debugOtp, setDebugOtp] = useState(location.state?.debugOtp || '')
   const inputsRef = useRef([])
 
-  // Redirect back if no state
   useEffect(() => {
     if (!email && !phone) {
-      navigate('/dispatch/onboarding/phone')
-    }
-  }, [email, phone, navigate])
-
-  // Countdown timer
-  useEffect(() => {
-    if (!email) {
       navigate('/dispatch/onboarding/personal', { replace: true })
     }
-  }, [email, navigate])
+  }, [email, phone, navigate])
 
   useEffect(() => {
     if (timer <= 0) {
@@ -47,30 +40,13 @@ export default function RiderVerify() {
     return () => clearTimeout(id)
   }, [timer])
 
-  const submitCode = async (otpDigits) => {
-    const otp = otpDigits.join('')
-    if (otp.length !== OTP_LENGTH) return
-
-    setLoading(true)
-    setError('')
-
-    try {
-      await verifyRegistrationEmail({ email, code: otp })
-      navigate('/dispatch/onboarding/identity')
-    } catch (err) {
-      setError(getApiFieldError(err, 'code') || 'Invalid verification code.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleChange = (val, idx) => {
     if (!/^\d?$/.test(val)) return
     const next = [...code]
     next[idx] = val
-    setOtp(next)
+    setCode(next)
     setError('')
-    
+
     if (val && idx < OTP_LENGTH - 1) inputsRef.current[idx + 1]?.focus()
     if (val && idx === OTP_LENGTH - 1) {
       verifyCode([...next])
@@ -83,27 +59,32 @@ export default function RiderVerify() {
     }
   }
 
-  const verifyCode = async (digits = otp) => {
-    const code = digits.join('')
-    if (code.length < OTP_LENGTH) return
-    
+  const verifyCode = async (digits = code) => {
+    const otp = digits.join('')
+    if (otp.length < OTP_LENGTH) return
+
     setVerifying(true)
     setError('')
-    
+
     try {
       if (method === 'email') {
-        await verifyEmailOtp(email, code)
+        await verifyEmailOtp(email, otp)
+        sessionStorage.setItem('rider_reg_email_verified', email)
       } else {
-        await verifyPhoneOtp(phone, code)
+        await verifyPhoneOtp(phone, otp)
+        sessionStorage.setItem('rider_reg_phone_verified', phone)
       }
-      
-      // Verification successful, move to personal info
-      navigate('/dispatch/onboarding/personal', {
-        state: { method, email, phone }
-      })
+
+      if (nextStep === 'personal') {
+        navigate('/dispatch/onboarding/personal', {
+          state: { method, email, phone },
+        })
+      } else {
+        navigate('/dispatch/onboarding/identity')
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid verification code. Please try again.')
-      setOtp(Array(OTP_LENGTH).fill(''))
+      setCode(Array(OTP_LENGTH).fill(''))
       setTimeout(() => inputsRef.current[0]?.focus(), 50)
     } finally {
       setVerifying(false)
@@ -112,34 +93,38 @@ export default function RiderVerify() {
 
   const handleResend = async () => {
     if (!canResend) return
-    
+
     setSendingOtp(true)
     setError('')
-    
+
     try {
+      let response
       if (method === 'email') {
-        await requestEmailOtp(email)
+        response = await requestEmailOtp(email)
       } else {
-        await requestPhoneOtp(phone)
+        response = await requestPhoneOtp(phone)
       }
-      
-      setOtp(Array(OTP_LENGTH).fill(''))
+
+      if (response?.data?.data?.debug_otp) {
+        setDebugOtp(response.data.data.debug_otp)
+      }
+
+      setCode(Array(OTP_LENGTH).fill(''))
       setTimer(45)
       setCanResend(false)
       inputsRef.current[0]?.focus()
     } catch (err) {
-      setError('Failed to resend code. Please try again.')
+      setError(err.response?.data?.message || 'Failed to resend code. Please try again.')
     } finally {
       setSendingOtp(false)
     }
   }
 
-  const filled = otp.filter(Boolean).length
+  const filled = code.filter(Boolean).length
 
   return (
     <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-5 pb-8">
 
-      {/* Top bar */}
       <div className="flex items-center justify-between mb-6">
         <button onClick={() => navigate(-1)}
           className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:bg-gray-200 transition-colors">
@@ -147,7 +132,6 @@ export default function RiderVerify() {
         </button>
       </div>
 
-      {/* Heading */}
       <div className="mb-10">
         <h1 className="text-[28px] font-black text-gray-900 leading-tight mb-3">
           Verify Your {method === 'email' ? 'Email' : 'Phone'}
@@ -170,9 +154,8 @@ export default function RiderVerify() {
         )}
       </div>
 
-      {/* OTP boxes */}
       <div className="flex gap-2 justify-center mb-6">
-        {otp.map((digit, i) => (
+        {code.map((digit, i) => (
           <input
             key={i}
             ref={(el) => (inputsRef.current[i] = el)}
@@ -198,10 +181,9 @@ export default function RiderVerify() {
         </div>
       )}
 
-      {/* Resend */}
       <div className="text-center mb-4">
         <p className="text-gray-500 text-sm">
-          Didn't get a code?{' '}
+          {canResend ? "Didn't get a code?" : `Resend available in ${timer}s`}{' '}
           <button
             onClick={handleResend}
             disabled={sendingOtp || !canResend}

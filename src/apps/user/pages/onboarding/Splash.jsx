@@ -1,31 +1,66 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
 import Logo from '../../../../components/brand/Logo'
+import { hasAuthToken, isBiometricUnlockEnabled } from '../../../../utils/biometricSession'
+import { APP_ROLES, getRoleConfig } from '../../../../utils/appRole'
 
 export default function Splash() {
   const navigate = useNavigate()
   const [phase, setPhase] = useState('one')
+  const role = APP_ROLES.user
+  const roleConfig = getRoleConfig(role)
 
   useEffect(() => {
-    // Switch to second splash screen after 1.5 seconds
-    const t1 = setTimeout(() => setPhase('two'), 1500)
-    // Navigate to slider after another 2 seconds
-    const t2 = setTimeout(() => navigate('/onboarding/slider', { replace: true }), 3500)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    let cancelled = false
+    let t1
+    let t2
+
+    const routeReturningUser = async () => {
+      if (!hasAuthToken(role)) return false
+
+      if (Capacitor.isNativePlatform() && await isBiometricUnlockEnabled(role)) {
+        navigate(roleConfig.biometricUnlockPath, { replace: true })
+        return true
+      }
+
+      navigate(roleConfig.homePath, { replace: true })
+      return true
+    }
+
+    const startOnboardingSplash = () => {
+      t1 = setTimeout(() => {
+        if (!cancelled) setPhase('two')
+      }, 1500)
+
+      t2 = setTimeout(() => {
+        if (!cancelled) navigate('/onboarding/slider', { replace: true })
+      }, 3500)
+    }
+
+    routeReturningUser().then((handled) => {
+      if (!handled && !cancelled) {
+        startOnboardingSplash()
+      }
+    })
+
+    return () => {
+      cancelled = true
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
   }, [navigate])
 
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden"
       style={{ background: '#4F46E5' }}>
 
-      {/* Center content */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full">
         <div className="flex items-center gap-3">
-          {/* F/R combined Logo icon placeholder */}
           <div className="flex items-center justify-center">
             <Logo variant="icon" height={48} />
           </div>
-          
+
           {phase === 'two' && (
             <span className="text-white text-4xl font-semibold tracking-tight animate-fade-in">
               Fast Rapid
@@ -40,17 +75,14 @@ export default function Splash() {
         )}
       </div>
 
-      {/* Bottom area */}
       <div className="absolute bottom-16 w-full flex flex-col items-center justify-center">
         {phase === 'one' ? (
-          // Three dots loader
           <div className="flex gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
             <span className="w-1.5 h-1.5 rounded-full bg-white/70" />
             <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
           </div>
         ) : (
-          // Loading bar
           <div className="flex flex-col items-center w-full px-12 max-w-xs animate-fade-in">
             <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mb-4 relative">
               <div className="h-full bg-white w-1/3 rounded-full absolute left-0 top-0 animate-[loading_1.5s_ease-in-out_infinite]" />

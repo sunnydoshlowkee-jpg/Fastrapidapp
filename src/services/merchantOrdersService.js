@@ -187,6 +187,15 @@ export async function getMerchantOrder(orderId) {
   }
 }
 
+export async function getMerchantOrdersBadge() {
+  try {
+    const { data } = await api.get('/merchant/orders/badge')
+    return Number(data?.data?.new_orders_count) || 0
+  } catch {
+    return 0
+  }
+}
+
 export async function getMerchantOrders({ status = 'all', search = '', page = 1, perPage = 15 } = {}) {
   try {
     const { data } = await api.get('/merchant/orders', {
@@ -202,6 +211,9 @@ export async function getMerchantOrders({ status = 'all', search = '', page = 1,
       orders: (data?.data || []).map(mapMerchantOrderFromApi).filter(Boolean),
       meta: data?.meta || { current_page: 1, last_page: 1, total: 0, per_page: perPage },
       filterCounts: data?.filter_counts || {},
+      summary: buildOrdersSummaryFromApi(data?.summary),
+      summaryMobile: buildOrdersSummaryMobileFromApi(data?.summary),
+      merchantId: data?.merchant_id || null,
     }
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form') || 'Could not load orders.')
@@ -211,6 +223,7 @@ export async function getMerchantOrders({ status = 'all', search = '', page = 1,
 export async function updateMerchantOrderStatus(orderId, action) {
   try {
     const { data } = await api.patch(`/merchant/orders/${orderId}/status`, { action })
+    window.dispatchEvent(new Event('merchant-orders-changed'))
     return mapMerchantOrderFromApi(data?.data)
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form') || 'Could not update order.')
@@ -224,6 +237,60 @@ export function formatNaira(amount) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(Number(amount) || 0)
+}
+
+export function buildOrdersSummaryFromApi(summary = {}) {
+  const pending = Number(summary.pending_orders) || 0
+  const pendingSinceMorning = Number(summary.pending_since_morning) || 0
+  const revenue = Number(summary.daily_revenue) || 0
+  const transactions = Number(summary.transactions_today) || 0
+  const completionRate = Number(summary.completion_rate) || 0
+
+  return {
+    pending: {
+      label: 'Pending Orders',
+      value: String(pending),
+      subtext:
+        pendingSinceMorning > 0
+          ? `+${pendingSinceMorning} since 8:00 AM`
+          : pending > 0
+            ? 'Awaiting action'
+            : 'No pending orders',
+      subtextTone: pendingSinceMorning > 0 ? 'positive' : 'muted',
+    },
+    revenue: {
+      label: 'Daily Revenue',
+      value: revenue > 0 ? formatNaira(revenue) : '₦0',
+      subtext:
+        transactions > 0
+          ? `${transactions} transaction${transactions === 1 ? '' : 's'} today`
+          : 'No paid orders today',
+      subtextTone: transactions > 0 ? 'info' : 'muted',
+    },
+    completion: {
+      label: 'Completion Rate',
+      value: completionRate > 0 ? `${completionRate}%` : '—',
+      percent: completionRate,
+    },
+  }
+}
+
+export function buildOrdersSummaryMobileFromApi(summary = {}) {
+  const desktop = buildOrdersSummaryFromApi(summary)
+
+  return {
+    pending: {
+      label: desktop.pending.label,
+      value: desktop.pending.value,
+      subtext: desktop.pending.subtext,
+    },
+    revenue: {
+      label: desktop.revenue.label,
+      value: desktop.revenue.value,
+      subtext: desktop.revenue.subtext.replace(' today', ' total'),
+    },
+    completion: desktop.completion,
+  }
 }
 
 export function buildDashboardStats(stats = {}, liveOrders = []) {

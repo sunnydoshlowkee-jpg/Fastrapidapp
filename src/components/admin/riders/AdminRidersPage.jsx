@@ -64,10 +64,20 @@ export default function AdminRidersPage() {
     [riders, stats],
   )
 
+  const pendingCount = useMemo(() => {
+    const pendingStat = stats.find((stat) => stat.id === 'pending')
+    return Number.parseInt(pendingStat?.value ?? '0', 10) || 0
+  }, [stats])
+
   return (
     <>
       <div className="flex h-full min-h-0 flex-1 lg:hidden">
-        <AdminRidersMobilePage data={pageData} loading={loading} error={error} />
+        <AdminRidersMobilePage
+          data={pageData}
+          loading={loading}
+          error={error}
+          pendingCount={pendingCount}
+        />
       </div>
 
       <div className="hidden p-6 lg:block">
@@ -89,6 +99,7 @@ export default function AdminRidersPage() {
             <nav className="flex flex-wrap gap-2" aria-label="Rider filters">
               {pageConfig.tabs.map((tab) => {
                 const isActive = activeTab === tab.id
+                const showBadge = tab.id === 'pending' && pendingCount > 0
                 return (
                   <button
                     key={tab.id}
@@ -97,13 +108,22 @@ export default function AdminRidersPage() {
                       setActiveTab(tab.id)
                       setPage(1)
                     }}
-                    className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                       isActive
                         ? 'bg-rapid-orange text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
                     {tab.label}
+                    {showBadge ? (
+                      <span
+                        className={`inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                          isActive ? 'bg-white text-rapid-orange' : 'bg-rapid-orange text-white'
+                        }`}
+                      >
+                        {pendingCount}
+                      </span>
+                    ) : null}
                   </button>
                 )
               })}

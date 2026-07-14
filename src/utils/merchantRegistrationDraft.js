@@ -15,6 +15,7 @@ export function mapUserToRegistrationDraft(user) {
   const values = {
     legalName: merchant.business_name ?? '',
     businessType: merchant.business_type ?? DEFAULT_BUSINESS_TYPE,
+    storeFormat: merchant.store_format ?? '',
     businessEmail: user.email ?? '',
     phone: user.phone ?? '',
     address: merchant.registered_address ?? '',

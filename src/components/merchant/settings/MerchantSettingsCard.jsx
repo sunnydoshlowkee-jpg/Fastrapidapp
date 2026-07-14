@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Banknote, Clock, CreditCard, Store, User, UserCog } from 'lucide-react'
+import { Banknote, Clock, CreditCard, Shield, Store, User, UserCog } from 'lucide-react'
 
 const iconMap = {
   store: Store,
@@ -8,6 +8,7 @@ const iconMap = {
   'credit-card': CreditCard,
   user: User,
   'user-cog': UserCog,
+  shield: Shield,
 }
 
 export default function MerchantSettingsCard({ card, onSelect, variant = 'desktop' }) {

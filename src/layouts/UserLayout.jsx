@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, ShoppingBag, Wallet, User, Car, ShoppingCart } from 'lucide-react'
+import { Home, Search, ShoppingBag, Wallet, User, Car } from 'lucide-react'
 import Logo from '../components/brand/Logo'
+import { NavBadge } from '../components/notifications/NotificationBellButton'
+import { useUnreadNotifications } from '../hooks/useUnreadNotifications'
 import { getOrders } from '../services/orderService'
+import LocationRequiredGate from '../components/location/LocationRequiredGate'
 
 const navItems = [
   { to: '/app', icon: Home, label: 'Home', desktopLabel: 'Home' },
   { to: '/app/search', icon: Search, label: 'Search', desktopLabel: 'Search' },
   { to: '/app/orders', icon: ShoppingBag, label: 'Orders', desktopLabel: 'Orders' },
   { to: '/app/wallet', icon: Wallet, label: 'Wallet', desktopLabel: 'Wallet' },
-  { to: '/app/profile', icon: User, label: 'Profile', desktopLabel: 'Profile' },
+  { to: '/app/profile', icon: User, label: 'Profile', desktopLabel: 'Profile', badgeKey: 'unread' },
 ]
 
 export default function UserLayout() {
@@ -18,23 +21,41 @@ export default function UserLayout() {
   const mainRef = useRef(null)
   const isHome = location.pathname === '/app'
   const [activeOrder, setActiveOrder] = useState(null)
+  const { unread, chatUnread, refresh: refreshUnread } = useUnreadNotifications({
+    role: 'user',
+    enabled: Boolean(localStorage.getItem('rapid_token')),
+  })
+
+  useEffect(() => {
+    refreshUnread()
+  }, [location.pathname, refreshUnread])
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0)
   }, [location.pathname])
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchActiveOrder = async () => {
       try {
         const { data } = await getOrders()
+        if (cancelled) return
         const ongoing = (data.data || []).find(o => o.status !== 'delivered' && o.status !== 'cancelled')
         setActiveOrder(ongoing || null)
       } catch (err) {
         console.error('Failed to fetch active order in layout', err)
       }
     }
+
     fetchActiveOrder()
-  }, [location.pathname])
+    const intervalId = window.setInterval(fetchActiveOrder, 30_000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [])
   
   const topLevelPaths = ['/app', '/app/search', '/app/promotions', '/app/orders', '/app/wallet', '/app/profile']
   const browsePaths = [
@@ -47,6 +68,7 @@ export default function UserLayout() {
     /^\/app\/checkout$/,
     /^\/app\/order-success\//,
     /^\/app\/track\//,
+    /^\/app\/order\/[^/]+\/chat$/,
   ]
 
   const showMobileNav =
@@ -78,7 +100,7 @@ export default function UserLayout() {
         </div>
         
         <nav className="flex-1 flex flex-col gap-2.5 px-5">
-          {navItems.map(({ to, icon: Icon, desktopLabel }) => (
+          {navItems.map(({ to, icon: Icon, desktopLabel, badgeKey }) => (
             <NavLink
               key={to}
               to={to}
@@ -91,10 +113,18 @@ export default function UserLayout() {
                 }`
               }
             >
-              {({ isActive }) => (
+              {() => (
                 <>
-                  <Icon size={26} className="flex-shrink-0" />
-                  <span className="text-[18px]">{desktopLabel}</span>
+                  <span className="relative flex-shrink-0">
+                    <Icon size={26} />
+                    {badgeKey === 'unread' ? <NavBadge count={unread} /> : null}
+                  </span>
+                  <span className="text-[18px] flex-1">{desktopLabel}</span>
+                  {badgeKey === 'unread' && chatUnread > 0 ? (
+                    <span className="text-[11px] font-bold text-[#1A1AF5] bg-indigo-50 px-2 py-0.5 rounded-full">
+                      {chatUnread > 99 ? '99+' : chatUnread} chat
+                    </span>
+                  ) : null}
                 </>
               )}
             </NavLink>
@@ -139,14 +169,21 @@ export default function UserLayout() {
       </aside>
 
       {/* --- MAIN CONTENT --- */}
-      <main ref={mainRef} className="flex-1 flex flex-col min-h-0 h-full overflow-y-auto w-full md:w-[calc(100%-300px)]">
-        <Outlet />
+      <main
+        ref={mainRef}
+        className={`flex-1 flex flex-col min-h-0 h-full overflow-y-auto w-full md:w-[calc(100%-300px)] ${
+          showMobileNav ? 'pb-mobile-nav' : ''
+        }`}
+      >
+        <LocationRequiredGate>
+          <Outlet />
+        </LocationRequiredGate>
       </main>
 
       {/* --- MOBILE BOTTOM NAV --- */}
       {showMobileNav && (
-        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center h-[72px] pb-safe z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 flex justify-around items-center min-h-[72px] pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+        {navItems.map(({ to, icon: Icon, label, badgeKey }) => (
           <NavLink
             key={to}
             to={to}
@@ -159,7 +196,10 @@ export default function UserLayout() {
           >
             {({ isActive }) => (
               <>
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-[#1A1AF5]' : 'text-gray-400'} />
+                <span className="relative">
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'text-[#1A1AF5]' : 'text-gray-400'} />
+                  {badgeKey === 'unread' ? <NavBadge count={unread} /> : null}
+                </span>
                 {label}
               </>
             )}

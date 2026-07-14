@@ -37,6 +37,7 @@ export const ADMIN_RIDERS = {
   ],
   tabs: [
     { id: 'all', label: 'All Riders' },
+    { id: 'pending', label: 'Pending Review' },
     { id: 'available', label: 'Available' },
     { id: 'on_trip', label: 'On Trip' },
     { id: 'offline', label: 'Offline' },
@@ -141,6 +142,7 @@ export const ADMIN_RIDERS = {
     searchPlaceholder: 'Search riders by name, ID, or zone...',
     filters: [
       { id: 'all', label: 'All' },
+      { id: 'pending', label: 'Pending' },
       { id: 'available', label: 'Available' },
       { id: 'on_trip', label: 'On Trip' },
       { id: 'offline', label: 'Offline' },

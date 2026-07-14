@@ -32,6 +32,11 @@ api.interceptors.request.use(config => {
     token = localStorage.getItem('rapid_merchant_token')
   } else if (isRiderApi) {
     token = localStorage.getItem('rider_token')
+  } else if (requestUrl.includes('/user/security')) {
+    token =
+      localStorage.getItem('rapid_token') ||
+      localStorage.getItem('rider_token') ||
+      localStorage.getItem('rapid_merchant_token')
   } else {
     token =
       localStorage.getItem('rapid_token') ||

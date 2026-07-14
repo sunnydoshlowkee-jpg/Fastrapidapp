@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getMerchantOrders } from '../../../services/merchantOrdersService'
+import { buildOrdersSummaryFromApi, buildOrdersSummaryMobileFromApi, getMerchantOrders } from '../../../services/merchantOrdersService'
 import { MERCHANT_ORDERS_PAGINATION } from '../../../services/data/merchantOrders.mock'
+
+const EMPTY_SUMMARY = buildOrdersSummaryFromApi()
+const EMPTY_SUMMARY_MOBILE = buildOrdersSummaryMobileFromApi()
 
 export default function useMerchantOrdersPage() {
   const [activeFilter, setActiveFilter] = useState('all')
@@ -8,6 +11,9 @@ export default function useMerchantOrdersPage() {
   const [page, setPage] = useState(1)
   const [orders, setOrders] = useState([])
   const [filterCounts, setFilterCounts] = useState({})
+  const [summary, setSummary] = useState(EMPTY_SUMMARY)
+  const [summaryMobile, setSummaryMobile] = useState(EMPTY_SUMMARY_MOBILE)
+  const [merchantId, setMerchantId] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: MERCHANT_ORDERS_PAGINATION.pageSize,
@@ -35,6 +41,9 @@ export default function useMerchantOrdersPage() {
         if (!cancelled) {
           setOrders(result.orders)
           setFilterCounts(result.filterCounts)
+          setSummary(result.summary)
+          setSummaryMobile(result.summaryMobile)
+          setMerchantId(result.merchantId)
           setPagination({
             page: result.meta.current_page,
             pageSize: result.meta.per_page,
@@ -80,6 +89,9 @@ export default function useMerchantOrdersPage() {
     searchQuery,
     loading,
     error,
+    summary,
+    summaryMobile,
+    merchantId,
     handleFilterChange,
     handleSearchChange,
     pagination: {

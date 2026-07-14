@@ -14,6 +14,7 @@ function findAndroidSdk() {
   const candidates = [
     process.env.ANDROID_HOME,
     process.env.ANDROID_SDK_ROOT,
+    '/opt/android-sdk',
     process.platform === 'win32'
       ? join(process.env.LOCALAPPDATA || '', 'Android', 'Sdk')
       : join(homedir(), 'Library', 'Android', 'sdk'),

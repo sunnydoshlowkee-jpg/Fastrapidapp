@@ -1,8 +1,7 @@
 import { TrendingUp } from 'lucide-react'
-import { MERCHANT_ORDERS_SUMMARY_MOBILE } from '../../../services/data/merchantOrders.mock'
 
-export default function MerchantOrdersMobileSummaryCards() {
-  const { pending, revenue, completion } = MERCHANT_ORDERS_SUMMARY_MOBILE
+export default function MerchantOrdersMobileSummaryCards({ summary }) {
+  const { pending, revenue, completion } = summary
 
   return (
     <section className="flex flex-col gap-3" aria-label="Orders summary">

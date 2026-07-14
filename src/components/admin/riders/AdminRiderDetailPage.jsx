@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Ban, Bike, MapPin, Pencil, Star, TrendingUp } from 'lucide-react'
 import { getRiderTrackingPath } from '../../../services/data/adminRiderTracking.mock'
+import {
+  approveAdminRider,
+  rejectAdminRider,
+  updateAdminRiderDocument,
+} from '../../../services/adminRidersService'
 import AdminRiderDocumentsList from './AdminRiderDocumentsList'
+import AdminRiderProfilePanel from './AdminRiderProfilePanel'
 import AdminRidersBreadcrumbs from './AdminRidersBreadcrumbs'
 
 function MetricCard({ metric }) {
@@ -60,9 +66,51 @@ function TripHistoryItem({ trip }) {
   )
 }
 
-export default function AdminRiderDetailPage({ rider }) {
-  const [activeTab, setActiveTab] = useState(rider.defaultTab ?? 'trips')
+export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
+  const [activeTab, setActiveTab] = useState(rider.defaultTab ?? 'profile')
+  const [actionError, setActionError] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
   const isOnline = rider.onlineLabel === 'Online'
+
+  const handleDocumentReview = async (documentType, status) => {
+    setActionLoading(true)
+    setActionError('')
+    try {
+      const payload = await updateAdminRiderDocument(rider.numericId, documentType, status)
+      onRiderUpdated?.(payload)
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Could not update document.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleApprove = async () => {
+    setActionLoading(true)
+    setActionError('')
+    try {
+      const payload = await approveAdminRider(rider.numericId)
+      onRiderUpdated?.(payload)
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Could not approve rider.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleReject = async () => {
+    const reason = window.prompt('Reason for rejection (optional):') || ''
+    setActionLoading(true)
+    setActionError('')
+    try {
+      const payload = await rejectAdminRider(rider.numericId, reason)
+      onRiderUpdated?.(payload)
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Could not reject rider.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
 
   return (
     <div className="p-6">
@@ -89,13 +137,27 @@ export default function AdminRiderDetailPage({ rider }) {
                 Track Live
               </Link>
             ) : null}
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-red-600 transition-colors hover:bg-red-50"
-            >
-              <Ban size={16} strokeWidth={2} aria-hidden />
-              {rider.suspendLabel}
-            </button>
+            {rider.status !== 'approved' ? (
+              <button
+                type="button"
+                onClick={handleApprove}
+                disabled={!rider.canApprove || actionLoading}
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Approve Rider
+              </button>
+            ) : null}
+            {rider.status !== 'rejected' ? (
+              <button
+                type="button"
+                onClick={handleReject}
+                disabled={actionLoading}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-red-600 transition-colors hover:bg-red-50"
+              >
+                <Ban size={16} strokeWidth={2} aria-hidden />
+                Reject
+              </button>
+            ) : null}
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-4 py-2 text-xs font-bold uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-[#E84A15]"
@@ -128,7 +190,7 @@ export default function AdminRiderDetailPage({ rider }) {
               <div className="pb-1">
                 <h1 className="text-2xl font-bold tracking-tight text-gray-900">{rider.name}</h1>
                 <p className="mt-1 text-sm text-gray-500">
-                  ID: #{rider.displayId} • {rider.joined}
+                  ID: #{rider.id} • {rider.joined} • {rider.approvalStatusLabel}
                 </p>
               </div>
             </div>
@@ -166,7 +228,9 @@ export default function AdminRiderDetailPage({ rider }) {
           })}
         </nav>
 
-        {activeTab === 'trips' ? (
+        {activeTab === 'profile' ? (
+          <AdminRiderProfilePanel sections={rider.profileSections} />
+        ) : activeTab === 'trips' ? (
           rider.tripHistory.length === 0 ? (
             <p className="px-6 py-12 text-center text-sm text-gray-500">No trip history yet.</p>
           ) : (
@@ -177,9 +241,13 @@ export default function AdminRiderDetailPage({ rider }) {
             </ul>
           )
         ) : (
-          <AdminRiderDocumentsList documents={rider.documents} />
+          <AdminRiderDocumentsList documents={rider.documents} onReview={handleDocumentReview} />
         )}
       </section>
+
+      {actionError ? (
+        <p className="mt-4 text-sm font-medium text-red-600">{actionError}</p>
+      ) : null}
     </div>
   )
 }

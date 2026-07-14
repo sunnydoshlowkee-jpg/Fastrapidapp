@@ -8,7 +8,7 @@ export default function MerchantOrdersFilterBar({ filters, activeFilter, counts,
       {filters.map((filter) => {
         const isActive = activeFilter === filter.id
         const count = filter.countKey ? counts[filter.countKey] : null
-        const label = count != null ? `${filter.label} (${count})` : filter.label
+        const label = count != null && count > 0 ? `${filter.label} (${count})` : filter.label
 
         return (
           <button

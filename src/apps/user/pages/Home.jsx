@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Utensils, ShoppingBasket, Package, Pill } from 'lucide-react'
 import AppLocationBar from '../../../components/location/AppLocationBar'
+import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
 import { useLocation } from '../../../context/LocationContext'
 import { useDiscovery } from '../../../hooks/useDiscovery'
 import { useDashboard } from '../../../hooks/useDashboard'
 import { useCart } from '../../../context/CartContext'
+import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 
 // Mock Data (Desktop Only)
 const desktopServices = [
@@ -31,6 +33,10 @@ export default function Home() {
   const { data: dashboard, loading: dashboardLoading } = useDashboard()
   const { items: cartItems = [], add: addToCart } = useCart()
   const [favorites, setFavorites] = useState([])
+  const { unread } = useUnreadNotifications({
+    role: 'user',
+    enabled: Boolean(localStorage.getItem('rapid_token')),
+  })
 
   const toggleFavorite = (e, id) => {
     e.stopPropagation()
@@ -40,17 +46,36 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('Food')
   const [bannerIndex, setBannerIndex] = useState(0)
 
-  const stores = activeTab === 'Food' ? (discovery.food ?? []) : (discovery.grocery ?? [])
-  const trending = activeTab === 'Food'
+  const isFood = activeTab === 'Food'
+  const isGroceries = activeTab === 'Groceries'
+  const isMore = activeTab === 'More'
+
+  const stores = isFood
+    ? (discovery.food ?? [])
+    : isGroceries
+      ? (discovery.grocery ?? [])
+      : (discovery.more ?? [])
+  const trending = isFood
     ? (discovery.trending_food ?? [])
-    : (discovery.trending_grocery ?? [])
+    : isGroceries
+      ? (discovery.trending_grocery ?? [])
+      : (discovery.trending_more ?? [])
   const desktopPopular = discovery.food ?? []
-  const recommended = discovery.recommended_for_you ?? []
+  const recommended = isMore ? [] : (discovery.recommended_for_you ?? [])
+  const nearbyCount = isMore
+    ? (discovery.more_count ?? stores.length)
+    : discovery.nearby_count
+  const storesSectionTitle = isFood
+    ? 'Restaurants near you'
+    : isGroceries
+      ? 'Grocery stores near you'
+      : 'Shops & services near you'
+  const seeAllPath = isMore ? '/app/vendors/other' : `/app/vendors/${activeTab.toLowerCase()}`
   const areaLabel = location?.location_label || 'your area'
-  const radiusLabel = discovery.radius_km ? `${discovery.radius_km}km` : '20km'
+  const radiusLabel = discovery.radius_km ? `${discovery.radius_km}km` : '10km'
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
+    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-4 md:pb-8">
       
       {/* -------------------------------------------------------------------------------- */}
       {/*                                 MOBILE LAYOUT                                      */}
@@ -59,24 +84,44 @@ export default function Home() {
       {/* Mobile Top Bar */}
       <div className="md:hidden px-5 pt-12 pb-3 flex items-center justify-between sticky top-0 bg-[#FAFAFA]/95 backdrop-blur-md z-40 border-b border-gray-100">
         <AppLocationBar variant="mobile" />
-        <div 
-          className="cursor-pointer bg-indigo-50 px-3 py-1.5 rounded-full hover:shadow-sm transition-all"
-          onClick={() => navigate('/app/wallet')}
-        >
-          <span className="font-bold text-[#4F46E5] text-[14px] flex items-center gap-2">
-            ₦{dashboardLoading ? '...' : dashboard.wallet_balance.toLocaleString()}
-          </span>
+        <div className="flex items-center gap-2">
+          <NotificationBellButton
+            onClick={() => navigate('/app/notifications')}
+            count={unread}
+            className="w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm"
+            iconSize={18}
+            iconClassName="text-gray-600"
+            tone="indigo"
+          />
+          <div
+            className="cursor-pointer bg-indigo-50 px-3 py-1.5 rounded-full hover:shadow-sm transition-all"
+            onClick={() => navigate('/app/wallet')}
+          >
+            <span className="font-bold text-[#4F46E5] text-[14px] flex items-center gap-2">
+              ₦{dashboardLoading ? '...' : dashboard.wallet_balance.toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="md:hidden flex-1 w-full max-w-md mx-auto px-5 pt-2 flex flex-col">
         {/* Mobile Hero Banner */}
         <div className="relative w-full h-[140px] rounded-2xl overflow-hidden mb-3">
-          <div className={`absolute inset-0 ${activeTab === 'Food' ? 'bg-gradient-to-r from-[#4F46E5] to-[#6366F1]' : 'bg-gradient-to-r from-[#10B981] to-[#34D399]'}`} />
+          <div className={`absolute inset-0 ${
+            isFood
+              ? 'bg-gradient-to-r from-[#4F46E5] to-[#6366F1]'
+              : isGroceries
+                ? 'bg-gradient-to-r from-[#10B981] to-[#34D399]'
+                : 'bg-gradient-to-r from-[#F59E0B] to-[#F97316]'
+          }`} />
           <div className="absolute inset-0 p-5 flex flex-col justify-center w-[65%]">
             <span className="hidden px-3 py-1 bg-white/20 text-white text-xs font-bold rounded-full w-max mb-3 backdrop-blur-sm">Limited Offer</span>
             <h2 className="text-white text-[17px] font-bold leading-snug mb-1">
-              {activeTab === 'Food' ? '50% off your first grocery haul' : 'Fresh groceries, 50% off today'}
+              {isFood
+                ? '50% off your first grocery haul'
+                : isGroceries
+                  ? 'Fresh groceries, 50% off today'
+                  : 'Discover shops and services near you'}
             </h2>
             <p className="text-white/80 text-[11px] font-medium mb-3">Fresh items delivered fast to your door</p>
             <button onClick={() => navigate('/app/promotions')} className="bg-white text-gray-900 px-4 py-2 rounded-full text-[12px] font-bold w-max flex items-center gap-1 hover:scale-105 transition-transform shadow-lg shadow-black/10">
@@ -84,7 +129,13 @@ export default function Home() {
             </button>
           </div>
           <img 
-            src={activeTab === 'Food' ? "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop" : "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop"} 
+            src={
+              isFood
+                ? 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop'
+                : isGroceries
+                  ? 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&h=500&fit=crop'
+                  : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&h=500&fit=crop'
+            }
             alt="Promo" 
             className="absolute -right-4 -bottom-4 w-36 h-36 object-cover opacity-80 drop-shadow-2xl" 
           />
@@ -122,11 +173,16 @@ export default function Home() {
               <span className="text-[28px]">🧺</span>
               <span className={`text-[12px] font-semibold ${activeTab === 'Groceries' ? 'text-white' : 'text-gray-700'}`}>Groceries</span>
             </div>
-            <div onClick={() => navigate('/app/categories')} className="flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer bg-[#F0F0F5] rounded-2xl h-[85px]">
-              <div className="w-8 h-8 bg-[#2E7D32] rounded-full flex items-center justify-center">
+            <div 
+              onClick={() => setActiveTab('More')}
+              className={`flex-1 flex flex-col items-center justify-center gap-2 cursor-pointer rounded-2xl transition-all duration-200 ${
+                isMore ? 'bg-[#4F46E5] h-[100px] shadow-lg shadow-indigo-200' : 'bg-[#F0F0F5] h-[85px]'
+              }`}
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isMore ? 'bg-white/20' : 'bg-[#2E7D32]'}`}>
                 <Plus size={18} className="text-white" strokeWidth={2.5} />
               </div>
-              <span className="text-[12px] font-semibold text-gray-700">more</span>
+              <span className={`text-[12px] font-semibold ${isMore ? 'text-white' : 'text-gray-700'}`}>more</span>
             </div>
           </div>
         </div>
@@ -188,13 +244,13 @@ export default function Home() {
         <div className="mb-7">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-gray-900">
-              {activeTab === 'Food' ? 'Restaurants near you' : 'Grocery stores near you'}
+              {storesSectionTitle}
             </h3>
-            <span onClick={() => navigate(`/app/vendors/${activeTab.toLowerCase()}`)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
+            <span onClick={() => navigate(seeAllPath)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">See all</span>
           </div>
           <p className="text-[11px] text-gray-500 mb-3 -mt-2">
             Within {radiusLabel} of {areaLabel}
-            {discovery.nearby_count > 0 && ` · ${discovery.nearby_count} nearby`}
+            {nearbyCount > 0 && ` · ${nearbyCount} nearby`}
           </p>
           {discoveryLoading && (
             <p className="text-sm text-gray-500 mb-4">Loading nearby results…</p>
@@ -261,9 +317,14 @@ export default function Home() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-gray-900">Trending Items</h3>
-            <span onClick={() => navigate(`/app/vendors/${activeTab.toLowerCase()}`)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">View Market</span>
+            <span onClick={() => navigate(seeAllPath)} className="text-[12px] font-bold text-[#4F46E5] cursor-pointer hover:underline">View Market</span>
           </div>
           <div className="grid grid-cols-2 gap-3">
+            {trending.length === 0 && !discoveryLoading ? (
+              <p className="col-span-2 text-sm text-gray-500 py-6 text-center bg-white rounded-2xl border border-gray-100">
+                No trending items in this category yet.
+              </p>
+            ) : null}
             {trending.map(item => (
               <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-2xl p-3 shadow-sm hover:shadow-md border border-gray-100 flex flex-col group cursor-pointer transition-all hover:-translate-y-1">
                 <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 relative bg-gray-50">

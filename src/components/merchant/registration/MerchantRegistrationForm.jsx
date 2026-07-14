@@ -3,11 +3,13 @@ import MerchantButton from '../auth/MerchantButton'
 import MerchantRegistrationField from './MerchantRegistrationField'
 import MerchantRegistrationLogoUpload from './MerchantRegistrationLogoUpload'
 import MerchantRegistrationSection from './MerchantRegistrationSection'
+import { allowsStoreFormat } from '../../../utils/merchantBusinessType'
 
 function buildDefaultValues(fields, initialValues) {
   return {
     legalName: '',
     businessType: fields.businessType.defaultValue,
+    storeFormat: '',
     businessEmail: '',
     phone: '',
     address: '',
@@ -36,7 +38,14 @@ export default function MerchantRegistrationForm({
   const [formError, setFormError] = useState('')
 
   const update = (key) => (e) => {
-    setValues((prev) => ({ ...prev, [key]: e.target.value }))
+    const value = e.target.value
+    setValues((prev) => {
+      const next = { ...prev, [key]: value }
+      if (key === 'businessType' && !allowsStoreFormat(value)) {
+        next.storeFormat = ''
+      }
+      return next
+    })
     if (errors[key]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -46,6 +55,8 @@ export default function MerchantRegistrationForm({
     }
     if (formError) setFormError('')
   }
+
+  const showStoreFormat = allowsStoreFormat(values.businessType)
 
   const handleLogoSelect = (file) => {
     setLogoFile(file)
@@ -122,6 +133,24 @@ export default function MerchantRegistrationForm({
               error={errors.businessEmail}
             />
           </div>
+
+          {showStoreFormat && fields.storeFormat ? (
+            <div className="sm:max-w-[calc(50%-10px)]">
+              <MerchantRegistrationField
+                id="storeFormat"
+                label={fields.storeFormat.label}
+                as="select"
+                placeholderOption={fields.storeFormat.placeholder}
+                options={fields.storeFormat.options}
+                value={values.storeFormat}
+                onChange={update('storeFormat')}
+                error={errors.storeFormat}
+              />
+              {fields.storeFormat.helper ? (
+                <p className="mt-1.5 text-xs text-merchant-muted">{fields.storeFormat.helper}</p>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="sm:max-w-[calc(50%-10px)]">
             <MerchantRegistrationField

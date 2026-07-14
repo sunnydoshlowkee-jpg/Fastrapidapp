@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, HelpCircle, ChevronDown, CheckCircle2 } from 'lucide-react'
-import { purchaseAirtime, getDataPlans, purchaseData, verifyMeter, purchaseElectricity } from '../../../services/walletService'
+import {
+  purchaseAirtime,
+  getDataPlans,
+  purchaseData,
+  verifyMeter,
+  purchaseElectricity,
+  getCablePlans,
+  verifySmartcard,
+  purchaseCable,
+} from '../../../services/walletService'
 
 const providers = [
   { id: 'mtn', name: 'MTN', color: 'bg-yellow-400', textColor: 'text-yellow-900' },
@@ -19,12 +28,21 @@ const elecProviders = [
   { id: 'portharcourt-electric', name: 'PHED' },
 ]
 
+const cableProviders = [
+  { id: 'dstv', name: 'DSTV' },
+  { id: 'gotv', name: 'GOTV' },
+  { id: 'startimes', name: 'Startimes' },
+  { id: 'showmax', name: 'Showmax' },
+]
+
 const recentAmounts = ['₦500', '₦1,000', '₦2,000']
+const VALID_TABS = ['airtime', 'data', 'electricity', 'cable']
 
 export default function PayBills() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const initialTab = ['data', 'electricity'].includes(searchParams.get('type')) ? searchParams.get('type') : 'airtime'
+  const typeParam = searchParams.get('type')
+  const initialTab = VALID_TABS.includes(typeParam) ? typeParam : 'airtime'
   const [tab, setTab] = useState(initialTab)
   const [provider, setProvider] = useState('mtn')
   const [phone, setPhone] = useState('')
@@ -42,21 +60,50 @@ export default function PayBills() {
   const [meterName, setMeterName] = useState('')
   const [verifying, setVerifying] = useState(false)
 
+  // Cable State
+  const [cableProvider, setCableProvider] = useState('dstv')
+  const [smartcardNumber, setSmartcardNumber] = useState('')
+  const [cablePlans, setCablePlans] = useState([])
+  const [selectedCablePlanId, setSelectedCablePlanId] = useState('')
+  const [showCablePlanDropdown, setShowCablePlanDropdown] = useState(false)
+  const [customerName, setCustomerName] = useState('')
+
   useEffect(() => {
     if (tab === 'data') {
+      setError('')
       getDataPlans(provider).then(plans => {
         setDataPlans(plans)
         if (plans.length > 0) {
           setSelectedPlanId(plans[0].id)
-          setAmount(plans[0].price.toString())
+          setAmount(String(plans[0].price))
+        } else {
+          setSelectedPlanId('')
+          setAmount('')
         }
       }).catch(err => setError(err.message))
     }
   }, [tab, provider])
 
   useEffect(() => {
+    if (tab === 'cable') {
+      setError('')
+      setCustomerName('')
+      getCablePlans(cableProvider).then(plans => {
+        setCablePlans(plans)
+        if (plans.length > 0) {
+          setSelectedCablePlanId(plans[0].id)
+          setAmount(String(plans[0].price))
+        } else {
+          setSelectedCablePlanId('')
+          setAmount('')
+        }
+      }).catch(err => setError(err.message))
+    }
+  }, [tab, cableProvider])
+
+  useEffect(() => {
     const type = searchParams.get('type')
-    if (['airtime', 'data', 'electricity'].includes(type)) {
+    if (VALID_TABS.includes(type)) {
       setTab(type)
     }
   }, [searchParams])
@@ -64,6 +111,10 @@ export default function PayBills() {
   useEffect(() => {
     setMeterName('')
   }, [meterNumber, elecProvider, meterType])
+
+  useEffect(() => {
+    setCustomerName('')
+  }, [smartcardNumber, cableProvider])
 
   const handleVerify = async () => {
     if (!meterNumber.trim()) {
@@ -85,6 +136,30 @@ export default function PayBills() {
       }
     } catch (err) {
       setError(err?.message || 'Verification failed. Check meter number.')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  const handleVerifySmartcard = async () => {
+    if (!smartcardNumber.trim()) {
+      setError('Enter a valid smartcard / IUC number')
+      return
+    }
+    setVerifying(true)
+    setError('')
+    try {
+      const details = await verifySmartcard({
+        service: cableProvider,
+        smartcardNumber: smartcardNumber.trim(),
+      })
+      if (details?.name) {
+        setCustomerName(details.name)
+      } else {
+        throw new Error('Smartcard verification returned no name')
+      }
+    } catch (err) {
+      setError(err?.message || 'Verification failed. Check smartcard number.')
     } finally {
       setVerifying(false)
     }
@@ -112,6 +187,23 @@ export default function PayBills() {
           type: meterType,
           amount: parsedAmount,
           phone: phone.trim()
+        })
+      } else if (tab === 'cable') {
+        if (!customerName) {
+          throw new Error('Please verify your smartcard number first.')
+        }
+        if (!selectedCablePlanId) throw new Error('Select a bouquet / plan.')
+        if (!phone.trim()) throw new Error('Enter a contact phone number.')
+        const parsedAmount = Number.parseFloat(amount)
+        if (!Number.isFinite(parsedAmount) || parsedAmount < 1) {
+          throw new Error('Enter a valid amount.')
+        }
+        await purchaseCable({
+          service: cableProvider,
+          smartcardNumber: smartcardNumber.trim(),
+          planId: selectedCablePlanId,
+          phone: phone.trim(),
+          amount: parsedAmount,
         })
       } else if (tab === 'data') {
         if (!phone.trim()) throw new Error('Enter a recipient phone number.')
@@ -141,6 +233,21 @@ export default function PayBills() {
     }
   }
 
+  const switchTab = (next) => {
+    setTab(next)
+    setError('')
+    if (next === 'electricity' || next === 'cable') {
+      setAmount('')
+    } else if (next === 'airtime') {
+      setAmount('500')
+    }
+  }
+
+  const payDisabled =
+    loading ||
+    (tab === 'electricity' && !meterName) ||
+    (tab === 'cable' && !customerName)
+
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
       
@@ -163,30 +270,17 @@ export default function PayBills() {
           
           {/* Tab Switcher */}
           <div className="flex bg-[#F0F0F5] p-1 rounded-xl mb-6 md:mb-8 overflow-x-auto scrollbar-hide">
-            <button 
-              onClick={() => { setTab('airtime'); setError(''); }}
-              className={`flex-1 py-2.5 md:py-3 px-3 text-[12px] md:text-[13px] font-semibold rounded-lg transition-all whitespace-nowrap ${
-                tab === 'airtime' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Airtime
-            </button>
-            <button 
-              onClick={() => { setTab('data'); setError(''); }}
-              className={`flex-1 py-2.5 md:py-3 px-3 text-[12px] md:text-[13px] font-semibold rounded-lg transition-all whitespace-nowrap ${
-                tab === 'data' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Data
-            </button>
-            <button 
-              onClick={() => { setTab('electricity'); setError(''); setAmount(''); }}
-              className={`flex-1 py-2.5 md:py-3 px-3 text-[12px] md:text-[13px] font-semibold rounded-lg transition-all whitespace-nowrap ${
-                tab === 'electricity' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Electricity
-            </button>
+            {['airtime', 'data', 'cable', 'electricity'].map((t) => (
+              <button
+                key={t}
+                onClick={() => switchTab(t)}
+                className={`flex-1 py-2.5 md:py-3 px-3 text-[12px] md:text-[13px] font-semibold rounded-lg transition-all whitespace-nowrap capitalize ${
+                  tab === t ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {t === 'cable' ? 'Cable TV' : t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
           </div>
 
           {(tab === 'airtime' || tab === 'data') && (
@@ -258,6 +352,102 @@ export default function PayBills() {
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === 'cable' && (
+            <>
+              <div className="mb-5 md:mb-6">
+                <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Cable Provider</label>
+                <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
+                  <select
+                    value={cableProvider}
+                    onChange={(e) => setCableProvider(e.target.value)}
+                    className="w-full text-[14px] md:text-[15px] font-medium outline-none bg-transparent"
+                  >
+                    {cableProviders.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-5 md:mb-6">
+                <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Smartcard / IUC Number</label>
+                <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
+                  <input
+                    type="text"
+                    value={smartcardNumber}
+                    onChange={(e) => setSmartcardNumber(e.target.value)}
+                    placeholder="1212121212"
+                    className="w-full text-[14px] md:text-[15px] outline-none bg-transparent placeholder-gray-400"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-5 md:mb-6 relative">
+                <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Select Bouquet</label>
+                <div
+                  onClick={() => setShowCablePlanDropdown(!showCablePlanDropdown)}
+                  className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 flex items-center justify-between cursor-pointer hover:border-[#4F46E5] transition-colors"
+                >
+                  <span className="text-[14px] md:text-[15px] text-gray-900 font-medium">
+                    {cablePlans.find(p => p.id === selectedCablePlanId)?.name || 'Select a bouquet'}
+                  </span>
+                  <ChevronDown size={18} className="text-gray-400" />
+                </div>
+
+                {showCablePlanDropdown && (
+                  <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-xl shadow-lg border border-gray-100 z-10 max-h-[200px] overflow-y-auto">
+                    {cablePlans.map(plan => (
+                      <div
+                        key={plan.id}
+                        onClick={() => {
+                          setSelectedCablePlanId(plan.id)
+                          setAmount(String(plan.price))
+                          setShowCablePlanDropdown(false)
+                        }}
+                        className="px-4 py-3 hover:bg-indigo-50 cursor-pointer flex justify-between items-center"
+                      >
+                        <span className="text-sm font-medium text-gray-900">{plan.name}</span>
+                        <span className="text-sm font-bold text-[#4F46E5]">₦{Number(plan.price).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-5 md:mb-6">
+                <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Contact Phone Number</label>
+                <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="0803 000 0000"
+                    className="w-full text-[14px] md:text-[15px] outline-none bg-transparent placeholder-gray-400"
+                  />
+                </div>
+              </div>
+
+              {!customerName ? (
+                <button
+                  type="button"
+                  onClick={handleVerifySmartcard}
+                  disabled={verifying}
+                  className="mb-5 bg-indigo-50 text-indigo-700 font-bold rounded-xl py-3 w-full hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                >
+                  {verifying ? 'Verifying...' : 'Verify Smartcard'}
+                </button>
+              ) : (
+                <div className="mb-5 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+                  <CheckCircle2 className="text-green-600 mt-0.5" size={18} />
+                  <div>
+                    <p className="text-xs font-bold text-green-800 uppercase tracking-widest mb-1">Smartcard Verified</p>
+                    <p className="text-sm font-semibold text-green-900">{customerName}</p>
+                  </div>
                 </div>
               )}
             </>
@@ -343,7 +533,7 @@ export default function PayBills() {
           )}
 
           {/* Amount */}
-          <div className={`mb-4 md:mb-6 ${tab === 'data' ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className={`mb-4 md:mb-6 ${tab === 'data' || tab === 'cable' ? 'opacity-50 pointer-events-none' : ''}`}>
             <label className="text-[12px] font-semibold text-gray-500 mb-2 block">Amount</label>
             <div className="bg-white md:bg-gray-50 rounded-xl border border-gray-200 px-4 py-3.5 md:py-4 flex items-center gap-2 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-indigo-50 transition-all">
               <span className="text-[16px] md:text-[18px] font-bold text-gray-900">₦</span>
@@ -351,7 +541,7 @@ export default function PayBills() {
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                readOnly={tab === 'data'}
+                readOnly={tab === 'data' || tab === 'cable'}
                 className="flex-1 text-[16px] md:text-[18px] font-semibold text-gray-900 outline-none bg-transparent"
               />
             </div>
@@ -382,7 +572,7 @@ export default function PayBills() {
             <button
               type="button"
               onClick={handlePay}
-              disabled={loading || (tab === 'electricity' && !meterName)}
+              disabled={payDisabled}
               className="w-full bg-[#4F46E5] text-white py-4 md:py-4.5 rounded-xl font-bold text-[15px] md:text-[16px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transition-all active:scale-[0.98] disabled:opacity-60"
             >
               {loading ? 'Processing…' : `Pay ₦${parseInt(amount || 0, 10).toLocaleString()}`}

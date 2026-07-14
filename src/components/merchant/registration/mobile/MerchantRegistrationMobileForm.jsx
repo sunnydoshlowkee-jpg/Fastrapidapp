@@ -3,11 +3,13 @@ import MerchantRegistrationField from '../MerchantRegistrationField'
 import MerchantRegistrationMobileLogoUpload from './MerchantRegistrationMobileLogoUpload'
 import MerchantRegistrationMobilePromo from './MerchantRegistrationMobilePromo'
 import MerchantRegistrationMobileSection from './MerchantRegistrationMobileSection'
+import { allowsStoreFormat } from '../../../../utils/merchantBusinessType'
 
 function buildDefaultValues(fields, initialValues) {
   return {
     legalName: '',
     businessType: fields.businessType.options?.[0] || '',
+    storeFormat: '',
     businessEmail: '',
     phone: '',
     addressStreet: '',
@@ -40,7 +42,14 @@ export default function MerchantRegistrationMobileForm({
   const [formError, setFormError] = useState('')
 
   const update = (key) => (e) => {
-    setValues((prev) => ({ ...prev, [key]: e.target.value }))
+    const value = e.target.value
+    setValues((prev) => {
+      const next = { ...prev, [key]: value }
+      if (key === 'businessType' && !allowsStoreFormat(value)) {
+        next.storeFormat = ''
+      }
+      return next
+    })
     if (errors[key]) {
       setErrors((prev) => {
         const next = { ...prev }
@@ -50,6 +59,8 @@ export default function MerchantRegistrationMobileForm({
     }
     if (formError) setFormError('')
   }
+
+  const showStoreFormat = allowsStoreFormat(values.businessType)
 
   const handleLogoSelect = (file) => {
     setLogoFile(file)
@@ -118,6 +129,24 @@ export default function MerchantRegistrationMobileForm({
             onChange={update('businessType')}
             error={errors.businessType}
           />
+
+          {showStoreFormat && fields.storeFormat ? (
+            <>
+              <MerchantRegistrationField
+                id="mobile-storeFormat"
+                label={fields.storeFormat.label}
+                as="select"
+                placeholderOption={fields.storeFormat.placeholder}
+                options={fields.storeFormat.options}
+                value={values.storeFormat}
+                onChange={update('storeFormat')}
+                error={errors.storeFormat}
+              />
+              {fields.storeFormat.helper ? (
+                <p className="text-xs text-merchant-muted">{fields.storeFormat.helper}</p>
+              ) : null}
+            </>
+          ) : null}
 
           <MerchantRegistrationField
             id="mobile-businessEmail"

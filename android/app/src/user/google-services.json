@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "769273660479",
+    "project_id": "fastrapid",
+    "storage_bucket": "fastrapid.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:769273660479:android:c0133951ba6312b632648a",
+        "android_client_info": {
+          "package_name": "com.fastrapid.user"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPywZEWdl-rMWRrjt_iUwkJ_eC1A_BPh0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

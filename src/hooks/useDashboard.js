@@ -1,32 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useCallback } from 'react'
 import { getDashboardData } from '../services/dashboardService'
+import { useCachedFetch } from './useCachedFetch'
+
+const DASHBOARD_TTL_MS = 2 * 60 * 1000
+
+const EMPTY_DASHBOARD = {
+  wallet_balance: 0,
+  active_order: null,
+  quick_reorders: [],
+}
 
 export function useDashboard() {
-  const [data, setData] = useState({
-    wallet_balance: 0,
-    active_order: null,
-    quick_reorders: [],
-  })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const fetcher = useCallback(() => getDashboardData(), [])
+  const { data, loading, error, refetch } = useCachedFetch(
+    ['dashboard'],
+    fetcher,
+    { ttlMs: DASHBOARD_TTL_MS, initialData: EMPTY_DASHBOARD },
+  )
 
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      const res = await getDashboardData()
-      setData(res)
-      setError(null)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch dashboard data')
-      console.error('Error fetching dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
+  return {
+    data: data ?? EMPTY_DASHBOARD,
+    loading,
+    error: error?.response?.data?.message || error?.message || null,
+    refetch,
   }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  return { data, loading, error, refetch: fetchData }
 }

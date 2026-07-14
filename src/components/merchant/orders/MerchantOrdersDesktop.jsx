@@ -4,10 +4,7 @@ import MerchantOrdersFilterBar from './MerchantOrdersFilterBar'
 import MerchantOrdersSummaryCards from './MerchantOrdersSummaryCards'
 import MerchantOrdersTable from './MerchantOrdersTable'
 import useMerchantOrdersPage from './useMerchantOrdersPage'
-import {
-  MERCHANT_ORDERS_FILTERS,
-  MERCHANT_ORDERS_SUMMARY,
-} from '../../../services/data/merchantOrders.mock'
+import { MERCHANT_ORDERS_FILTERS } from '../../../services/data/merchantOrders.mock'
 
 export default function MerchantOrdersDesktop() {
   const navigate = useNavigate()
@@ -19,6 +16,8 @@ export default function MerchantOrdersDesktop() {
     searchQuery,
     loading,
     error,
+    summary,
+    merchantId,
     handleFilterChange,
     handleSearchChange,
     pagination,
@@ -29,6 +28,7 @@ export default function MerchantOrdersDesktop() {
     <div className="flex flex-1 flex-col gap-6 p-6 lg:gap-8 lg:p-8">
       <MerchantDashboardHeader
         title="Orders"
+        merchantId={merchantId || '—'}
         showMenuButton
         onMenuClick={openMobileNav}
       />
@@ -40,7 +40,7 @@ export default function MerchantOrdersDesktop() {
         onChange={handleFilterChange}
       />
 
-      <MerchantOrdersSummaryCards summary={MERCHANT_ORDERS_SUMMARY} />
+      <MerchantOrdersSummaryCards summary={summary} />
 
       {error ? (
         <div className="rounded-merchant-stat border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

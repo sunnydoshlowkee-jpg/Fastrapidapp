@@ -97,6 +97,7 @@ export default function OtpVerify() {
 
       if (token) {
         localStorage.setItem('rapid_token', token)
+        window.dispatchEvent(new Event('rapid-auth-changed'))
       }
 
       if (user?.status === 'pending_profile') {

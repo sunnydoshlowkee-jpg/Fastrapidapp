@@ -2,6 +2,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom'
 import { MERCHANT_MENU_NEW_PATH } from '../../../services/data/merchantMenuItemCreate.mock'
 import { MERCHANT_MENU_IMPORT_SUCCESS_PATH } from '../../../services/data/merchantMenuImportSuccess.mock'
 import { MERCHANT_MENU_UPLOAD } from '../../../services/data/merchantMenuUpload.mock'
+import { downloadMerchantProductImportTemplate } from '../../../services/merchantProductsService'
 import MerchantMenuUploadCsvCard from './MerchantMenuUploadCsvCard'
 import MerchantMenuUploadHeader from './MerchantMenuUploadHeader'
 import MerchantMenuUploadHelp from './MerchantMenuUploadHelp'
@@ -21,8 +22,12 @@ export default function MerchantMenuUploadDesktop() {
     navigate(MERCHANT_MENU_IMPORT_SUCCESS_PATH)
   }
 
-  const handleDownloadTemplate = () => {
-    window.open(data.csvUpload.templateUrl, '_blank', 'noopener,noreferrer')
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadMerchantProductImportTemplate()
+    } catch (err) {
+      alert(err.message || 'Could not download template.')
+    }
   }
 
   return (

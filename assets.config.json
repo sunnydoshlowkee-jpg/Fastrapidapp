@@ -1,0 +1,11 @@
+{
+  "android": {
+    "icon": {
+      "backgroundColor": "#000000"
+    }
+  },
+  "iconBackgroundColor": "#000000",
+  "iconBackgroundColorDark": "#000000",
+  "splashBackgroundColor": "#000000",
+  "splashBackgroundColorDark": "#000000"
+}

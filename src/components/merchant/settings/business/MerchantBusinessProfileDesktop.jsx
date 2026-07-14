@@ -1,10 +1,16 @@
 import { useOutletContext } from 'react-router-dom'
+import MerchantBusinessCategoryCard from './MerchantBusinessCategoryCard'
 import MerchantBusinessProfileDocuments from './MerchantBusinessProfileDocuments'
 import MerchantBusinessProfileHeader from './MerchantBusinessProfileHeader'
 import MerchantBusinessProfileInfoCard from './MerchantBusinessProfileInfoCard'
 import MerchantBusinessProfileStoreStatus from './MerchantBusinessProfileStoreStatus'
 
-export default function MerchantBusinessProfileDesktop({ profile }) {
+export default function MerchantBusinessProfileDesktop({
+  profile,
+  onSaveCategory,
+  savingCategory = false,
+  onLogoUpdated,
+}) {
   const { openMobileNav } = useOutletContext()
 
   return (
@@ -17,9 +23,17 @@ export default function MerchantBusinessProfileDesktop({ profile }) {
 
       <div className="flex w-full flex-col gap-5 lg:gap-6">
         <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-6">
-          <MerchantBusinessProfileInfoCard businessInfo={profile.businessInfo} />
+          <MerchantBusinessProfileInfoCard
+            businessInfo={profile.businessInfo}
+            onLogoUpdated={onLogoUpdated}
+          />
           <MerchantBusinessProfileStoreStatus storeStatus={profile.storeStatus} />
         </div>
+        <MerchantBusinessCategoryCard
+          businessInfo={profile.businessInfo}
+          onSave={onSaveCategory}
+          saving={savingCategory}
+        />
         <MerchantBusinessProfileDocuments documents={profile.documents} />
       </div>
     </div>

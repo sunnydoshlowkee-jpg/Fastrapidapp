@@ -1,34 +1,74 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search as SearchIcon, X, Clock, Heart, Plus, ArrowUpRight, Flame, Sparkles, MapPin, ShoppingCart, ChevronDown, Home, Wallet, User } from 'lucide-react'
+import { Search as SearchIcon, X, Clock, Heart, Plus, ArrowUpRight, Flame, Sparkles, MapPin, ShoppingCart, ChevronDown } from 'lucide-react'
 import { trackEvent } from '../../../services/analyticsService'
+import { searchCatalog, getSearchSuggestions } from '../../../services/searchService'
+import { useLocation } from '../../../context/LocationContext'
+import { useCart } from '../../../context/CartContext'
+import {
+  addRecentSearch,
+  clearRecentSearches,
+  getRecentSearches,
+  removeRecentSearch,
+} from '../../../utils/recentSearches'
+import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
 
-import { getDiscovery } from '../../../services/discoveryService'
-
-// Mock Data
-const recentSearchesMobile = ['Jollof Rice', 'Burger King near me', 'Pharmacy 24/7']
-const popularTagsMobile = ['Rice near Yaba', 'Sushi in Ikeja', 'Late night snack']
-
-const recentSearchesDesktop = [
-  { term: 'Wireless mechanical keyboards', category: 'In Electronics & Accessories' },
-  { term: 'Minimalist leather desk mat', category: 'In Home Office' },
-  { term: 'Ergonomic chair obsidian', category: 'In Furniture' }
-]
-const popularTagsDesktop = ['Studio Lighting', 'Noise Cancelling', 'Smart Home Hub', 'Wireless Charger']
+const SEARCH_SUGGESTIONS_TTL_MS = 10 * 60 * 1000
+const SEARCH_RESULTS_TTL_MS = 2 * 60 * 1000
 
 export default function Search() {
   const navigate = useNavigate()
+  const { location } = useLocation()
+  const { count: cartCount } = useCart()
   const [query, setQuery] = useState('')
   const [activeTabMobile, setActiveTabMobile] = useState('Products')
   
-  const [recentDesktop, setRecentDesktop] = useState(recentSearchesDesktop)
-  const [recentMobile, setRecentMobile] = useState(recentSearchesMobile)
+  const [recentSearches, setRecentSearches] = useState([])
+  const [popularTags, setPopularTags] = useState([])
   
   const [products, setProducts] = useState([])
   const [vendors, setVendors] = useState([])
   const [loading, setLoading] = useState(false)
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true)
 
   const isSearching = query.trim().length > 0
+
+  useEffect(() => {
+    setRecentSearches(getRecentSearches())
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    const suggestionsKey = cacheKey(['search-suggestions'])
+
+    async function loadSuggestions() {
+      const cached = getCached(suggestionsKey, { ttlMs: SEARCH_SUGGESTIONS_TTL_MS })
+      if (cached?.data) {
+        setPopularTags(cached.data)
+        setSuggestionsLoading(false)
+        if (cached.fresh) return
+      } else {
+        setSuggestionsLoading(true)
+      }
+
+      try {
+        const popular = await getSearchSuggestions()
+        if (!active) return
+        setCached(suggestionsKey, popular)
+        setPopularTags(popular)
+      } catch (err) {
+        console.error('Failed to load search suggestions', err)
+      } finally {
+        if (active) setSuggestionsLoading(false)
+      }
+    }
+
+    loadSuggestions()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!isSearching) {
@@ -38,26 +78,57 @@ export default function Search() {
     }
     
     const timeout = setTimeout(async () => {
-      trackEvent('search', null, null, { query: query.trim() })
-      try {
+      const trimmed = query.trim()
+      trackEvent('search', null, null, { query: trimmed })
+      const resultsKey = cacheKey([
+        'search-results',
+        trimmed.toLowerCase(),
+        location?.latitude,
+        location?.longitude,
+      ])
+      const cached = getCached(resultsKey, { ttlMs: SEARCH_RESULTS_TTL_MS })
+
+      if (cached?.data) {
+        setProducts(cached.data.products || [])
+        setVendors(cached.data.vendors || [])
+        setLoading(false)
+        if (cached.fresh) return
+      } else {
         setLoading(true)
-        const res = await getDiscovery({
-          latitude: 6.5244,
-          longitude: 3.3792,
-          search: query.trim()
+      }
+
+      try {
+        const { data } = await searchCatalog({
+          q: trimmed,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
         })
-        const data = res.data.data
-        setProducts([...(data.trending_food || []), ...(data.trending_grocery || [])])
-        setVendors([...(data.food || []), ...(data.grocery || [])])
+        const payload = data?.data ?? {}
+        const next = {
+          products: payload.products || [],
+          vendors: payload.vendors || [],
+        }
+        setCached(resultsKey, next)
+        setProducts(next.products)
+        setVendors(next.vendors)
+        setRecentSearches(addRecentSearch(trimmed))
       } catch (err) {
         console.error('Search failed', err)
+        if (!cached?.data) {
+          setProducts([])
+          setVendors([])
+        }
       } finally {
         setLoading(false)
       }
-    }, 500)
+    }, 400)
     
     return () => clearTimeout(timeout)
-  }, [query, isSearching])
+  }, [query, isSearching, location?.latitude, location?.longitude])
+
+  const applySearchTerm = (term) => {
+    setQuery(term)
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0">
@@ -94,16 +165,25 @@ export default function Search() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[13px] font-bold text-gray-900">Recent searches</h3>
-                  <button onClick={() => setRecentMobile([])} className="text-[#4F46E5] text-[11px] font-bold">Clear all</button>
+                  {recentSearches.length > 0 ? (
+                    <button
+                      onClick={() => setRecentSearches(clearRecentSearches())}
+                      className="text-[#4F46E5] text-[11px] font-bold"
+                    >
+                      Clear all
+                    </button>
+                  ) : null}
                 </div>
                 <div className="flex flex-col gap-4">
-                  {recentMobile.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between cursor-pointer group" onClick={() => setQuery(s)}>
+                  {recentSearches.length === 0 ? (
+                    <p className="text-[12px] text-gray-400">Your recent searches will appear here.</p>
+                  ) : recentSearches.map((search) => (
+                    <div key={search.term} className="flex items-center justify-between cursor-pointer group" onClick={() => applySearchTerm(search.term)}>
                       <div className="flex items-center gap-3">
                         <Clock size={16} className="text-gray-400 group-hover:text-[#4F46E5]" />
-                        <span className="text-[13px] text-gray-600">{s}</span>
+                        <span className="text-[13px] text-gray-600">{search.term}</span>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); setRecentMobile(prev => prev.filter(x => x !== s)) }} className="p-1">
+                      <button onClick={(e) => { e.stopPropagation(); setRecentSearches(removeRecentSearch(search.term)) }} className="p-1">
                         <X size={16} className="text-gray-300 hover:text-gray-500" />
                       </button>
                     </div>
@@ -112,10 +192,14 @@ export default function Search() {
               </div>
 
               <div>
-                <h3 className="text-[13px] font-bold text-gray-900 mb-4">Popular near you</h3>
+                <h3 className="text-[13px] font-bold text-gray-900 mb-4">Popular on RAPID</h3>
                 <div className="flex flex-wrap gap-2.5">
-                  {popularTagsMobile.map((tag, i) => (
-                    <button key={i} onClick={() => setQuery(tag)} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-[11px] font-medium hover:bg-gray-200 transition-colors">
+                  {suggestionsLoading ? (
+                    <p className="text-[12px] text-gray-400">Loading suggestions…</p>
+                  ) : popularTags.length === 0 ? (
+                    <p className="text-[12px] text-gray-400">Search for food, groceries, and more.</p>
+                  ) : popularTags.map((tag) => (
+                    <button key={tag} onClick={() => applySearchTerm(tag)} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-[11px] font-medium hover:bg-gray-200 transition-colors">
                       {tag}
                     </button>
                   ))}
@@ -152,6 +236,12 @@ export default function Search() {
 
               <div className="flex flex-col gap-4">
                 {loading && <div className="text-center text-sm text-gray-500 py-4">Searching...</div>}
+                {!loading && activeTabMobile === 'Products' && products.length === 0 && (
+                  <div className="text-center text-sm text-gray-500 py-4">No products found for "{query.trim()}".</div>
+                )}
+                {!loading && activeTabMobile === 'Vendors' && vendors.length === 0 && (
+                  <div className="text-center text-sm text-gray-500 py-4">No vendors found for "{query.trim()}".</div>
+                )}
                 {!loading && activeTabMobile === 'Products' && products.map(item => (
                   <div key={item.id} onClick={() => navigate(`/app/item/${item.id}`)} className="bg-white rounded-[24px] p-4 flex justify-between items-center shadow-sm border border-gray-100 cursor-pointer">
                     <div className="flex-1 pr-4">
@@ -231,7 +321,7 @@ export default function Search() {
               </div>
               <div onClick={() => navigate('/app/cart')} className="relative cursor-pointer p-2 hover:bg-gray-50 rounded-xl transition-colors">
                 <ShoppingCart size={20} className="text-gray-500" strokeWidth={2} />
-                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">3</span>
+                <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full text-[11px] font-bold flex items-center justify-center border-2 border-white">{cartCount}</span>
               </div>
             </div>
           </div>
@@ -299,19 +389,23 @@ export default function Search() {
                     <div className="flex-1 max-w-[500px]">
                       <div className="flex items-center justify-between mb-6">
                         <h2 className="text-[20px] font-bold text-gray-900">Recent searches</h2>
-                        <button onClick={() => setRecentDesktop([])} className="text-[#2D2AEE] text-[13px] font-bold">Clear all</button>
+                        {recentSearches.length > 0 ? (
+                          <button onClick={() => setRecentSearches(clearRecentSearches())} className="text-[#2D2AEE] text-[13px] font-bold">Clear all</button>
+                        ) : null}
                       </div>
                       
                       <div className="flex flex-col gap-4">
-                        {recentDesktop.map((search, idx) => (
-                          <div key={idx} onClick={() => setQuery(search.term)} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
+                        {recentSearches.length === 0 ? (
+                          <p className="text-[13px] text-gray-400">Your recent searches will appear here.</p>
+                        ) : recentSearches.map((search) => (
+                          <div key={search.term} onClick={() => applySearchTerm(search.term)} className="bg-white rounded-[24px] p-5 flex items-center justify-between shadow-sm border border-gray-100 cursor-pointer group hover:border-gray-200 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-[#F4F5F7] rounded-full flex items-center justify-center text-gray-400 group-hover:text-[#2D2AEE] transition-colors">
                             <Clock size={18} />
                           </div>
                           <div>
                             <h4 className="font-bold text-gray-900 text-[14px] mb-0.5">{search.term}</h4>
-                            <p className="text-[12px] text-gray-400 font-medium">{search.category}</p>
+                            <p className="text-[12px] text-gray-400 font-medium">{search.category || 'Across RAPID'}</p>
                           </div>
                         </div>
                         <ArrowUpRight size={20} className="text-gray-300 group-hover:text-[#2D2AEE] transition-colors" />
@@ -337,10 +431,14 @@ export default function Search() {
 
               {/* Popular Near You */}
               <div>
-                <h2 className="text-[20px] font-bold text-gray-900 mb-6">Popular near you</h2>
-                <div className="flex gap-3">
-                  {popularTagsDesktop.map((tag, idx) => (
-                    <button key={idx} onClick={() => setQuery(tag)} className="bg-white border border-gray-100 text-gray-900 px-6 py-3.5 rounded-full text-[13px] font-bold shadow-sm hover:border-gray-300 transition-colors">
+                <h2 className="text-[20px] font-bold text-gray-900 mb-6">Popular on RAPID</h2>
+                <div className="flex flex-wrap gap-3">
+                  {suggestionsLoading ? (
+                    <p className="text-[13px] text-gray-400">Loading suggestions…</p>
+                  ) : popularTags.length === 0 ? (
+                    <p className="text-[13px] text-gray-400">Search for food, groceries, and more.</p>
+                  ) : popularTags.map((tag) => (
+                    <button key={tag} onClick={() => applySearchTerm(tag)} className="bg-white border border-gray-100 text-gray-900 px-6 py-3.5 rounded-full text-[13px] font-bold shadow-sm hover:border-gray-300 transition-colors">
                       {tag}
                     </button>
                   ))}

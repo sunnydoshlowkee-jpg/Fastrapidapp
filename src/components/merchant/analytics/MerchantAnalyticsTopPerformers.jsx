@@ -24,6 +24,9 @@ export default function MerchantAnalyticsTopPerformers({ products }) {
       </div>
 
       <div className="mt-4 overflow-x-auto">
+        {products.length === 0 ? (
+          <p className="text-sm text-merchant-muted">No product sales in this period yet.</p>
+        ) : (
         <table className="w-full min-w-[480px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-merchant-divider text-[10px] font-bold uppercase tracking-[0.08em] text-merchant-muted">
@@ -65,6 +68,7 @@ export default function MerchantAnalyticsTopPerformers({ products }) {
             ))}
           </tbody>
         </table>
+        )}
       </div>
     </article>
   )

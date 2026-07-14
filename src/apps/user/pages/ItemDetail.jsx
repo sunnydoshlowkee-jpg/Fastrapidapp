@@ -2,35 +2,78 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Star, Minus, Plus, ShoppingCart, MapPin } from 'lucide-react'
 import { useCart } from '../../../context/CartContext'
+import { useLocation } from '../../../context/LocationContext'
 import { getDiscoveryItem } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
+import { resolveStorageUrl } from '../../../utils/mediaUrl'
+import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+
+const ITEM_TTL_MS = 5 * 60 * 1000
 
 export default function ItemDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { location } = useLocation()
   const { add, cartItems } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [hasAddon, setHasAddon] = useState(false)
   const [notes, setNotes] = useState('')
+  const [error, setError] = useState('')
 
-  const [itemData, setItemData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const itemCacheKey = cacheKey(['item', id, location?.latitude, location?.longitude])
+  const initialCached = id && location?.latitude != null
+    ? getCached(itemCacheKey, { ttlMs: ITEM_TTL_MS })
+    : null
+  const [itemData, setItemData] = useState(initialCached?.data ?? null)
+  const [loading, setLoading] = useState(!initialCached)
 
   useEffect(() => {
+    if (!id || location?.latitude == null || location?.longitude == null) return
+
+    let cancelled = false
+    const key = cacheKey(['item', id, location.latitude, location.longitude])
+    const cached = getCached(key, { ttlMs: ITEM_TTL_MS })
+
+    if (cached?.data) {
+      setItemData(cached.data)
+      setLoading(false)
+      if (cached.fresh) {
+        return () => {
+          cancelled = true
+        }
+      }
+    } else {
+      setLoading(true)
+    }
+
     const fetchItem = async () => {
       try {
-        setLoading(true)
-        const { data } = await getDiscoveryItem(id)
+        setError('')
+        const { data } = await getDiscoveryItem(id, {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        })
+        if (cancelled) return
+        setCached(key, data.data)
         setItemData(data.data)
         trackEvent('view_product', 'product', id)
       } catch (err) {
         console.error('Failed to fetch item', err)
+        if (!cancelled) {
+          setError(err?.response?.data?.message || 'This item is outside your 10km area.')
+          if (!cached?.data) setItemData(null)
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
     fetchItem()
-  }, [id])
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, location?.latitude, location?.longitude])
 
   if (loading) {
     return (
@@ -42,8 +85,8 @@ export default function ItemDetail() {
 
   if (!itemData) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Item not found.</p>
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center px-6">
+        <p className="text-center text-gray-500">{error || 'Item not found.'}</p>
         <button onClick={() => navigate(-1)} className="mt-4 text-[#4F46E5] font-bold">Go Back</button>
       </div>
     )
@@ -52,6 +95,7 @@ export default function ItemDetail() {
   const basePrice = Number(itemData.price)
   const addonPrice = 1200
   const total = (basePrice + (hasAddon ? addonPrice : 0)) * quantity
+  const itemImage = resolveStorageUrl(itemData.img) || itemData.img
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
@@ -60,6 +104,7 @@ export default function ItemDetail() {
   const handleAddToCart = () => {
     const cartItem = {
       ...itemData,
+      img: itemImage,
       price: basePrice + (hasAddon ? addonPrice : 0),
       qty: quantity,
       notes
@@ -80,7 +125,7 @@ export default function ItemDetail() {
 
       {/* Mobile Header Image */}
       <div className="md:hidden relative h-64 w-full">
-        <img src={itemData.img} alt="Item Cover" className="w-full h-full object-cover" />
+        <img src={itemImage} alt="Item Cover" className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />
@@ -190,7 +235,7 @@ export default function ItemDetail() {
         {/* Left: Image */}
         <div className="w-1/2 shrink-0">
           <div className="w-full aspect-square rounded-[32px] overflow-hidden shadow-xl shadow-gray-200/50">
-            <img src={itemData.img} alt={itemData.name} className="w-full h-full object-cover" />
+            <img src={itemImage} alt={itemData.name} className="w-full h-full object-cover" loading="lazy" />
           </div>
         </div>
 
