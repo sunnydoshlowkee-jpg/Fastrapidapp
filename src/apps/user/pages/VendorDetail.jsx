@@ -7,6 +7,8 @@ import { getVendor } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import VendorInfoTab from '../../../components/vendor/VendorInfoTab'
+import VendorReviewsTab from '../../../components/vendor/VendorReviewsTab'
 
 const VENDOR_TTL_MS = 5 * 60 * 1000
 
@@ -249,9 +251,15 @@ export default function VendorDetail() {
           </>
         )}
 
-        {activeTab !== 'Menu' && (
-          <div className="py-20 text-center text-gray-400">
-             <p>{activeTab} view not implemented in mockup</p>
+        {activeTab === 'Info' && (
+          <div className="pt-2">
+            <VendorInfoTab merchant={merchant} />
+          </div>
+        )}
+
+        {activeTab === 'Reviews' && (
+          <div className="pt-2">
+            <VendorReviewsTab merchantId={merchant.id} />
           </div>
         )}
 

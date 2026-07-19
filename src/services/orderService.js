@@ -12,3 +12,4 @@ export const createOrder = async (data) => {
 }
 export const cancelOrder = (id) => api.patch(`/user/orders/${id}/cancel`)
 export const trackOrder = (id) => api.get(`/user/orders/${id}/track`)
+export const submitReview = (id, data) => api.post(`/user/orders/${id}/review`, data)

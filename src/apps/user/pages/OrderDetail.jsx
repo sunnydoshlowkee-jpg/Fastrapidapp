@@ -6,6 +6,8 @@ import { useCart } from '../../../context/CartContext'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { echo } from '../../../services/echo'
+import OrderReviewPanel from '../../../components/orders/OrderReviewPanel'
+import { Star } from 'lucide-react'
 
 export default function OrderDetail() {
   const navigate = useNavigate()
@@ -208,6 +210,32 @@ export default function OrderDetail() {
               </div>
             </div>
           </div>
+
+          {/* Review Section */}
+          {order.status === 'delivered' && (
+            <div className="mt-2">
+              {!order.review ? (
+                <OrderReviewPanel 
+                  orderId={order.id} 
+                  onReviewSubmitted={(review) => setOrder({...order, review})} 
+                />
+              ) : (
+                <div className="bg-[#F8F9FA] rounded-[24px] p-5 border border-gray-100 mb-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-[14px] font-bold text-gray-900">Your Review</h3>
+                    <div className="flex text-yellow-400">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <Star key={star} size={14} className={star <= order.review.rating ? 'fill-yellow-400' : 'text-gray-300'} />
+                      ))}
+                    </div>
+                  </div>
+                  {order.review.comment && (
+                    <p className="text-[13px] text-gray-500 italic mt-2">"{order.review.comment}"</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex flex-col items-center gap-4 mt-2">
@@ -432,6 +460,32 @@ export default function OrderDetail() {
                     </button>
                   </div>
                 </div>
+
+                {/* Desktop Review Section */}
+                {order.status === 'delivered' && (
+                  <div>
+                    {!order.review ? (
+                      <OrderReviewPanel 
+                        orderId={order.id} 
+                        onReviewSubmitted={(review) => setOrder({...order, review})} 
+                      />
+                    ) : (
+                      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-[16px] font-bold text-gray-900">Your Review</h3>
+                          <div className="flex text-yellow-400">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star key={star} size={16} className={star <= order.review.rating ? 'fill-yellow-400' : 'text-gray-300'} />
+                            ))}
+                          </div>
+                        </div>
+                        {order.review.comment && (
+                          <p className="text-[14px] text-gray-500 italic">"{order.review.comment}"</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-3">
                   <button onClick={() => window.print()} className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors text-[14px]">
