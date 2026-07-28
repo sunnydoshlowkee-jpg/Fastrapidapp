@@ -1,4 +1,5 @@
 import { RECEIPT_LOGO_DATA_URL } from '../../assets/receiptLogoData'
+import { CheckCircle2, ArrowUp, User } from 'lucide-react'
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount)
@@ -14,75 +15,20 @@ function formatTime(isoString) {
 
 function formatDate(isoString) {
   return new Intl.DateTimeFormat('en-NG', {
-    weekday: 'short',
-    day: '2-digit',
     month: 'short',
+    day: '2-digit',
     year: 'numeric',
   }).format(new Date(isoString))
 }
 
-function ReceiptScallopEdge() {
-  const width = 390
-  const step = 20
-  const radius = 10
-  const count = Math.ceil(width / step)
-
-  return (
-    <svg
-      width={width}
-      height="14"
-      viewBox={`0 0 ${width} 14`}
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ display: 'block', width: '100%', height: '14px' }}
-    >
-      <rect width={width} height="7" fill="#5B52E8" />
-      {Array.from({ length: count }).map((_, index) => (
-        <circle
-          key={index}
-          cx={step / 2 + index * step}
-          cy="7"
-          r={radius}
-          fill="#FFFFFF"
-        />
-      ))}
-    </svg>
-  )
-}
-
-function DetailRow({ label, value, isLast = false }) {
+function DetailRow({ label, value }) {
   if (!value) return null
 
   return (
-    <tr>
-      <td
-        style={{
-          padding: '13px 18px',
-          fontSize: '12px',
-          color: '#64748B',
-          fontWeight: 500,
-          verticalAlign: 'top',
-          width: '40%',
-          borderBottom: isLast ? 'none' : '1px solid #F1F5F9',
-        }}
-      >
-        {label}
-      </td>
-      <td
-        style={{
-          padding: '13px 18px',
-          fontSize: '13px',
-          color: '#0F172A',
-          fontWeight: 600,
-          textAlign: 'right',
-          verticalAlign: 'top',
-          wordBreak: 'break-word',
-          lineHeight: 1.45,
-          borderBottom: isLast ? 'none' : '1px solid #F1F5F9',
-        }}
-      >
-        {value}
-      </td>
-    </tr>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+      <span style={{ fontSize: '13px', color: '#64748B', fontWeight: 500 }}>{label}</span>
+      <span style={{ fontSize: '13px', color: '#111827', fontWeight: 600 }}>{value}</span>
+    </div>
   )
 }
 
@@ -95,21 +41,9 @@ export default function ReceiptDownloadCard({
   categoryLabel,
   paymentMethod,
 }) {
-  const reference = tx.reference || `RD-TX-${tx.id}`
+  const reference = tx.reference || `TXN-${tx.id}`
   const isCredit = tx.type === 'credit'
   const typeLabel = isCredit ? 'Credit' : 'Debit'
-
-  const rows = [
-    { label: 'Reference', value: reference },
-    { label: 'Date', value: formatDate(tx.created_at) },
-    { label: 'Time', value: formatTime(tx.created_at) },
-    { label: 'Type', value: categoryLabel },
-    { label: 'Description', value: description },
-    { label: counterpartyLabel, value: counterparty },
-    { label: 'Payment', value: paymentMethod },
-    { label: 'Debit / Credit', value: typeLabel },
-    { label: 'Status', value: statusLabel },
-  ].filter((row) => row.value)
 
   return (
     <div
@@ -117,127 +51,156 @@ export default function ReceiptDownloadCard({
         width: '390px',
         maxWidth: '100%',
         margin: '0 auto',
-        fontFamily: 'Helvetica, Arial, sans-serif',
+        fontFamily: 'Inter, SF Pro Text, sans-serif',
         background: '#FFFFFF',
-        borderRadius: '24px',
+        borderRadius: '16px',
         overflow: 'hidden',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 20px 40px rgba(15, 23, 42, 0.08)',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.04)',
+        borderTop: '6px solid #5B52E8',
       }}
     >
-      <div
-        style={{
-          background: '#5B52E8',
-          padding: '28px 22px 0',
-          textAlign: 'center',
-        }}
-      >
+      {/* Header section */}
+      <div style={{ padding: '32px 24px 24px', textAlign: 'center' }}>
         <div
           style={{
-            display: 'inline-block',
-            background: '#FFFFFF',
-            borderRadius: '16px',
-            padding: '10px 16px',
-            boxShadow: '0 8px 20px rgba(15, 23, 42, 0.12)',
-            marginBottom: '20px',
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: '#5B52E8',
+            margin: '0 auto 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <div
-            data-receipt-logo
-            role="img"
-            aria-label="FastRapid"
-            style={{
-              height: '34px',
-              width: '168px',
-              margin: '0 auto',
-              backgroundImage: `url(${RECEIPT_LOGO_DATA_URL})`,
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-            }}
+          <img 
+            src={RECEIPT_LOGO_DATA_URL} 
+            alt="Rapid Logo" 
+            style={{ width: '32px', height: '32px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
           />
+        </div>
+        
+        {/* Amount */}
+        <h1 style={{ 
+          fontSize: '32px', 
+          fontWeight: 700, 
+          color: '#111827', 
+          margin: '0 0 12px 0',
+          letterSpacing: '-0.5px'
+        }}>
+          {isCredit ? '+ ' : '- '}{formatCurrency(tx.amount)}
+        </h1>
+
+        {/* Status Badge */}
+        <div style={{ 
+          display: 'inline-flex', 
+          alignItems: 'center', 
+          gap: '6px',
+          background: '#DEF7EC', 
+          padding: '6px 12px', 
+          borderRadius: '20px',
+          color: '#03543F',
+          fontSize: '12px',
+          fontWeight: 600
+        }}>
+          <CheckCircle2 size={14} color="#03543F" />
+          {statusLabel || 'Successful'}
         </div>
       </div>
 
-      <ReceiptScallopEdge />
-
-      <div
-        style={{
-          background: '#FFFFFF',
-          padding: '28px 22px 22px',
-          textAlign: 'center',
-          borderBottom: '1px solid #F1F5F9',
-        }}
-      >
-        <p
-          style={{
-            margin: '0 0 10px',
-            fontSize: '11px',
-            fontWeight: 500,
-            letterSpacing: '1.4px',
-            textTransform: 'uppercase',
-            color: '#94A3B8',
-          }}
-        >
-          Amount
-        </p>
-        <p
-          style={{
-            margin: 0,
-            color: '#334155',
-            fontSize: '34px',
-            fontWeight: 400,
-            lineHeight: 1.15,
-            letterSpacing: '0.02em',
-            fontFamily: 'Georgia, "Times New Roman", serif',
-          }}
-        >
-          {formatCurrency(tx.amount)}
-        </p>
+      {/* Scallop Divider with Dashed Line */}
+      <div style={{ position: 'relative', height: '24px', width: '100%', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute',
+          left: '-12px',
+          width: '24px',
+          height: '24px',
+          backgroundColor: '#F4F4FF', // matches app background
+          borderRadius: '50%',
+          zIndex: 2
+        }} />
+        <div style={{
+          flex: 1,
+          borderBottom: '1.5px dashed #E5E7EB',
+          margin: '0 12px',
+        }} />
+        <div style={{
+          position: 'absolute',
+          right: '-12px',
+          width: '24px',
+          height: '24px',
+          backgroundColor: '#F4F4FF', // matches app background
+          borderRadius: '50%',
+          zIndex: 2
+        }} />
       </div>
 
-      <div style={{ padding: '16px' }}>
-        <div
-          style={{
-            background: '#FFFFFF',
-            borderRadius: '16px',
-            border: '1px solid #E2E8F0',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              padding: '14px 18px',
-              background: '#F8FAFC',
-              borderBottom: '1px solid #E2E8F0',
-            }}
-          >
-            <p
-              style={{
-                margin: 0,
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                color: '#64748B',
-              }}
-            >
-              Transaction Details
-            </p>
+      {/* Details Section */}
+      <div style={{ padding: '24px' }}>
+        <DetailRow label="Date & Time" value={`${formatDate(tx.created_at)} • ${formatTime(tx.created_at)}`} />
+        <DetailRow label="Reference No" value={reference} />
+        <DetailRow label="Type" value={categoryLabel || typeLabel} />
+        <DetailRow label="Fee" value="₦0.00" />
+        {description && <DetailRow label="Description" value={description} />}
+        {paymentMethod && <DetailRow label="Payment" value={paymentMethod} />}
+
+        {/* Sender/Receiver Card */}
+        <div style={{
+          marginTop: '24px',
+          background: '#F9FAFB',
+          border: '1px solid #F3F4F6',
+          borderRadius: '12px',
+          padding: '16px',
+          position: 'relative'
+        }}>
+          
+          {/* Vertical Connecting Line */}
+          <div style={{
+            position: 'absolute',
+            left: '32px',
+            top: '46px',
+            bottom: '46px',
+            width: '2px',
+            backgroundColor: '#E5E7EB',
+            zIndex: 1
+          }} />
+
+          {/* Sender */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', position: 'relative', zIndex: 2 }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%', background: '#E0E7FF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+            }}>
+              <ArrowUp size={16} color="#5B52E8" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>From</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '14px', color: '#111827', fontWeight: 600 }}>
+                {isCredit ? (counterparty || 'Wallet Funding') : 'My Wallet'}
+              </p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#6B7280' }}>Wallet</p>
+            </div>
           </div>
 
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#FFFFFF' }}>
-            <tbody>
-              {rows.map((row, index) => (
-                <DetailRow
-                  key={row.label}
-                  label={row.label}
-                  value={row.value}
-                  isLast={index === rows.length - 1}
-                />
-              ))}
-            </tbody>
-          </table>
+          <div style={{ height: '24px' }} />
+
+          {/* Receiver */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', position: 'relative', zIndex: 2 }}>
+            <div style={{
+              width: '32px', height: '32px', borderRadius: '50%', background: '#F3F4F6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+            }}>
+              <User size={16} color="#6B7280" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: '11px', color: '#6B7280', fontWeight: 500 }}>To</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '14px', color: '#111827', fontWeight: 600 }}>
+                {isCredit ? 'My Wallet' : (counterparty || 'Wallet Withdrawal')}
+              </p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#6B7280' }}>Wallet</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

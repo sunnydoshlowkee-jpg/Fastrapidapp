@@ -98,7 +98,7 @@ export default function WalletReceipt() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
+      <div className="flex flex-col min-h-screen bg-[#F4F4FF] items-center justify-center">
         <p className="text-gray-500">Loading receipt…</p>
       </div>
     )
@@ -106,7 +106,7 @@ export default function WalletReceipt() {
 
   if (!tx) {
     return (
-      <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center px-6 text-center">
+      <div className="flex flex-col min-h-screen bg-[#F4F4FF] items-center justify-center px-6 text-center">
         <p className="text-gray-500 mb-4">{error || 'Transaction not found.'}</p>
         <button onClick={() => navigate(-1)} className="text-[#4F46E5] font-bold">Go Back</button>
       </div>
@@ -122,9 +122,9 @@ export default function WalletReceipt() {
   const actionBusy = downloading || sharing
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-44 md:pb-8">
+    <div className="flex flex-col min-h-screen bg-[#F4F4FF] pb-44 md:pb-8">
       <div className="w-full max-w-md mx-auto flex flex-col flex-1">
-        <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 flex items-center gap-3 bg-[#FAFAFA] sticky top-0 z-20">
+        <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 flex items-center gap-3 bg-[#F4F4FF] sticky top-0 z-20">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-sm w-10 h-10 flex items-center justify-center">
             <ArrowLeft size={20} />
           </button>
@@ -148,38 +148,28 @@ export default function WalletReceipt() {
           {shareHint ? <p className="mt-3 text-sm text-[#4F46E5] text-center font-medium">{shareHint}</p> : null}
 
           <div className="hidden md:flex w-full mt-8 flex-col items-center gap-3">
-            <div className="w-full grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={handleShare}
-                disabled={actionBusy}
-                className="bg-white border border-gray-200 text-[#4F46E5] py-4 rounded-xl font-bold text-[15px] hover:bg-indigo-50 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-              >
-                <Share2 size={18} />
-                {sharing ? 'Preparing image…' : 'Share Image'}
-              </button>
-              <button
-                type="button"
-                onClick={handleDownload}
-                disabled={actionBusy}
-                className="bg-[#4F46E5] text-white py-4 rounded-xl font-bold text-[15px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-              >
-                <Download size={18} />
-                {downloading ? 'Preparing…' : 'Download Receipt'}
-              </button>
-            </div>
             <button
               type="button"
-              onClick={() => navigate('/app/profile/help')}
-              className="w-full border border-gray-200 bg-white text-red-500 py-4 rounded-xl font-bold text-[15px] hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+              onClick={handleDownload}
+              disabled={actionBusy}
+              className="w-full bg-[#5B52E8] text-white py-4 rounded-xl font-bold text-[15px] shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              <Info size={18} />
-              Need Help?
+              <Download size={18} />
+              {downloading ? 'Preparing…' : 'Download PDF'}
+            </button>
+            <button
+              type="button"
+              onClick={handleShare}
+              disabled={actionBusy}
+              className="w-full bg-white border-2 border-[#E2E8F0] text-[#5B52E8] py-4 rounded-xl font-bold text-[15px] hover:bg-indigo-50 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+              <Share2 size={18} />
+              {sharing ? 'Preparing image…' : 'Share Receipt'}
             </button>
             <button
               type="button"
               onClick={() => navigate('/app/wallet')}
-              className="text-[14px] font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2"
+              className="text-[14px] font-semibold text-gray-500 hover:text-gray-700 transition-colors py-2 mt-2"
             >
               Back to Wallet
             </button>
@@ -187,28 +177,26 @@ export default function WalletReceipt() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 px-5 pt-4 pb-mobile-nav shadow-[0_-8px_30px_rgba(15,23,42,0.08)] md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#F4F4FF] border-t border-gray-200 px-5 pt-4 pb-mobile-nav shadow-[0_-8px_30px_rgba(15,23,42,0.08)] md:hidden">
         <div className="w-full max-w-md mx-auto flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={handleShare}
-              disabled={actionBusy}
-              className="bg-white border-2 border-[#4F46E5] text-[#4F46E5] py-3.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              <Share2 size={17} />
-              {sharing ? 'Preparing…' : 'Share Image'}
-            </button>
-            <button
-              type="button"
-              onClick={handleDownload}
-              disabled={actionBusy}
-              className="bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold text-[14px] shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              <Download size={17} />
-              {downloading ? 'Preparing…' : 'Download'}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={actionBusy}
+            className="w-full bg-[#5B52E8] text-white py-3.5 rounded-xl font-bold text-[15px] shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            <Download size={17} />
+            {downloading ? 'Preparing…' : 'Download PDF'}
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={actionBusy}
+            className="w-full bg-white border-2 border-[#E2E8F0] text-[#5B52E8] py-3.5 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            <Share2 size={17} />
+            {sharing ? 'Preparing image…' : 'Share Receipt'}
+          </button>
           <button
             type="button"
             onClick={() => navigate('/app/wallet')}
