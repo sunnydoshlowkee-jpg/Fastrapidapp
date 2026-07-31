@@ -8,7 +8,6 @@ import {
 } from '../../../../services/adminAuthService'
 import {
   ADMIN_2FA_COPY,
-  ADMIN_2FA_OTP,
   ADMIN_LOGIN_PATH,
 } from '../../../../services/data/adminAuth.mock'
 
@@ -257,14 +256,7 @@ export default function AdminVerify2fa() {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          {import.meta.env.VITE_ADMIN_2FA_STRICT === 'true' ? (
-            <>
-              Enter the code sent to your email, or demo code{' '}
-              <span className="text-gray-500">{ADMIN_2FA_OTP}</span>
-            </>
-          ) : (
-            <>Demo mode: enter any 6-digit code (e.g. {ADMIN_2FA_OTP})</>
-          )}
+          Enter the 6-digit code we sent to your admin email.
         </p>
       </div>
     </div>

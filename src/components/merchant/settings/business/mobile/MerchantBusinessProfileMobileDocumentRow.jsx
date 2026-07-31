@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { CheckCircle2, Clock, FileText, XCircle } from 'lucide-react'
 
 const statusBadge = {
@@ -13,7 +14,22 @@ const statusBadge = {
   },
 }
 
-export default function MerchantBusinessProfileMobileDocumentRow({ document }) {
+export default function MerchantBusinessProfileMobileDocumentRow({ document, onReupload }) {
+  const inputRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+
+  const handleFile = async (file) => {
+    if (!file || !onReupload) return
+    setUploading(true)
+    try {
+      await onReupload(document.id, file)
+    } catch (err) {
+      alert(err?.message || 'Upload failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   if (!document.status) {
     return (
       <li className="flex items-center justify-between gap-3 rounded-lg bg-merchant-input px-3.5 py-3">
@@ -37,12 +53,23 @@ export default function MerchantBusinessProfileMobileDocumentRow({ document }) {
           </p>
         </div>
         {document.reuploadLabel && (
-          <button
-            type="button"
-            className="shrink-0 rounded-lg bg-[#B91C1C] px-3.5 py-2 text-xs font-semibold text-white"
-          >
-            {document.reuploadLabel}
-          </button>
+          <>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".pdf,image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+              className="shrink-0 rounded-lg bg-[#B91C1C] px-3.5 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            >
+              {uploading ? '…' : document.reuploadLabel}
+            </button>
+          </>
         )}
       </li>
     )

@@ -2,17 +2,25 @@ import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { registerDeviceToken, unregisterDeviceToken } from './deviceTokenService'
-import { getNativePersona, getRoleConfig, getNativeAppRole } from '../utils/appRole'
+import { getNativePersona, getRoleConfig, getNativeAppRole, getAppPathname, navigateAppPath } from '../utils/appRole'
 
 const TOKEN_STORAGE_KEY = 'rapid_fcm_token'
 export const PUSH_CHANNEL_ID = 'fastrapid_default'
 let initialized = false
 let registrationInFlight = null
 
-function hasAuthToken() {
+function hasAuthToken({ ignorePushPreference = false } = {}) {
   const role = getNativeAppRole()
   const { tokenKey } = getRoleConfig(role)
-  return Boolean(localStorage.getItem(tokenKey))
+  if (!localStorage.getItem(tokenKey)) return false
+
+  // Rider Edit Profile can opt out of push registration.
+  if (!ignorePushPreference && role === 'rider') {
+    const saved = localStorage.getItem('rider_push_notifs')
+    if (saved !== null && JSON.parse(saved) === false) return false
+  }
+
+  return true
 }
 
 function persistLocalToken(token) {
@@ -43,9 +51,8 @@ function navigateFromNotification(notification) {
   if (!path || typeof path !== 'string') return
   if (!path.startsWith('/')) return
 
-  if (window.location.pathname !== path) {
-    window.history.pushState({}, '', path)
-    window.dispatchEvent(new PopStateEvent('popstate'))
+  if (getAppPathname() !== path.split('?')[0]) {
+    navigateAppPath(path)
   }
 }
 
@@ -171,7 +178,7 @@ export async function clearPushTokenOnLogout() {
   if (!token) return
 
   try {
-    if (hasAuthToken()) {
+    if (hasAuthToken({ ignorePushPreference: true })) {
       await unregisterDeviceToken(token, { appPersona: getNativePersona() })
     }
   } catch {

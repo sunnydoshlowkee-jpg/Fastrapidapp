@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import UserLayout from '../layouts/UserLayout'
 import Home from '../apps/user/pages/Home'
 import Search from '../apps/user/pages/Search'
@@ -12,7 +12,6 @@ import VendorDetail from '../apps/user/pages/VendorDetail'
 import ItemDetail from '../apps/user/pages/ItemDetail'
 import CartDetail from '../apps/user/pages/CartDetail'
 import Payment from '../apps/user/pages/Payment'
-import CryptoCheckout from '../apps/user/pages/CryptoCheckout'
 import OrderSuccess from '../apps/user/pages/OrderSuccess'
 import TrackOrder from '../apps/user/pages/TrackOrder'
 import OrderDetail from '../apps/user/pages/OrderDetail'
@@ -23,6 +22,7 @@ import PaymentMethods from '../apps/user/pages/PaymentMethods'
 import ReferEarn from '../apps/user/pages/ReferEarn'
 import Help from '../apps/user/pages/Help'
 import PrivacySecurity from '../apps/user/pages/PrivacySecurity'
+import LegalHub from '../apps/user/pages/LegalHub'
 import SendMoney from '../apps/user/pages/SendMoney'
 import ReceiveMoney from '../apps/user/pages/ReceiveMoney'
 import FundWallet from '../apps/user/pages/FundWallet'
@@ -42,7 +42,7 @@ export default function AppRoutes() {
         <Route path="item/:id" element={<ItemDetail />} />
         <Route path="cart" element={<CartDetail />} />
         <Route path="checkout" element={<Payment />} />
-        <Route path="payment/crypto" element={<CryptoCheckout />} />
+        <Route path="payment/crypto" element={<Navigate to="/app/checkout" replace />} />
         <Route path="order-success/:id" element={<OrderSuccess />} />
         <Route path="track/:id" element={<TrackOrder />} />
         <Route path="order/:id" element={<OrderDetail />} />
@@ -68,6 +68,8 @@ export default function AppRoutes() {
         <Route path="profile/refer-earn" element={<ReferEarn />} />
         <Route path="profile/help" element={<Help />} />
         <Route path="profile/privacy-security" element={<PrivacySecurity />} />
+        <Route path="legal" element={<LegalHub />} />
+        <Route path="legal/:doc" element={<LegalHub />} />
       </Route>
     </Routes>
   )

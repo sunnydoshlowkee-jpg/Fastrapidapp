@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MERCHANT_MENU_NEW_PATH } from '../../../services/data/merchantMenuItemCreate.mock'
 import { MERCHANT_MENU_IMPORT_SUCCESS_PATH } from '../../../services/data/merchantMenuImportSuccess.mock'
 import { MERCHANT_MENU_UPLOAD } from '../../../services/data/merchantMenuUpload.mock'
-import { downloadMerchantProductImportTemplate } from '../../../services/merchantProductsService'
+import {
+  downloadMerchantProductImportTemplate,
+  importMerchantProductsCsv,
+} from '../../../services/merchantProductsService'
 import MerchantMenuUploadMobileCsvCard from './mobile/MerchantMenuUploadMobileCsvCard'
 import MerchantMenuUploadMobileHeader from './mobile/MerchantMenuUploadMobileHeader'
 import MerchantMenuUploadMobileHelp from './mobile/MerchantMenuUploadMobileHelp'
@@ -12,13 +16,28 @@ export default function MerchantMenuUploadMobile() {
   const navigate = useNavigate()
   const data = MERCHANT_MENU_UPLOAD
   const mobile = data.mobile
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleStartEntry = () => {
     navigate(MERCHANT_MENU_NEW_PATH)
   }
 
-  const handleUpload = () => {
-    navigate(MERCHANT_MENU_IMPORT_SUCCESS_PATH)
+  const handleUpload = async (file) => {
+    if (!file) {
+      setError('Choose a CSV file first.')
+      return
+    }
+    setUploading(true)
+    setError('')
+    try {
+      const result = await importMerchantProductsCsv(file)
+      navigate(MERCHANT_MENU_IMPORT_SUCCESS_PATH, { state: { importResult: result } })
+    } catch (err) {
+      setError(err.message || 'Could not import CSV.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleDownloadTemplate = async () => {
@@ -49,6 +68,8 @@ export default function MerchantMenuUploadMobile() {
             mobileCsv={mobile.csvUpload}
             onUpload={handleUpload}
             onDownloadTemplate={handleDownloadTemplate}
+            uploading={uploading}
+            error={error}
           />
         </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import MerchantMobileHeader from './MerchantMobileHeader'
 import MerchantMobileStatCard from './MerchantMobileStatCard'
 import MerchantMobileEmptyState from './MerchantMobileEmptyState'
@@ -11,6 +11,7 @@ export default function MerchantDashboardMobileEmpty({
   stats = [],
   error = '',
 }) {
+  const navigate = useNavigate()
   const { overview, emptyState, gettingStarted } = MERCHANT_DASHBOARD_MOBILE
   const customerLink = `${window.location.origin}/app/vendor/${merchantId}`
 
@@ -49,7 +50,7 @@ export default function MerchantDashboardMobileEmpty({
           description={emptyState.description}
           primaryAction={emptyState.primaryAction}
           secondaryAction={emptyState.secondaryAction}
-          onPrimaryClick={() => {}}
+          onPrimaryClick={() => navigate('/merchant/menu/upload')}
           onSecondaryClick={() => window.open(customerLink, '_blank', 'noopener,noreferrer')}
         />
 

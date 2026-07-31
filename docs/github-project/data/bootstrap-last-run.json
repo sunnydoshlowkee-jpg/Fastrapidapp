@@ -1,0 +1,378 @@
+{
+  "owner": "headmaster2hm",
+  "project_id": null,
+  "created": {
+    "AUTH-01": {
+      "number": 2,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/2"
+    },
+    "AUTH-02": {
+      "number": 1,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/1"
+    },
+    "AUTH-03": {
+      "number": 2,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/2"
+    },
+    "AUTH-04": {
+      "number": 3,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/3"
+    },
+    "AUTH-05": {
+      "number": 3,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/3"
+    },
+    "AUTH-06": {
+      "number": 4,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/4"
+    },
+    "AUTH-07": {
+      "number": 5,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/5"
+    },
+    "AUTH-08": {
+      "number": 4,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/4"
+    },
+    "AUTH-09": {
+      "number": 5,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/5"
+    },
+    "CUS-01": {
+      "number": 6,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/6"
+    },
+    "CUS-02": {
+      "number": 6,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/6"
+    },
+    "CUS-03": {
+      "number": 7,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/7"
+    },
+    "CUS-04": {
+      "number": 7,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/7"
+    },
+    "CUS-05": {
+      "number": 8,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/8"
+    },
+    "CUS-06": {
+      "number": 9,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/9"
+    },
+    "MER-01": {
+      "number": 10,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/10"
+    },
+    "MER-02": {
+      "number": 11,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/11"
+    },
+    "MER-03": {
+      "number": 8,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/8"
+    },
+    "RID-01": {
+      "number": 9,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/9"
+    },
+    "RID-02": {
+      "number": 12,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/12"
+    },
+    "RID-03": {
+      "number": 13,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/13"
+    },
+    "RID-04": {
+      "number": 10,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/10"
+    },
+    "RID-05": {
+      "number": 14,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/14"
+    },
+    "ADM-01": {
+      "number": 11,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/11"
+    },
+    "ADM-02": {
+      "number": 15,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/15"
+    },
+    "ADM-03": {
+      "number": 12,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/12"
+    },
+    "ADM-04": {
+      "number": 16,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/16"
+    },
+    "ADM-05": {
+      "number": 13,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/13"
+    },
+    "ADM-06": {
+      "number": 17,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/17"
+    },
+    "ADM-07": {
+      "number": 14,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/14"
+    },
+    "ADM-08": {
+      "number": 18,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/18"
+    },
+    "ADM-09": {
+      "number": 15,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/15"
+    },
+    "ADM-10": {
+      "number": 19,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/19"
+    },
+    "ADM-11": {
+      "number": 16,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/16"
+    },
+    "ADM-12": {
+      "number": 20,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/20"
+    },
+    "ADM-13": {
+      "number": 17,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/17"
+    },
+    "ADM-14": {
+      "number": 21,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/21"
+    },
+    "ADM-15": {
+      "number": 18,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/18"
+    },
+    "ADM-16": {
+      "number": 22,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/22"
+    },
+    "ADM-17": {
+      "number": 23,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/23"
+    },
+    "ADM-18": {
+      "number": 19,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/19"
+    },
+    "WAL-01": {
+      "number": 20,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/20"
+    },
+    "WAL-02": {
+      "number": 21,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/21"
+    },
+    "WAL-03": {
+      "number": 22,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/22"
+    },
+    "PAY-01": {
+      "number": 23,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/23"
+    },
+    "MKT-01": {
+      "number": 24,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/24"
+    },
+    "MKT-02": {
+      "number": 25,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/25"
+    },
+    "MKT-03": {
+      "number": 26,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/26"
+    },
+    "NOT-01": {
+      "number": 24,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/24"
+    },
+    "NOT-02": {
+      "number": 25,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/25"
+    },
+    "MOB-01": {
+      "number": 26,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/26"
+    },
+    "MOB-02": {
+      "number": 27,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/27"
+    },
+    "MOB-03": {
+      "number": 28,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/28"
+    },
+    "MOB-04": {
+      "number": 29,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/29"
+    },
+    "COM-01": {
+      "number": 30,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/30"
+    },
+    "COM-02": {
+      "number": 31,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/31"
+    },
+    "DEP-01": {
+      "number": 27,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/27"
+    },
+    "DEP-02": {
+      "number": 28,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/28"
+    },
+    "DEP-03": {
+      "number": 29,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/29"
+    },
+    "ANL-01": {
+      "number": 32,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/32"
+    },
+    "TST-01": {
+      "number": 30,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/30"
+    },
+    "DONE-01": {
+      "number": 31,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/31"
+    },
+    "DONE-02": {
+      "number": 32,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/32"
+    },
+    "DONE-03": {
+      "number": 33,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/33"
+    },
+    "DONE-04": {
+      "number": 34,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/34"
+    },
+    "DONE-05": {
+      "number": 33,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/33"
+    },
+    "DONE-06": {
+      "number": 34,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/34"
+    },
+    "DONE-07": {
+      "number": 35,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/35"
+    },
+    "DONE-08": {
+      "number": 36,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/36"
+    },
+    "DONE-09": {
+      "number": 37,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/37"
+    },
+    "DONE-10": {
+      "number": 38,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/38"
+    },
+    "DONE-11": {
+      "number": 35,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/35"
+    },
+    "DONE-12": {
+      "number": 36,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/36"
+    },
+    "DONE-13": {
+      "number": 39,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/39"
+    },
+    "DONE-14": {
+      "number": 40,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/40"
+    },
+    "DONE-15": {
+      "number": 37,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/37"
+    },
+    "DONE-16": {
+      "number": 38,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/38"
+    },
+    "DONE-17": {
+      "number": 41,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/41"
+    },
+    "DONE-18": {
+      "number": 39,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/39"
+    },
+    "EPIC-AUTH": {
+      "number": 42,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/42"
+    },
+    "EPIC-CUSTOMER": {
+      "number": 40,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/40"
+    },
+    "EPIC-MERCHANT": {
+      "number": 41,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/41"
+    },
+    "EPIC-RIDER": {
+      "number": 42,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/42"
+    },
+    "EPIC-ADMIN": {
+      "number": 43,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/43"
+    },
+    "EPIC-WALLET": {
+      "number": 43,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/43"
+    },
+    "EPIC-PAYMENTS": {
+      "number": 44,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/44"
+    },
+    "EPIC-MARKET": {
+      "number": 45,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/45"
+    },
+    "EPIC-NOTIF": {
+      "number": 46,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/46"
+    },
+    "EPIC-MOBILE": {
+      "number": 44,
+      "url": "https://github.com/headmaster2hm/rapid-superapp/issues/44"
+    },
+    "EPIC-COMPLY": {
+      "number": 47,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/47"
+    },
+    "EPIC-DEPLOY": {
+      "number": 48,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/48"
+    },
+    "EPIC-ANALYTICS": {
+      "number": 49,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/49"
+    },
+    "EPIC-TEST": {
+      "number": 50,
+      "url": "https://github.com/headmaster2hm/rapid-superapp-api/issues/50"
+    }
+  }
+}

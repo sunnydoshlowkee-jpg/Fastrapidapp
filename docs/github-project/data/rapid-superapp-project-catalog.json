@@ -1,0 +1,3270 @@
+{
+  "project": {
+    "name": "Rapid Super App Development",
+    "owner": "headmaster2hm",
+    "repositories": {
+      "frontend": "headmaster2hm/rapid-superapp",
+      "backend": "headmaster2hm/rapid-superapp-api"
+    },
+    "columns": [
+      "Backlog",
+      "Todo",
+      "In Progress",
+      "Testing",
+      "Review",
+      "Done",
+      "Phase 2"
+    ],
+    "generated_at": "2026-07-22",
+    "source_of_truth": "Codebase audit of rapid-superapp + rapid-superapp-api"
+  },
+  "labels": [
+    {
+      "name": "frontend",
+      "color": "1D76DB",
+      "description": "Frontend / React work"
+    },
+    {
+      "name": "backend",
+      "color": "0E8A16",
+      "description": "Backend / Laravel work"
+    },
+    {
+      "name": "api",
+      "color": "006B75",
+      "description": "API endpoint work"
+    },
+    {
+      "name": "database",
+      "color": "5319E7",
+      "description": "Schema / migrations"
+    },
+    {
+      "name": "mobile",
+      "color": "FBCA04",
+      "description": "Capacitor / native"
+    },
+    {
+      "name": "bug",
+      "color": "D73A4A",
+      "description": "Defect"
+    },
+    {
+      "name": "feature",
+      "color": "A2EEEF",
+      "description": "New feature"
+    },
+    {
+      "name": "enhancement",
+      "color": "A2EEEF",
+      "description": "Improvement"
+    },
+    {
+      "name": "documentation",
+      "color": "0075CA",
+      "description": "Docs"
+    },
+    {
+      "name": "testing",
+      "color": "BFDADC",
+      "description": "Tests / QA"
+    },
+    {
+      "name": "compliance",
+      "color": "B60205",
+      "description": "Compliance / legal"
+    },
+    {
+      "name": "infrastructure",
+      "color": "5319E7",
+      "description": "DevOps / infra"
+    },
+    {
+      "name": "authentication",
+      "color": "C5DEF5",
+      "description": "Auth domain"
+    },
+    {
+      "name": "wallet",
+      "color": "C2E0C6",
+      "description": "Wallet domain"
+    },
+    {
+      "name": "payments",
+      "color": "C2E0C6",
+      "description": "Payments domain"
+    },
+    {
+      "name": "merchant",
+      "color": "FEF2C0",
+      "description": "Merchant domain"
+    },
+    {
+      "name": "customer",
+      "color": "FEF2C0",
+      "description": "Customer domain"
+    },
+    {
+      "name": "rider",
+      "color": "FEF2C0",
+      "description": "Rider / dispatch"
+    },
+    {
+      "name": "admin",
+      "color": "D4C5F9",
+      "description": "Admin portal"
+    },
+    {
+      "name": "notifications",
+      "color": "F9D0C4",
+      "description": "Notifications"
+    },
+    {
+      "name": "analytics",
+      "color": "F9D0C4",
+      "description": "Analytics"
+    },
+    {
+      "name": "marketplace",
+      "color": "F9D0C4",
+      "description": "Marketplace / discovery"
+    },
+    {
+      "name": "ios",
+      "color": "EDEDED",
+      "description": "iOS / TestFlight"
+    },
+    {
+      "name": "android",
+      "color": "EDEDED",
+      "description": "Android"
+    },
+    {
+      "name": "critical",
+      "color": "B60205",
+      "description": "P0 critical"
+    },
+    {
+      "name": "high",
+      "color": "D93F0B",
+      "description": "P1 high"
+    },
+    {
+      "name": "medium",
+      "color": "FBCA04",
+      "description": "P2 medium"
+    },
+    {
+      "name": "low",
+      "color": "0E8A16",
+      "description": "P3 low"
+    },
+    {
+      "name": "epic",
+      "color": "3E4B9E",
+      "description": "Epic umbrella"
+    },
+    {
+      "name": "blocked",
+      "color": "000000",
+      "description": "Blocked"
+    },
+    {
+      "name": "cross-repo",
+      "color": "BFD4F2",
+      "description": "FE+BE dependency"
+    }
+  ],
+  "milestones": [
+    {
+      "title": "MVP Launch",
+      "description": "Ship core customer / merchant / rider loops to production-ready MVP.",
+      "due_on": "2026-08-15T23:59:59Z"
+    },
+    {
+      "title": "iOS TestFlight",
+      "description": "Publish user, merchant, and rider iOS builds to TestFlight.",
+      "due_on": "2026-08-22T23:59:59Z"
+    },
+    {
+      "title": "Compliance",
+      "description": "Security hardening, KYC, privacy, OTP strict mode, audit readiness.",
+      "due_on": "2026-09-05T23:59:59Z"
+    },
+    {
+      "title": "Phase 2",
+      "description": "Crypto payments, advanced admin ops, referrals rewards, marketplace expansions.",
+      "due_on": "2026-10-15T23:59:59Z"
+    },
+    {
+      "title": "Production Launch",
+      "description": "Public production launch with monitoring, rate limits, and store listings.",
+      "due_on": "2026-09-19T23:59:59Z"
+    }
+  ],
+  "epics": [
+    {
+      "key": "EPIC-AUTH",
+      "title": "[Epic] Authentication",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "Done",
+      "pct": 90,
+      "body": "Multi-persona auth (customer OTP, merchant password, rider OTP, admin). Source: codebase + ClickUp auth export (~90%). Remaining: admin 2FA strict, OTP rate limits, production strict flags, docs, E2E."
+    },
+    {
+      "key": "EPIC-CUSTOMER",
+      "title": "[Epic] Customer App",
+      "repo": "headmaster2hm/rapid-superapp",
+      "column": "In Progress",
+      "pct": 85,
+      "body": "Discovery, cart, checkout, orders, tracking, profile. Core API-wired; polish mocks, payment methods, crypto deferred."
+    },
+    {
+      "key": "EPIC-MERCHANT",
+      "title": "[Epic] Merchant Portal",
+      "repo": "headmaster2hm/rapid-superapp",
+      "column": "In Progress",
+      "pct": 80,
+      "body": "Merchant auth, onboarding, catalog, orders, wallet, analytics. Strong API coverage; UI mock cleanup and QA remaining."
+    },
+    {
+      "key": "EPIC-RIDER",
+      "title": "[Epic] Delivery Rider",
+      "repo": "headmaster2hm/rapid-superapp",
+      "column": "In Progress",
+      "pct": 75,
+      "body": "Rider onboarding, deliveries, maps, earnings. Missing withdraw/payout API + FE wiring and admin live tracking."
+    },
+    {
+      "key": "EPIC-ADMIN",
+      "title": "[Epic] Admin Portal",
+      "repo": "headmaster2hm/rapid-superapp",
+      "column": "In Progress",
+      "pct": 45,
+      "body": "Core admin (users/merchants/riders/orders/dashboard) live. Finance/support/disputes/audit/settings/analytics mostly mock UI \u2014 need backend + wiring."
+    },
+    {
+      "key": "EPIC-WALLET",
+      "title": "[Epic] Wallet",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "In Progress",
+      "pct": 85,
+      "body": "User + merchant wallets via Paystack. Rider earnings read-only. Bills via VTpass. Gaps: rider cash-out, bill tests."
+    },
+    {
+      "key": "EPIC-PAYMENTS",
+      "title": "[Epic] Payments",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "In Progress",
+      "pct": 88,
+      "body": "Paystack checkout, webhook, VA funding, transfers. Crypto checkout is FE-simulated (Phase 2)."
+    },
+    {
+      "key": "EPIC-MARKET",
+      "title": "[Epic] Marketplace & Restaurants",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "In Progress",
+      "pct": 80,
+      "body": "Live merchants/products discovery & search. Legacy restaurant/menu tables unused. Referrals/promos read-only."
+    },
+    {
+      "key": "EPIC-NOTIF",
+      "title": "[Epic] Notifications",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "In Progress",
+      "pct": 75,
+      "body": "In-app notifications + FCM device tokens + push jobs. Admin notifications UI still mock; realtime Echo env-dependent."
+    },
+    {
+      "key": "EPIC-MOBILE",
+      "title": "[Epic] Mobile Apps",
+      "repo": "headmaster2hm/rapid-superapp",
+      "column": "In Progress",
+      "pct": 80,
+      "body": "Android 3 flavors + iOS persona prep. Remaining: TestFlight, store QA, push on device."
+    },
+    {
+      "key": "EPIC-COMPLY",
+      "title": "[Epic] Compliance",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "Todo",
+      "pct": 25,
+      "body": "OTP strict prod, admin 2FA, KYC review flows, privacy/security docs, audit logging."
+    },
+    {
+      "key": "EPIC-DEPLOY",
+      "title": "[Epic] Deployment",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "In Progress",
+      "pct": 70,
+      "body": "app.fastrapid.com + api.fastrapid.com live. Remaining: CI, monitoring, prod secrets hardening."
+    },
+    {
+      "key": "EPIC-ANALYTICS",
+      "title": "[Epic] Analytics",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "Todo",
+      "pct": 35,
+      "body": "Client track endpoint exists; admin analytics page is stub; merchant analytics live."
+    },
+    {
+      "key": "EPIC-TEST",
+      "title": "[Epic] Testing & QA",
+      "repo": "headmaster2hm/rapid-superapp-api",
+      "column": "Todo",
+      "pct": 55,
+      "body": "~185 backend feature tests; gaps in security/cart/bills/chat/admin orders. Cypress smoke-only for auth."
+    }
+  ],
+  "issues": [
+    {
+      "key": "AUTH-01",
+      "title": "Wire admin TOTP 2FA in strict mode",
+      "description": "Admin verify-2fa currently accepts any 6-digit code unless VITE_ADMIN_2FA_STRICT=true. Wire real TOTP verify against backend UserSecurity / admin 2FA API.",
+      "acceptance_criteria": [
+        "Admin login requires valid TOTP when strict mode enabled",
+        "Invalid codes rejected",
+        "Works with backend-stored TOTP secret",
+        "Feature flag documented"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "backend",
+        "authentication",
+        "admin",
+        "bug",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "AUTH-02"
+      ],
+      "checklist": [
+        "Add admin TOTP verify API client",
+        "Gate Verify2fa page on real verify",
+        "Enable VITE_ADMIN_2FA_STRICT in staging",
+        "Manual QA login path"
+      ],
+      "column": "In Progress",
+      "milestone": "Compliance",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-02",
+      "title": "Implement Admin TOTP verify and password-reset APIs",
+      "description": "Backend lacks dedicated admin 2FA verify and password-reset endpoints used by adminAuthService stubs.",
+      "acceptance_criteria": [
+        "POST /admin/2fa/verify validates TOTP",
+        "Forgot/reset password flow issues time-limited codes",
+        "Tests cover success and failure",
+        "Sanctum admin role enforced"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "authentication",
+        "admin",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Migration if needed",
+        "Controller methods",
+        "Feature tests",
+        "Update OpenAPI notes"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-03",
+      "title": "Enable production EMAIL_OTP_STRICT and PHONE_OTP_STRICT",
+      "description": "Defaults are false in .env.example. Production must reject bypass codes.",
+      "acceptance_criteria": [
+        "Production .env has both flags true",
+        "Staging verified before prod flip",
+        "Runbook updated"
+      ],
+      "priority": "critical",
+      "estimated_effort": "0.25d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "infrastructure",
+        "authentication",
+        "compliance",
+        "critical"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Update production secrets",
+        "Smoke OTP on staging",
+        "Document rollback"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-04",
+      "title": "Add rate limiting on auth OTP endpoints",
+      "description": "Throttle email/phone OTP request routes to prevent abuse.",
+      "acceptance_criteria": [
+        "Throttle middleware on OTP request routes",
+        "429 returned after limit",
+        "Config documented",
+        "Tests assert throttle"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "authentication",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Apply RateLimiter",
+        "Feature test",
+        "Update .env.example"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-05",
+      "title": "Expand Cypress full auth E2E coverage",
+      "description": "Currently smoke-only in user-auth-wallet.cy.js. Cover OTP, profile, biometric gates for personas where feasible.",
+      "acceptance_criteria": [
+        "E2E covers user login happy path",
+        "Merchant login smoke",
+        "Admin login smoke",
+        "CI-ready with fixtures/mocks"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "testing",
+        "frontend",
+        "authentication",
+        "medium"
+      ],
+      "dependencies": [
+        "AUTH-01"
+      ],
+      "checklist": [
+        "Extend cypress specs",
+        "Document env vars",
+        "Run in CI"
+      ],
+      "column": "Backlog",
+      "milestone": "Production Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-06",
+      "title": "Mobile auth QA \u2014 Android (user/merchant/dispatch)",
+      "description": "Manual QA biometric unlock and login security on three APK flavors.",
+      "acceptance_criteria": [
+        "User APK biometric unlock verified",
+        "Merchant APK verified",
+        "Dispatch APK verified",
+        "Bugs filed for failures"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "testing",
+        "mobile",
+        "android",
+        "authentication",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "Install release APKs",
+        "Checklist per persona",
+        "File defects"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-07",
+      "title": "Mobile auth QA \u2014 iOS TestFlight",
+      "description": "TestFlight biometric and login flows once iOS builds published.",
+      "acceptance_criteria": [
+        "All three personas installable via TestFlight",
+        "Biometric unlock verified",
+        "Login security verified"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "testing",
+        "mobile",
+        "ios",
+        "authentication",
+        "high"
+      ],
+      "dependencies": [
+        "MOB-01",
+        "MOB-02",
+        "MOB-03"
+      ],
+      "checklist": [
+        "Install TF builds",
+        "Run checklist",
+        "File defects"
+      ],
+      "column": "Todo",
+      "milestone": "iOS TestFlight",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-08",
+      "title": "Document auth API endpoints (OpenAPI/Markdown)",
+      "description": "Document all /auth, /merchant auth, /admin, /rider auth routes.",
+      "acceptance_criteria": [
+        "Markdown or OpenAPI published under docs/",
+        "Covers request/response shapes",
+        "Token lifetimes noted"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "documentation",
+        "api",
+        "authentication",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Inventory routes",
+        "Write docs",
+        "Link from README"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "AUTH-09",
+      "title": "Write production auth hardening checklist",
+      "description": "OTP strict, admin 2FA, rate limiting, bootstrap secret rotation.",
+      "acceptance_criteria": [
+        "Checklist checked into docs/",
+        "Owners assigned",
+        "Linked to Compliance milestone"
+      ],
+      "priority": "critical",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "documentation",
+        "compliance",
+        "authentication",
+        "critical"
+      ],
+      "dependencies": [
+        "AUTH-03",
+        "AUTH-01",
+        "AUTH-04"
+      ],
+      "checklist": [
+        "Draft checklist",
+        "Review with DevOps",
+        "Sign-off"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "CUS-01",
+      "title": "Wire Payment Methods page to backend payment sources API",
+      "description": "PaymentMethods UI has no API usage. Either implement payment-methods endpoints or persist cards via Paystack and surface them.",
+      "acceptance_criteria": [
+        "List/add/remove payment methods works end-to-end",
+        "Errors handled",
+        "Empty state correct"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "customer",
+        "payments",
+        "feature",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "CUS-02"
+      ],
+      "checklist": [
+        "Define API contract",
+        "Wire service",
+        "Update UI",
+        "Smoke test"
+      ],
+      "column": "Todo",
+      "milestone": "Phase 2",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "CUS-02",
+      "title": "Implement user payment methods API",
+      "description": "Backend endpoint for saved payment methods / Paystack authorization codes if MVP needs saved cards.",
+      "acceptance_criteria": [
+        "CRUD or list+delete endpoints",
+        "Sanctum protected",
+        "Tests pass"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "payments",
+        "customer",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-PAYMENTS"
+      ],
+      "checklist": [
+        "Migration if needed",
+        "Controller",
+        "Tests"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-PAYMENTS"
+    },
+    {
+      "key": "CUS-03",
+      "title": "Remove leftover mock data from Customer Home and CartDetail",
+      "description": "Hardcoded demo arrays remain alongside live Context/API data.",
+      "acceptance_criteria": [
+        "No unused mock arrays in production paths",
+        "UI still renders correctly",
+        "No console errors"
+      ],
+      "priority": "low",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "customer",
+        "enhancement",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-CUSTOMER"
+      ],
+      "checklist": [
+        "Audit Home/CartDetail",
+        "Delete dead mocks",
+        "Smoke discovery"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "CUS-04",
+      "title": "Harden cart update with pricing and stock validation",
+      "description": "Cart stores JSON blob without pricing/stock validation on backend.",
+      "acceptance_criteria": [
+        "Server recalculates line totals",
+        "Rejects unavailable items",
+        "Checkout uses validated cart",
+        "Tests cover edge cases"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "customer",
+        "marketplace",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-CUSTOMER"
+      ],
+      "checklist": [
+        "Validation service",
+        "Update CartController",
+        "Feature tests"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "CUS-05",
+      "title": "Fix VendorDetail unimplemented mockup tabs",
+      "description": "VendorDetail still shows 'view not implemented in mockup' for some tabs.",
+      "acceptance_criteria": [
+        "All visible tabs functional or hidden",
+        "Uses discovery item API",
+        "Mobile layout OK"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "customer",
+        "marketplace",
+        "bug",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-CUSTOMER"
+      ],
+      "checklist": [
+        "Identify stub tabs",
+        "Wire or remove",
+        "QA"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "CUS-06",
+      "title": "Replace simulated CryptoCheckout with real provider or hide for MVP",
+      "description": "CryptoCheckout uses fake BTC rate/address/timers. Defer to Phase 2 or feature-flag off.",
+      "acceptance_criteria": [
+        "Crypto route gated behind feature flag OFF for MVP",
+        "Or real provider integrated",
+        "No fake addresses in prod"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "payments",
+        "customer",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-PAYMENTS"
+      ],
+      "checklist": [
+        "Add feature flag",
+        "Hide nav entry",
+        "Document Phase 2"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "MER-01",
+      "title": "Replace merchant inventory mock constants with API-only data",
+      "description": "Merchant inventory UI still imports mock constants for labels/filters mixed with live products.",
+      "acceptance_criteria": [
+        "Menu list driven solely by API",
+        "Filters work on live data",
+        "No stale mock SKUs"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "merchant",
+        "enhancement",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-MERCHANT"
+      ],
+      "checklist": [
+        "Audit mock imports",
+        "Refactor filters",
+        "QA menu CRUD"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MERCHANT"
+    },
+    {
+      "key": "MER-02",
+      "title": "Merchant product CSV import E2E QA",
+      "description": "Import template + endpoints exist; verify full import success path in UI.",
+      "acceptance_criteria": [
+        "Template downloads",
+        "Import succeeds for valid CSV",
+        "Errors shown for bad rows",
+        "Products appear in list"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "testing",
+        "merchant",
+        "frontend",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-MERCHANT"
+      ],
+      "checklist": [
+        "Prepare sample CSV",
+        "Run import",
+        "File bugs"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MERCHANT"
+    },
+    {
+      "key": "MER-03",
+      "title": "Merchant wallet withdraw production smoke test",
+      "description": "Withdraw API exists and is tested in PHPUnit; need staging Paystack smoke.",
+      "acceptance_criteria": [
+        "Withdraw to verified bank succeeds on staging",
+        "PIN required",
+        "Transaction appears in history"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "merchant",
+        "wallet",
+        "payments",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-WALLET"
+      ],
+      "checklist": [
+        "Staging credentials",
+        "Execute withdraw",
+        "Reconcile Paystack"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MERCHANT"
+    },
+    {
+      "key": "RID-01",
+      "title": "Implement rider wallet withdraw API",
+      "description": "Rider can view earnings but has no withdraw/send routes (merchant has withdraw).",
+      "acceptance_criteria": [
+        "POST /rider/wallet/withdraw",
+        "PIN or security verify",
+        "Paystack transfer",
+        "Ledger transaction recorded",
+        "Feature tests"
+      ],
+      "priority": "critical",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "rider",
+        "wallet",
+        "payments",
+        "feature",
+        "critical"
+      ],
+      "dependencies": [
+        "EPIC-WALLET"
+      ],
+      "checklist": [
+        "Controller + service",
+        "Reuse Paystack transfer",
+        "Tests",
+        "Route registration"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-RIDER"
+    },
+    {
+      "key": "RID-02",
+      "title": "Wire rider Withdraw UI to withdraw API",
+      "description": "Dispatch Withdraw page loads earnings/profile but does not call withdraw API.",
+      "acceptance_criteria": [
+        "Withdraw submits to API",
+        "Success/error UX",
+        "History refresh",
+        "PIN gate"
+      ],
+      "priority": "critical",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "rider",
+        "wallet",
+        "feature",
+        "critical",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "RID-01"
+      ],
+      "checklist": [
+        "Add riderWalletService.withdraw",
+        "Wire form",
+        "QA"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-RIDER"
+    },
+    {
+      "key": "RID-03",
+      "title": "Rider location streaming reliability hardening",
+      "description": "Ensure periodic location pings continue in background constraints on Android/iOS.",
+      "acceptance_criteria": [
+        "Location updates while online on delivery",
+        "Battery impact acceptable",
+        "Failures surfaced"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "mobile",
+        "rider",
+        "enhancement",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-RIDER"
+      ],
+      "checklist": [
+        "Review useRiderLocationTracking",
+        "Android foreground service if needed",
+        "Device QA"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-RIDER"
+    },
+    {
+      "key": "RID-04",
+      "title": "Admin live rider tracking API",
+      "description": "Admin rider tracking page uses mock path helpers; need last-known location API.",
+      "acceptance_criteria": [
+        "GET /admin/riders/{id}/location returns latest coords",
+        "List online riders with coords",
+        "Tests"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "rider",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Endpoint",
+        "Presenter",
+        "Tests"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "RID-05",
+      "title": "Wire Admin Rider Tracking page to live location API",
+      "description": "Replace mock tracking UI with map of live rider positions.",
+      "acceptance_criteria": [
+        "Map shows selected rider",
+        "Online riders list live",
+        "Polling or Echo"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "rider",
+        "feature",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "RID-04"
+      ],
+      "checklist": [
+        "Service client",
+        "Map integration",
+        "Remove mocks"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-01",
+      "title": "Admin platform transactions list/detail API",
+      "description": "Paginated platform transactions across wallets/payments for admin finance UI currently mocked on FE.",
+      "acceptance_criteria": [
+        "GET /admin/transactions paginated newest first",
+        "GET show by id",
+        "Filters type/status/date",
+        "Laravel API Resource",
+        "Feature tests"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "wallet",
+        "payments",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-02",
+      "title": "Wire Admin Transactions pages to API",
+      "description": "Replace adminTransactions.mock.js with live adminTransactionsService.",
+      "acceptance_criteria": [
+        "List and detail from API",
+        "Filters work",
+        "Loading/empty/error states"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "wallet",
+        "feature",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-01"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-03",
+      "title": "Admin payouts queue API (approve/reject)",
+      "description": "Backend for merchant/rider payout request management used by Admin Payouts UI.",
+      "acceptance_criteria": [
+        "List pending payouts",
+        "Approve triggers transfer or marks paid",
+        "Reject with reason",
+        "Tests"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "payments",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-04",
+      "title": "Wire Admin Payouts page to API",
+      "description": "Replace adminPayouts.mock.js with live actions.",
+      "acceptance_criteria": [
+        "Queue loads",
+        "Approve/reject works",
+        "Nav counts update"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "payments",
+        "feature",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-03"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-05",
+      "title": "Admin disputes schema and API",
+      "description": "No disputes API; FE uses mocks. Create schema + endpoints.",
+      "acceptance_criteria": [
+        "disputes migration",
+        "Index/show/update",
+        "Linked to order/user",
+        "Tests"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "database",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-06",
+      "title": "Wire Admin Disputes pages to API",
+      "description": "Replace adminDisputes.mock.js.",
+      "acceptance_criteria": [
+        "List/detail live",
+        "Status updates persist"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "feature",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-05"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-07",
+      "title": "Admin support tickets API",
+      "description": "Support ticket list/detail/reply endpoints for admin support UI.",
+      "acceptance_criteria": [
+        "Tickets list/detail",
+        "Reply + status",
+        "Tests"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-08",
+      "title": "Wire Admin Support pages to API",
+      "description": "Replace adminSupportTickets.mock.js.",
+      "acceptance_criteria": [
+        "Tickets load",
+        "Reply works"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "feature",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-07"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-09",
+      "title": "Implement AuditLog write path and Admin audit API",
+      "description": "AuditLog model exists unused. Record admin actions; expose list API.",
+      "acceptance_criteria": [
+        "Writes on approve/reject/settings",
+        "GET /admin/audit-log",
+        "Filters",
+        "Tests"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "compliance",
+        "database",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-COMPLY"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-COMPLY"
+    },
+    {
+      "key": "ADM-10",
+      "title": "Wire Admin Audit Log page to API",
+      "description": "Replace adminAuditLog.mock.js.",
+      "acceptance_criteria": [
+        "Entries load",
+        "Filters work"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "compliance",
+        "feature",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-09"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-COMPLY"
+    },
+    {
+      "key": "ADM-11",
+      "title": "Admin notifications API",
+      "description": "Admin notification center endpoints.",
+      "acceptance_criteria": [
+        "Index + mark read",
+        "Optional create/broadcast",
+        "Tests"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "notifications",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-NOTIF"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "ADM-12",
+      "title": "Wire Admin Notifications page to API",
+      "description": "Replace adminNotifications.mock.js.",
+      "acceptance_criteria": [
+        "Notifications load from API"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "notifications",
+        "feature",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-11"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "ADM-13",
+      "title": "Admin platform analytics API",
+      "description": "Aggregated GMV/orders/users/riders metrics for admin analytics stub.",
+      "acceptance_criteria": [
+        "GET /admin/analytics",
+        "Date range",
+        "Tests"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "analytics",
+        "feature",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-ANALYTICS"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ANALYTICS"
+    },
+    {
+      "key": "ADM-14",
+      "title": "Build Admin Analytics dashboard against API",
+      "description": "Replace empty 'Platform-wide metrics' stub.",
+      "acceptance_criteria": [
+        "Metrics render",
+        "Date filter",
+        "No mock data"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "analytics",
+        "feature",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-13"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ANALYTICS"
+    },
+    {
+      "key": "ADM-15",
+      "title": "Admin settings CRUD API",
+      "description": "Settings model unused. Expose key/value settings for gateway, flags, zones.",
+      "acceptance_criteria": [
+        "GET/PUT settings",
+        "Validation",
+        "Admin-only",
+        "Tests"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "database",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-16",
+      "title": "Wire Admin Settings screens to settings API",
+      "description": "Persist payment gateway, feature flags, delivery zones, alert settings; resolve Roles placeholder.",
+      "acceptance_criteria": [
+        "Settings persist",
+        "Roles implemented or removed from nav"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "feature",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-15"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-17",
+      "title": "Complete Admin Merchant Detail remaining tabs",
+      "description": "Info/Orders/Documents live; other tabs coming soon.",
+      "acceptance_criteria": [
+        "MVP-required tabs live",
+        "Non-MVP tabs hidden"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "merchant",
+        "enhancement",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "ADM-18",
+      "title": "Feature tests for Admin Orders and Admin Riders",
+      "description": "APIs exist without dedicated PHPUnit coverage.",
+      "acceptance_criteria": [
+        "AdminOrderTest",
+        "AdminRiderTest approve/reject/docs",
+        "CI green"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "backend",
+        "admin",
+        "rider",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-TEST"
+      ],
+      "checklist": [
+        "Implement",
+        "Test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-TEST"
+    },
+    {
+      "key": "WAL-01",
+      "title": "Add PHPUnit coverage for VTpass bill payments",
+      "description": "Airtime/data/electricity/cable implemented but lightly/untested.",
+      "acceptance_criteria": [
+        "Feature tests with HTTP fakes",
+        "Failure paths covered",
+        "CI green"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "backend",
+        "wallet",
+        "payments",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-WALLET"
+      ],
+      "checklist": [
+        "Fake VtpassBillService",
+        "Write tests",
+        "Run suite"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-WALLET"
+    },
+    {
+      "key": "WAL-02",
+      "title": "Add PHPUnit coverage for UserSecurityController",
+      "description": "TOTP/biometric/action-code APIs have zero dedicated tests.",
+      "acceptance_criteria": [
+        "Setup/confirm/disable TOTP tested",
+        "Verify action code tested",
+        "CI green"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "backend",
+        "authentication",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Write UserSecurityTest",
+        "Edge cases",
+        "CI"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-TEST"
+    },
+    {
+      "key": "WAL-03",
+      "title": "Add Delivery Chat feature tests",
+      "description": "User/rider chat endpoints implemented, untested.",
+      "acceptance_criteria": [
+        "User can post/list messages",
+        "Rider can post/list",
+        "Authz enforced"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "backend",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-TEST"
+      ],
+      "checklist": [
+        "Write DeliveryChatTest",
+        "CI"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-TEST"
+    },
+    {
+      "key": "PAY-01",
+      "title": "Paystack webhook failure alerting",
+      "description": "Webhook + reconcile exist; add monitoring/alerts on repeated failures.",
+      "acceptance_criteria": [
+        "Failed webhooks logged with context",
+        "Alert channel documented",
+        "Reconcile job health check"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "payments",
+        "infrastructure",
+        "enhancement",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-PAYMENTS"
+      ],
+      "checklist": [
+        "Structured logging",
+        "Optional Slack/email",
+        "Runbook"
+      ],
+      "column": "Todo",
+      "milestone": "Production Launch",
+      "epic": "EPIC-PAYMENTS"
+    },
+    {
+      "key": "MKT-01",
+      "title": "Implement referral reward completion pipeline",
+      "description": "Referrals list/code only \u2014 no create-on-signup or reward completion.",
+      "acceptance_criteria": [
+        "Referral attributed on signup",
+        "Reward credited on first order",
+        "Idempotent",
+        "Tests"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "customer",
+        "marketplace",
+        "feature",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-MARKET"
+      ],
+      "checklist": [
+        "Service logic",
+        "Hooks on order complete",
+        "Tests"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-MARKET"
+    },
+    {
+      "key": "MKT-02",
+      "title": "Admin CRUD for Promotions and FAQs",
+      "description": "Promotions/FAQs are read-only public endpoints.",
+      "acceptance_criteria": [
+        "Admin create/update/delete promotions",
+        "Admin FAQ CRUD",
+        "FE admin screens or artisan seed path documented"
+      ],
+      "priority": "low",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "api",
+        "admin",
+        "marketplace",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-MARKET"
+      ],
+      "checklist": [
+        "Controllers",
+        "Policies",
+        "Tests"
+      ],
+      "column": "Phase 2",
+      "milestone": "Phase 2",
+      "epic": "EPIC-MARKET"
+    },
+    {
+      "key": "MKT-03",
+      "title": "Retire or migrate legacy restaurants/menu tables",
+      "description": "Restaurant/MenuCategory/MenuItem schema unused; products superseded them.",
+      "acceptance_criteria": [
+        "Decision recorded",
+        "Either remove migrations in new envs or document legacy",
+        "No dead models referenced"
+      ],
+      "priority": "low",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "database",
+        "marketplace",
+        "documentation",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-MARKET"
+      ],
+      "checklist": [
+        "Audit usages",
+        "Document decision",
+        "Optional drop migration"
+      ],
+      "column": "Backlog",
+      "milestone": "Phase 2",
+      "epic": "EPIC-MARKET"
+    },
+    {
+      "key": "NOT-01",
+      "title": "Verify FCM push on all three Android flavors",
+      "description": "Device token registration exists; validate end-to-end push on device.",
+      "acceptance_criteria": [
+        "User/merchant/rider receive test push",
+        "Token refresh handled",
+        "Docs match behavior"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "testing",
+        "mobile",
+        "android",
+        "notifications",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-NOTIF"
+      ],
+      "checklist": [
+        "Send test via admin/job",
+        "Verify each APK",
+        "File bugs"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "NOT-02",
+      "title": "Validate Laravel Echo realtime on staging",
+      "description": "Echo/Pusher client present; confirm order/delivery events if broadcast configured.",
+      "acceptance_criteria": [
+        "Decide broadcast vs polling for MVP",
+        "If Echo: events received",
+        "Document env vars"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "backend",
+        "notifications",
+        "medium",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "EPIC-NOTIF"
+      ],
+      "checklist": [
+        "Audit broadcasting config",
+        "Staging test",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "MOB-01",
+      "title": "Publish Customer iOS build to TestFlight",
+      "description": "Prepare persona, archive, upload Fast Rapid user app.",
+      "acceptance_criteria": [
+        "Build uploaded",
+        "Internal testers can install",
+        "Crash-free launch"
+      ],
+      "priority": "critical",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "mobile",
+        "ios",
+        "customer",
+        "infrastructure",
+        "critical"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "prepare-ios-persona user",
+        "Archive",
+        "Upload",
+        "Invite testers"
+      ],
+      "column": "Todo",
+      "milestone": "iOS TestFlight",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "MOB-02",
+      "title": "Publish Merchant iOS build to TestFlight",
+      "description": "Same for Rapid Merchant.",
+      "acceptance_criteria": [
+        "Build uploaded",
+        "Installable",
+        "Login works"
+      ],
+      "priority": "critical",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "mobile",
+        "ios",
+        "merchant",
+        "infrastructure",
+        "critical"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "Persona prep",
+        "Archive",
+        "Upload"
+      ],
+      "column": "Todo",
+      "milestone": "iOS TestFlight",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "MOB-03",
+      "title": "Publish Rider iOS build to TestFlight",
+      "description": "Same for Rapid Rider.",
+      "acceptance_criteria": [
+        "Build uploaded",
+        "Installable",
+        "Online toggle works"
+      ],
+      "priority": "critical",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "mobile",
+        "ios",
+        "rider",
+        "infrastructure",
+        "critical"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "Persona prep",
+        "Archive",
+        "Upload"
+      ],
+      "column": "Todo",
+      "milestone": "iOS TestFlight",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "MOB-04",
+      "title": "Prepare Play Store listing assets for three Android apps",
+      "description": "Screenshots, descriptions, privacy policy links for user/merchant/rider.",
+      "acceptance_criteria": [
+        "Assets for 3 apps",
+        "Privacy URLs",
+        "Content rating drafts"
+      ],
+      "priority": "medium",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "mobile",
+        "android",
+        "documentation",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "Capture screenshots",
+        "Write copy",
+        "Store draft"
+      ],
+      "column": "Todo",
+      "milestone": "Production Launch",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "COM-01",
+      "title": "KYC document review SLAs and rejection reason UX",
+      "description": "Merchant/rider docs approve/reject exist; tighten admin UX and reason requirements.",
+      "acceptance_criteria": [
+        "Reject requires reason",
+        "Applicant notified",
+        "Audit logged"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "admin",
+        "compliance",
+        "merchant",
+        "rider",
+        "enhancement",
+        "high",
+        "cross-repo"
+      ],
+      "dependencies": [
+        "ADM-09"
+      ],
+      "checklist": [
+        "UX update",
+        "API reason field if missing",
+        "QA"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-COMPLY"
+    },
+    {
+      "key": "COM-02",
+      "title": "Publish privacy policy and terms endpoints or static pages",
+      "description": "Ensure in-app Help/Privacy links resolve to current legal docs.",
+      "acceptance_criteria": [
+        "Links work on all personas",
+        "Version dated",
+        "Hosted on fastrapid.com"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "compliance",
+        "documentation",
+        "frontend",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-COMPLY"
+      ],
+      "checklist": [
+        "Host pages",
+        "Update app links"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-COMPLY"
+    },
+    {
+      "key": "DEP-01",
+      "title": "Add CI workflows for API PHPUnit and Frontend build",
+      "description": "Ensure PRs run tests/build on GitHub Actions.",
+      "acceptance_criteria": [
+        "API workflow runs phpunit",
+        "FE workflow runs lint/build",
+        "Badges optional"
+      ],
+      "priority": "high",
+      "estimated_effort": "1d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "infrastructure",
+        "testing",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-DEPLOY"
+      ],
+      "checklist": [
+        "Create workflows in both repos",
+        "Secrets documented"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-DEPLOY"
+    },
+    {
+      "key": "DEP-02",
+      "title": "Production secrets rotation and bootstrap secret lockdown",
+      "description": "ADMIN_BOOTSTRAP_SECRET and OTP keys rotation runbook.",
+      "acceptance_criteria": [
+        "Secrets rotated",
+        "Old secrets invalidated",
+        "Runbook stored"
+      ],
+      "priority": "critical",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "infrastructure",
+        "compliance",
+        "authentication",
+        "critical"
+      ],
+      "dependencies": [
+        "AUTH-03"
+      ],
+      "checklist": [
+        "Rotate",
+        "Verify admin:create gated",
+        "Document"
+      ],
+      "column": "Todo",
+      "milestone": "Compliance",
+      "epic": "EPIC-DEPLOY"
+    },
+    {
+      "key": "DEP-03",
+      "title": "Application monitoring and uptime checks",
+      "description": "Health endpoint exists; add uptime monitor + error tracking.",
+      "acceptance_criteria": [
+        "Uptime check on /api/health",
+        "Error tracker configured",
+        "On-call documented"
+      ],
+      "priority": "high",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "infrastructure",
+        "high"
+      ],
+      "dependencies": [
+        "EPIC-DEPLOY"
+      ],
+      "checklist": [
+        "Choose tool",
+        "Configure",
+        "Alert test"
+      ],
+      "column": "Todo",
+      "milestone": "Production Launch",
+      "epic": "EPIC-DEPLOY"
+    },
+    {
+      "key": "ANL-01",
+      "title": "Ensure analytics/track events fire on core funnels",
+      "description": "POST /analytics/track exists; verify FE fires on view/add-to-cart/checkout.",
+      "acceptance_criteria": [
+        "Events on discovery, cart, checkout, order success",
+        "No PII leakage",
+        "Document event names"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.75d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "analytics",
+        "customer",
+        "enhancement",
+        "medium"
+      ],
+      "dependencies": [
+        "EPIC-ANALYTICS"
+      ],
+      "checklist": [
+        "Audit analyticsService usage",
+        "Add missing events",
+        "Doc"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ANALYTICS"
+    },
+    {
+      "key": "TST-01",
+      "title": "Cart API feature tests",
+      "description": "Cart endpoints lack dedicated tests.",
+      "acceptance_criteria": [
+        "Show/update tested",
+        "Auth required",
+        "Invalid payload rejected"
+      ],
+      "priority": "medium",
+      "estimated_effort": "0.5d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "testing",
+        "backend",
+        "customer",
+        "medium"
+      ],
+      "dependencies": [
+        "CUS-04"
+      ],
+      "checklist": [
+        "Write CartTest",
+        "CI"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-TEST"
+    },
+    {
+      "key": "DONE-01",
+      "title": "[Done] Customer email/phone OTP auth + Sanctum",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "authentication",
+        "customer",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-02",
+      "title": "[Done] Merchant registration, login, password reset APIs",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "authentication",
+        "merchant",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-03",
+      "title": "[Done] Rider auth/register and document upload APIs",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "authentication",
+        "rider",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-04",
+      "title": "[Done] Admin login + EnsureAdminRole middleware",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "authentication",
+        "admin",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-05",
+      "title": "[Done] Customer onboarding and auth UI",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "authentication",
+        "customer",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-06",
+      "title": "[Done] Merchant and Dispatch onboarding UI",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "authentication",
+        "merchant",
+        "rider",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-07",
+      "title": "[Done] User wallet fund/send/VA/bills APIs",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "wallet",
+        "payments",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-WALLET"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-WALLET"
+    },
+    {
+      "key": "DONE-08",
+      "title": "[Done] Merchant wallet withdraw/send APIs",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "wallet",
+        "merchant",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-WALLET"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-WALLET"
+    },
+    {
+      "key": "DONE-09",
+      "title": "[Done] Orders checkout + Paystack initialize + webhook",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "payments",
+        "customer",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-PAYMENTS"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-PAYMENTS"
+    },
+    {
+      "key": "DONE-10",
+      "title": "[Done] Discovery/search against live merchants/products",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "marketplace",
+        "api",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-MARKET"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MARKET"
+    },
+    {
+      "key": "DONE-11",
+      "title": "[Done] Merchant products/orders/analytics APIs + UI",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "merchant",
+        "feature",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-MERCHANT"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MERCHANT"
+    },
+    {
+      "key": "DONE-12",
+      "title": "[Done] Rider deliveries accept/status/chat + maps home",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "rider",
+        "feature",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-RIDER"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-RIDER"
+    },
+    {
+      "key": "DONE-13",
+      "title": "[Done] Admin dashboard users/merchants/riders/orders live APIs",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "admin",
+        "api",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-ADMIN"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "DONE-14",
+      "title": "[Done] FCM device tokens + SendPushNotificationJob",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "notifications",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-NOTIF"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "DONE-15",
+      "title": "[Done] Android three-flavor Capacitor packaging",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "mobile",
+        "android",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-MOBILE"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "DONE-16",
+      "title": "[Done] Customer wallet/orders/discovery UI wired to API",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "customer",
+        "wallet",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-CUSTOMER"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "DONE-17",
+      "title": "[Done] Resend + Twilio OTP integrations",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "backend",
+        "authentication",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "DONE-18",
+      "title": "[Done] Capacitor biometric app lock",
+      "description": "Completed capability confirmed in source code. Tracked for project progress only \u2014 do not reopen unless regression.",
+      "acceptance_criteria": [
+        "Code present in main/develop",
+        "Covered by existing tests or production usage"
+      ],
+      "priority": "low",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "frontend",
+        "mobile",
+        "authentication",
+        "feature",
+        "low"
+      ],
+      "dependencies": [
+        "EPIC-AUTH"
+      ],
+      "checklist": [
+        "Verified in codebase audit 2026-07-22"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "EPIC-AUTH",
+      "title": "[Epic] Authentication",
+      "description": "Multi-persona auth (customer OTP, merchant password, rider OTP, admin). Source: codebase + ClickUp auth export (~90%). Remaining: admin 2FA strict, OTP rate limits, production strict flags, docs, E2E.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~90%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~90%"
+      ],
+      "column": "Done",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-AUTH"
+    },
+    {
+      "key": "EPIC-CUSTOMER",
+      "title": "[Epic] Customer App",
+      "description": "Discovery, cart, checkout, orders, tracking, profile. Core API-wired; polish mocks, payment methods, crypto deferred.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~85%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~85%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-CUSTOMER"
+    },
+    {
+      "key": "EPIC-MERCHANT",
+      "title": "[Epic] Merchant Portal",
+      "description": "Merchant auth, onboarding, catalog, orders, wallet, analytics. Strong API coverage; UI mock cleanup and QA remaining.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~80%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~80%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MERCHANT"
+    },
+    {
+      "key": "EPIC-RIDER",
+      "title": "[Epic] Delivery Rider",
+      "description": "Rider onboarding, deliveries, maps, earnings. Missing withdraw/payout API + FE wiring and admin live tracking.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~75%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~75%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-RIDER"
+    },
+    {
+      "key": "EPIC-ADMIN",
+      "title": "[Epic] Admin Portal",
+      "description": "Core admin (users/merchants/riders/orders/dashboard) live. Finance/support/disputes/audit/settings/analytics mostly mock UI \u2014 need backend + wiring.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~45%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~45%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ADMIN"
+    },
+    {
+      "key": "EPIC-WALLET",
+      "title": "[Epic] Wallet",
+      "description": "User + merchant wallets via Paystack. Rider earnings read-only. Bills via VTpass. Gaps: rider cash-out, bill tests.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~85%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~85%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-WALLET"
+    },
+    {
+      "key": "EPIC-PAYMENTS",
+      "title": "[Epic] Payments",
+      "description": "Paystack checkout, webhook, VA funding, transfers. Crypto checkout is FE-simulated (Phase 2).",
+      "acceptance_criteria": [
+        "Module completion target tracked (~88%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~88%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-PAYMENTS"
+    },
+    {
+      "key": "EPIC-MARKET",
+      "title": "[Epic] Marketplace & Restaurants",
+      "description": "Live merchants/products discovery & search. Legacy restaurant/menu tables unused. Referrals/promos read-only.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~80%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~80%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MARKET"
+    },
+    {
+      "key": "EPIC-NOTIF",
+      "title": "[Epic] Notifications",
+      "description": "In-app notifications + FCM device tokens + push jobs. Admin notifications UI still mock; realtime Echo env-dependent.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~75%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~75%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-NOTIF"
+    },
+    {
+      "key": "EPIC-MOBILE",
+      "title": "[Epic] Mobile Apps",
+      "description": "Android 3 flavors + iOS persona prep. Remaining: TestFlight, store QA, push on device.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~80%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~80%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-MOBILE"
+    },
+    {
+      "key": "EPIC-COMPLY",
+      "title": "[Epic] Compliance",
+      "description": "OTP strict prod, admin 2FA, KYC review flows, privacy/security docs, audit logging.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~25%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~25%"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-COMPLY"
+    },
+    {
+      "key": "EPIC-DEPLOY",
+      "title": "[Epic] Deployment",
+      "description": "app.fastrapid.com + api.fastrapid.com live. Remaining: CI, monitoring, prod secrets hardening.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~70%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~70%"
+      ],
+      "column": "In Progress",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-DEPLOY"
+    },
+    {
+      "key": "EPIC-ANALYTICS",
+      "title": "[Epic] Analytics",
+      "description": "Client track endpoint exists; admin analytics page is stub; merchant analytics live.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~35%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~35%"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-ANALYTICS"
+    },
+    {
+      "key": "EPIC-TEST",
+      "title": "[Epic] Testing & QA",
+      "description": "~185 backend feature tests; gaps in security/cart/bills/chat/admin orders. Cypress smoke-only for auth.",
+      "acceptance_criteria": [
+        "Module completion target tracked (~55%)",
+        "Child issues linked via dependencies"
+      ],
+      "priority": "high",
+      "estimated_effort": "0d",
+      "repository": "headmaster2hm/rapid-superapp-api",
+      "labels": [
+        "epic",
+        "high"
+      ],
+      "dependencies": [],
+      "checklist": [
+        "Progress ~55%"
+      ],
+      "column": "Todo",
+      "milestone": "MVP Launch",
+      "epic": "EPIC-TEST"
+    }
+  ],
+  "roadmap": {
+    "week_1": {
+      "focus": "Close MVP money + auth hard gaps",
+      "items": [
+        "RID-01",
+        "RID-02",
+        "AUTH-04",
+        "AUTH-02",
+        "AUTH-01",
+        "CUS-06",
+        "CUS-04",
+        "WAL-01",
+        "ADM-18"
+      ]
+    },
+    "week_2": {
+      "focus": "Admin finance visibility + analytics + rider tracking",
+      "items": [
+        "ADM-01",
+        "ADM-02",
+        "ADM-03",
+        "ADM-04",
+        "ADM-13",
+        "ADM-14",
+        "RID-04",
+        "RID-05",
+        "MER-01",
+        "CUS-03",
+        "CUS-05"
+      ]
+    },
+    "week_3": {
+      "focus": "iOS TestFlight + mobile QA + notifications",
+      "items": [
+        "MOB-01",
+        "MOB-02",
+        "MOB-03",
+        "AUTH-07",
+        "AUTH-06",
+        "NOT-01",
+        "NOT-02",
+        "RID-03",
+        "DEP-01",
+        "ANL-01"
+      ]
+    },
+    "week_4": {
+      "focus": "Compliance + production hardening + launch gates",
+      "items": [
+        "AUTH-03",
+        "AUTH-09",
+        "DEP-02",
+        "DEP-03",
+        "ADM-09",
+        "ADM-10",
+        "COM-01",
+        "COM-02",
+        "WAL-02",
+        "PAY-01",
+        "MOB-04"
+      ]
+    }
+  },
+  "progress": {
+    "overall_pct": 69,
+    "frontend_pct": 68,
+    "backend_pct": 80,
+    "mvp_pct": 72,
+    "modules": [
+      {
+        "module": "Authentication",
+        "pct": 90,
+        "repo": "both"
+      },
+      {
+        "module": "Customer App",
+        "pct": 85,
+        "repo": "frontend"
+      },
+      {
+        "module": "Merchant Portal",
+        "pct": 80,
+        "repo": "both"
+      },
+      {
+        "module": "Delivery Rider",
+        "pct": 75,
+        "repo": "both"
+      },
+      {
+        "module": "Admin Portal",
+        "pct": 45,
+        "repo": "both"
+      },
+      {
+        "module": "Wallet",
+        "pct": 85,
+        "repo": "both"
+      },
+      {
+        "module": "Payments",
+        "pct": 88,
+        "repo": "backend"
+      },
+      {
+        "module": "Marketplace",
+        "pct": 80,
+        "repo": "both"
+      },
+      {
+        "module": "Notifications",
+        "pct": 75,
+        "repo": "both"
+      },
+      {
+        "module": "Mobile Apps",
+        "pct": 80,
+        "repo": "frontend"
+      },
+      {
+        "module": "Compliance",
+        "pct": 25,
+        "repo": "both"
+      },
+      {
+        "module": "Deployment",
+        "pct": 70,
+        "repo": "both"
+      },
+      {
+        "module": "Analytics",
+        "pct": 35,
+        "repo": "both"
+      },
+      {
+        "module": "Testing & QA",
+        "pct": 55,
+        "repo": "both"
+      }
+    ],
+    "issues_by_column": {
+      "In Progress": 12,
+      "Todo": 49,
+      "Backlog": 2,
+      "Phase 2": 11,
+      "Done": 19
+    },
+    "open_issues": 74,
+    "closed_or_done_issues": 19,
+    "total_issues": 93,
+    "total_epics": 14
+  },
+  "missing_features": [
+    "Rider wallet withdraw (BE+FE)",
+    "Admin transactions/payouts APIs + FE wiring",
+    "Admin disputes/support/audit/notifications/settings APIs",
+    "Admin platform analytics (stub page)",
+    "Admin live rider tracking",
+    "Admin real 2FA + password reset APIs",
+    "Saved payment methods",
+    "Real crypto checkout (Phase 2)",
+    "Referral reward pipeline (Phase 2)",
+    "Production OTP strict flags",
+    "OTP rate limiting",
+    "Audit log write path",
+    "CI workflows",
+    "iOS TestFlight for 3 personas"
+  ],
+  "risks": [
+    {
+      "risk": "Admin finance UIs look complete but are mock-only \u2014 ops decisions on fake data",
+      "severity": "critical"
+    },
+    {
+      "risk": "Rider cannot cash out earnings \u2014 blocks rider adoption",
+      "severity": "critical"
+    },
+    {
+      "risk": "OTP strict mode off in prod defaults \u2014 auth bypass risk",
+      "severity": "critical"
+    },
+    {
+      "risk": "Admin 2FA stub accepts any code when not strict",
+      "severity": "high"
+    },
+    {
+      "risk": "No CI \u2014 regressions can ship unnoticed",
+      "severity": "high"
+    },
+    {
+      "risk": "iOS not yet on TestFlight \u2014 Apple launch path unknown",
+      "severity": "high"
+    },
+    {
+      "risk": "Crypto checkout simulated \u2014 legal/financial risk if left enabled",
+      "severity": "high"
+    },
+    {
+      "risk": "Cart lacks server-side price validation \u2014 payment integrity risk",
+      "severity": "medium"
+    }
+  ],
+  "priorities_suggested": [
+    "P0: Rider withdraw API+UI, OTP strict+rate limit, disable crypto sim, admin 2FA",
+    "P1: Admin transactions/payouts/analytics APIs+wiring, cart validation, CI",
+    "P2: iOS TestFlight + mobile QA + FCM verification",
+    "P3: Compliance audit log, privacy pages, monitoring",
+    "Phase 2: Disputes, support, settings, referrals, saved cards, crypto"
+  ]
+}

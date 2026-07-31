@@ -85,5 +85,8 @@ export default function UserDetail() {
     )
   }
 
-  return <AdminUserDetailPage user={user} />
+  return <AdminUserDetailPage user={user} onStatusUpdated={async () => {
+    const payload = await fetchAdminUserDetail(userId)
+    setUser(mapAdminUserDetailFromApi(payload))
+  }} />
 }

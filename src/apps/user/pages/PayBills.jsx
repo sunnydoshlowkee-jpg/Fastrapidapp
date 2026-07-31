@@ -10,7 +10,10 @@ import {
   getCablePlans,
   verifySmartcard,
   purchaseCable,
+  getWalletData,
 } from '../../../services/walletService'
+import { useAuth } from '../../../context/AuthContext'
+import SecurityAuthPanel from '../../../components/security/SecurityAuthPanel'
 
 const providers = [
   { id: 'mtn', name: 'MTN', color: 'bg-yellow-400', textColor: 'text-yellow-900' },
@@ -40,6 +43,10 @@ const VALID_TABS = ['airtime', 'data', 'electricity', 'cable']
 
 export default function PayBills() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const transactionMethod = user?.security?.transaction_method === 'biometric'
+    ? 'email'
+    : (user?.security?.transaction_method || 'pin')
   const [searchParams] = useSearchParams()
   const typeParam = searchParams.get('type')
   const initialTab = VALID_TABS.includes(typeParam) ? typeParam : 'airtime'
@@ -49,6 +56,7 @@ export default function PayBills() {
   const [amount, setAmount] = useState('500')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showAuth, setShowAuth] = useState(false)
   const [dataPlans, setDataPlans] = useState([])
   const [selectedPlanId, setSelectedPlanId] = useState('')
   const [showPlanDropdown, setShowPlanDropdown] = useState(false)
@@ -67,6 +75,18 @@ export default function PayBills() {
   const [selectedCablePlanId, setSelectedCablePlanId] = useState('')
   const [showCablePlanDropdown, setShowCablePlanDropdown] = useState(false)
   const [customerName, setCustomerName] = useState('')
+  const [successResult, setSuccessResult] = useState(null)
+  const [billsEnabled, setBillsEnabled] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    getWalletData()
+      .then(({ data }) => {
+        if (!cancelled) setBillsEnabled(data?.data?.bills_enabled !== false)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     if (tab === 'data') {
@@ -168,7 +188,6 @@ export default function PayBills() {
   const handlePay = async () => {
     setError('')
 
-    setLoading(true)
     try {
       if (tab === 'electricity') {
         if (!meterName) {
@@ -181,13 +200,6 @@ export default function PayBills() {
         if (!phone.trim()) {
           throw new Error('Enter a contact phone number.')
         }
-        await purchaseElectricity({
-          serviceId: elecProvider,
-          meterNumber: meterNumber.trim(),
-          type: meterType,
-          amount: parsedAmount,
-          phone: phone.trim()
-        })
       } else if (tab === 'cable') {
         if (!customerName) {
           throw new Error('Please verify your smartcard number first.')
@@ -198,36 +210,74 @@ export default function PayBills() {
         if (!Number.isFinite(parsedAmount) || parsedAmount < 1) {
           throw new Error('Enter a valid amount.')
         }
-        await purchaseCable({
-          service: cableProvider,
-          smartcardNumber: smartcardNumber.trim(),
-          planId: selectedCablePlanId,
-          phone: phone.trim(),
-          amount: parsedAmount,
-        })
       } else if (tab === 'data') {
         if (!phone.trim()) throw new Error('Enter a recipient phone number.')
         if (!selectedPlanId) throw new Error('Select a data plan.')
-        await purchaseData({
-          network: provider,
-          phone: phone.trim(),
-          planId: selectedPlanId,
-        })
       } else {
         if (!phone.trim()) throw new Error('Enter a recipient phone number.')
         const parsedAmount = Number.parseFloat(amount)
         if (!Number.isFinite(parsedAmount) || parsedAmount < 50) {
           throw new Error('Minimum airtime amount is ₦50.')
         }
-        await purchaseAirtime({
+      }
+      setShowAuth(true)
+    } catch (err) {
+      setError(err?.message || 'Could not continue.')
+    }
+  }
+
+  const completePurchase = async (authPayload = {}) => {
+    setError('')
+    setLoading(true)
+    try {
+      let result
+      if (tab === 'electricity') {
+        result = await purchaseElectricity({
+          serviceId: elecProvider,
+          meterNumber: meterNumber.trim(),
+          type: meterType,
+          amount: Number.parseFloat(amount),
+          phone: phone.trim(),
+          pin: authPayload.pin,
+          auth_code: authPayload.auth_code,
+        })
+      } else if (tab === 'cable') {
+        result = await purchaseCable({
+          service: cableProvider,
+          smartcardNumber: smartcardNumber.trim(),
+          planId: selectedCablePlanId,
+          phone: phone.trim(),
+          amount: Number.parseFloat(amount),
+          pin: authPayload.pin,
+          auth_code: authPayload.auth_code,
+        })
+      } else if (tab === 'data') {
+        result = await purchaseData({
           network: provider,
           phone: phone.trim(),
-          amount: parsedAmount,
+          planId: selectedPlanId,
+          amount: Number.parseFloat(amount) || undefined,
+          pin: authPayload.pin,
+          auth_code: authPayload.auth_code,
+        })
+      } else {
+        result = await purchaseAirtime({
+          network: provider,
+          phone: phone.trim(),
+          amount: Number.parseFloat(amount),
+          pin: authPayload.pin,
+          auth_code: authPayload.auth_code,
         })
       }
-      navigate('/app/wallet')
+      setShowAuth(false)
+      setSuccessResult({
+        tab,
+        token: result?.data?.token || result?.token || null,
+        message: result?.message || 'Purchase successful',
+      })
     } catch (err) {
       setError(err?.message || 'Could not complete purchase.')
+      throw err
     } finally {
       setLoading(false)
     }
@@ -245,8 +295,80 @@ export default function PayBills() {
 
   const payDisabled =
     loading ||
+    !billsEnabled ||
     (tab === 'electricity' && !meterName) ||
     (tab === 'cable' && !customerName)
+
+  if (successResult) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
+        <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial px-5 md:px-8 pt-app md:pt-10 pb-10">
+          <div className="flex flex-col items-center text-center pt-10">
+            <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-5">
+              <CheckCircle2 size={32} />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Payment successful</h1>
+            <p className="text-[14px] text-gray-500 mb-6">{successResult.message}</p>
+            {successResult.token ? (
+              <div className="w-full bg-[#F8FAFC] border border-gray-100 rounded-2xl p-5 mb-6">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Electricity token</p>
+                <p className="text-[20px] font-bold text-gray-900 tracking-wide break-all mb-4">{successResult.token}</p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(String(successResult.token))
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  className="w-full border border-gray-200 rounded-xl py-3 font-bold text-[14px] text-gray-800 hover:bg-white"
+                >
+                  Copy token
+                </button>
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => navigate('/app/wallet')}
+              className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold text-[15px]"
+            >
+              Back to wallet
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (showAuth) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
+        <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
+          <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+            <button
+              type="button"
+              onClick={() => { setShowAuth(false); setError('') }}
+              className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-[17px] md:text-[20px] font-bold text-gray-900">Authorize Payment</h1>
+          </div>
+          <SecurityAuthPanel
+            purpose="transaction"
+            method={transactionMethod}
+            title="Authorize Payment"
+            subtitle={`Confirm ₦${Number.parseFloat(amount || '0').toLocaleString()} bill payment`}
+            hasExistingPin
+            onCancel={() => { setShowAuth(false); setError('') }}
+            onVerified={completePurchase}
+          />
+          {error ? <p className="px-5 pb-6 text-sm text-red-600 text-center">{error}</p> : null}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
@@ -254,7 +376,7 @@ export default function PayBills() {
       <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
         
         {/* Header */}
-        <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center justify-between bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+        <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center justify-between bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center">
               <ArrowLeft size={20} />
@@ -267,6 +389,11 @@ export default function PayBills() {
         </div>
 
         <div className="px-5 md:px-8 w-full flex-1 flex flex-col pt-2 md:pt-6 md:pb-8">
+          {!billsEnabled ? (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+              Bill payments are temporarily unavailable. VTpass credentials are not configured on the server yet.
+            </div>
+          ) : null}
           
           {/* Tab Switcher */}
           <div className="flex bg-[#F0F0F5] p-1 rounded-xl mb-6 md:mb-8 overflow-x-auto scrollbar-hide">

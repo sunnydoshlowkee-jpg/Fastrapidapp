@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core'
+import { getDevicePosition } from './nativeLocation'
+
 /** Default center: Lagos */
 export const DEFAULT_LOCATION = {
   latitude: 6.5244,
@@ -40,22 +43,18 @@ export function storeLocation(location) {
   localStorage.setItem('rapid_location', JSON.stringify(location))
 }
 
-export function requestDevicePosition() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported on this device.'))
-      return
-    }
+/**
+ * Live device position. Uses Capacitor Geolocation on native APKs.
+ */
+export async function requestDevicePosition() {
+  const position = await getDevicePosition()
+  return {
+    latitude: position.lat ?? position.latitude,
+    longitude: position.lng ?? position.longitude,
+    accuracy: position.accuracy,
+  }
+}
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        })
-      },
-      (error) => reject(error),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 },
-    )
-  })
+export function isNativeLocationRequired() {
+  return Capacitor.isNativePlatform()
 }

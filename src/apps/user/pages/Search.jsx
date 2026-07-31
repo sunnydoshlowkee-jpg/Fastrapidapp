@@ -12,6 +12,7 @@ import {
   removeRecentSearch,
 } from '../../../utils/recentSearches'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const SEARCH_SUGGESTIONS_TTL_MS = 10 * 60 * 1000
 const SEARCH_RESULTS_TTL_MS = 2 * 60 * 1000
@@ -139,7 +140,7 @@ export default function Search() {
 
       <div className="md:hidden flex flex-col h-full">
         {/* Search Header */}
-        <div className="px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+        <div className="px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
           <div className={`relative flex items-center w-full rounded-xl transition-all ${
             isSearching ? 'bg-gray-100' : 'bg-[#FAFAFA] border-2 border-[#4F46E5] shadow-sm'
           }`}>
@@ -195,7 +196,7 @@ export default function Search() {
                 <h3 className="text-[13px] font-bold text-gray-900 mb-4">Popular on RAPID</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {suggestionsLoading ? (
-                    <p className="text-[12px] text-gray-400">Loading suggestions…</p>
+                    <BrandedLoader size="sm" />
                   ) : popularTags.length === 0 ? (
                     <p className="text-[12px] text-gray-400">Search for food, groceries, and more.</p>
                   ) : popularTags.map((tag) => (
@@ -434,7 +435,7 @@ export default function Search() {
                 <h2 className="text-[20px] font-bold text-gray-900 mb-6">Popular on RAPID</h2>
                 <div className="flex flex-wrap gap-3">
                   {suggestionsLoading ? (
-                    <p className="text-[13px] text-gray-400">Loading suggestions…</p>
+                    <BrandedLoader size="sm" />
                   ) : popularTags.length === 0 ? (
                     <p className="text-[13px] text-gray-400">Search for food, groceries, and more.</p>
                   ) : popularTags.map((tag) => (

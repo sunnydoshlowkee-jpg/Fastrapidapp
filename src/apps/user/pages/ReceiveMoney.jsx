@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Building2, Copy } from 'lucide-react'
-import { getWalletData } from '../../../services/walletService'
+import { getWalletData, provisionVirtualAccount } from '../../../services/walletService'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function ReceiveMoney() {
   const navigate = useNavigate()
   const [wallet, setWallet] = useState(null)
   const [loading, setLoading] = useState(true)
   const [copyMessage, setCopyMessage] = useState('')
+  const [vaRetrying, setVaRetrying] = useState(false)
 
   const loadWallet = async () => {
     try {
@@ -17,6 +19,20 @@ export default function ReceiveMoney() {
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const retryVirtualAccount = async () => {
+    try {
+      setVaRetrying(true)
+      const data = await provisionVirtualAccount()
+      setWallet(data?.data || data)
+      setCopyMessage('Transfer account ready')
+      window.setTimeout(() => setCopyMessage(''), 2000)
+    } catch (err) {
+      setCopyMessage(err?.message || 'Could not retry account setup.')
+    } finally {
+      setVaRetrying(false)
     }
   }
 
@@ -45,7 +61,7 @@ export default function ReceiveMoney() {
       
       <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
         
-        <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+        <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center">
             <ArrowLeft size={20} />
           </button>
@@ -67,7 +83,7 @@ export default function ReceiveMoney() {
             </div>
 
             {loading ? (
-              <p className="text-sm text-gray-500">Loading account details…</p>
+              <BrandedLoader size="sm" />
             ) : virtualAccount?.account_number ? (
               <div className="bg-white md:bg-gray-50 rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col gap-4 hover:shadow-md transition-shadow">
                 <div>
@@ -95,7 +111,17 @@ export default function ReceiveMoney() {
                 </div>
               </div>
             ) : virtualAccount?.status === 'failed' ? (
-              <p className="text-sm text-red-600">{virtualAccount.error || 'Could not set up your transfer account.'}</p>
+              <div className="bg-white md:bg-gray-50 rounded-2xl p-5 border border-red-100 shadow-sm">
+                <p className="text-sm text-red-600 mb-4">{virtualAccount.error || 'Could not set up your transfer account.'}</p>
+                <button
+                  type="button"
+                  disabled={vaRetrying}
+                  onClick={retryVirtualAccount}
+                  className="w-full bg-[#4F46E5] text-white py-3 rounded-xl font-bold text-[14px] disabled:opacity-60"
+                >
+                  {vaRetrying ? 'Retrying…' : 'Retry setup'}
+                </button>
+              </div>
             ) : (
               <p className="text-sm text-gray-500">Your bank transfer account is being set up. This usually takes a moment.</p>
             )}

@@ -2,35 +2,46 @@ import api from './api'
 import { setMerchantSignupEmail } from './merchantRegistrationService'
 import { getApiFieldError } from '../utils/apiErrors'
 import { clearPushTokenOnLogout, syncPushTokenAfterLogin } from './pushNotifications'
+import {
+  MERCHANT_ACCOUNTS_KEY,
+  MERCHANT_TOKEN_KEY,
+  MERCHANT_USER_KEY,
+  activateNextMerchantAccount,
+  clearActiveMerchantSessionKeys,
+  clearAllMerchantAccounts,
+  clearMerchantSession,
+  ensureMerchantAccountsHydrated,
+  getMerchantAccountLabel,
+  getStoredMerchantSession,
+  listMerchantAccounts,
+  merchantAccountRedirectPath,
+  removeMerchantAccount,
+  storeMerchantSession,
+  switchMerchantAccount as activateStoredMerchantAccount,
+} from './merchantAccountStore'
+
+export {
+  MERCHANT_ACCOUNTS_KEY,
+  MERCHANT_TOKEN_KEY,
+  MERCHANT_USER_KEY,
+  clearMerchantSession,
+  getMerchantAccountLabel,
+  getStoredMerchantSession,
+  listMerchantAccounts,
+  merchantAccountRedirectPath,
+  storeMerchantSession,
+}
 
 const MERCHANT_RESET_EMAIL_KEY = 'rapid_merchant_reset_email'
 
-export const MERCHANT_TOKEN_KEY = 'rapid_merchant_token'
-export const MERCHANT_USER_KEY = 'rapid_merchant_user'
-
-export function getStoredMerchantSession() {
-  const token = localStorage.getItem(MERCHANT_TOKEN_KEY)
-  const userJson = localStorage.getItem(MERCHANT_USER_KEY)
-  if (!token || !userJson) return null
+export async function merchantLogin({ email, password, rememberMe = false, addAccount = false }) {
   try {
-    return { token, user: JSON.parse(userJson) }
-  } catch {
-    return null
-  }
-}
+    // Preserve other accounts when adding; normal login still keeps the list
+    // and upserts the new/active account (re-login of the same email updates it).
+    if (!addAccount) {
+      ensureMerchantAccountsHydrated()
+    }
 
-export function clearMerchantSession() {
-  localStorage.removeItem(MERCHANT_TOKEN_KEY)
-  localStorage.removeItem(MERCHANT_USER_KEY)
-}
-
-function storeMerchantSession({ token, user }) {
-  localStorage.setItem(MERCHANT_TOKEN_KEY, token)
-  localStorage.setItem(MERCHANT_USER_KEY, JSON.stringify(user))
-}
-
-export async function merchantLogin({ email, password, rememberMe = false }) {
-  try {
     const { data } = await api.post('/merchant/login', {
       email: email.trim(),
       password,
@@ -42,6 +53,7 @@ export async function merchantLogin({ email, password, rememberMe = false }) {
       onboarding: data?.data?.onboarding ?? data?.data?.user?.onboarding ?? null,
       redirectPath: data?.data?.redirect_path ?? data?.data?.onboarding?.redirect_path ?? '/merchant',
       rememberMe,
+      addAccount,
     }
 
     if (!session.token || !session.user) {
@@ -57,8 +69,8 @@ export async function merchantLogin({ email, password, rememberMe = false }) {
     const payload = err.response?.data?.data
 
     if (payload?.requires_email_verification) {
-      const email = payload.email || email.trim()
-      setMerchantSignupEmail(email)
+      const verifiedEmail = payload.email || email.trim()
+      setMerchantSignupEmail(verifiedEmail)
 
       const verificationError = new Error(
         payload.message || 'Please verify your email to continue.',
@@ -85,19 +97,92 @@ export async function merchantLogin({ email, password, rememberMe = false }) {
 
 export async function merchantGetMe() {
   const { data } = await api.get('/merchant/me')
-  return data?.data?.user
+  const user = data?.data?.user
+  if (user) {
+    const token = localStorage.getItem(MERCHANT_TOKEN_KEY)
+    if (token) {
+      storeMerchantSession({ token, user })
+    }
+  }
+  return user
 }
 
-export async function merchantLogout() {
+/**
+ * Sign out the active merchant.
+ * When other accounts remain and `switchToRemaining` is true, activates the next one.
+ * @returns {{ switchedTo: { token: string, user: object } | null }}
+ */
+export async function merchantLogout({ switchToRemaining = true } = {}) {
   await clearPushTokenOnLogout()
+
+  const session = getStoredMerchantSession()
+
   try {
     await api.post('/merchant/logout')
   } catch {
     // Clear local session even if the API call fails.
-  } finally {
-    clearMerchantSession()
+  }
+
+  if (session?.user?.id != null) {
+    removeMerchantAccount(session.user.id)
+  }
+
+  clearActiveMerchantSessionKeys()
+
+  let switchedTo = null
+  if (switchToRemaining) {
+    switchedTo = activateNextMerchantAccount()
+    if (switchedTo) {
+      window.dispatchEvent(new Event('rapid-auth-changed'))
+      syncPushTokenAfterLogin()
+    }
+  }
+
+  if (!switchedTo) {
     window.dispatchEvent(new Event('rapid-auth-changed'))
   }
+
+  return { switchedTo }
+}
+
+/** Sign out every stored merchant account (revokes the active token only). */
+export async function merchantLogoutAll() {
+  await clearPushTokenOnLogout()
+  try {
+    await api.post('/merchant/logout')
+  } catch {
+    // ignore
+  } finally {
+    clearAllMerchantAccounts()
+    window.dispatchEvent(new Event('rapid-auth-changed'))
+  }
+  return { switchedTo: null }
+}
+
+/**
+ * Switch to another signed-in merchant without logging them out.
+ * Reloads the app so dashboard state remounts cleanly.
+ */
+export function switchMerchantAccount(userId, { reload = true } = {}) {
+  const active = getStoredMerchantSession()
+  if (active?.user?.id != null && String(active.user.id) === String(userId)) {
+    return active
+  }
+
+  const next = activateStoredMerchantAccount(userId)
+  if (!next) {
+    throw new Error('That merchant account is not signed in on this device.')
+  }
+
+  window.dispatchEvent(new Event('rapid-auth-changed'))
+  syncPushTokenAfterLogin()
+
+  if (reload) {
+    const path = merchantAccountRedirectPath(next.user)
+    window.location.assign(path)
+  }
+
+  return next
 }
 
 function storeResetEmail(email) {

@@ -6,7 +6,7 @@ export default function RiderWelcome() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-12 pb-10">
+    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-app pb-10">
 
       {/* Logo icon */}
       <div className="flex justify-center mb-6">

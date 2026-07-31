@@ -5,18 +5,17 @@ import MerchantStatCard from './MerchantStatCard'
 import MerchantLiveOrdersPanel from './MerchantLiveOrdersPanel'
 import MerchantStockAlertsPanel from './MerchantStockAlertsPanel'
 import { resolveMerchantOrderApiId } from '../../../services/merchantOrdersService'
-import { MERCHANT_DASHBOARD_ACTIVE } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardActiveDesktop({
   merchantId,
   stats,
   liveOrders: initialLiveOrders,
+  stockAlerts,
   onOrderAction,
 }) {
   const navigate = useNavigate()
   const { openMobileNav } = useOutletContext()
   const [liveOrders, setLiveOrders] = useState(initialLiveOrders)
-  const stockAlerts = MERCHANT_DASHBOARD_ACTIVE.stockAlerts
 
   useEffect(() => {
     setLiveOrders(initialLiveOrders)
@@ -81,7 +80,10 @@ export default function MerchantDashboardActiveDesktop({
           />
         </div>
         <div className="xl:col-span-1">
-          <MerchantStockAlertsPanel stockAlerts={stockAlerts} />
+          <MerchantStockAlertsPanel
+            stockAlerts={stockAlerts}
+            onRestock={() => navigate('/merchant/menu')}
+          />
         </div>
       </div>
     </div>

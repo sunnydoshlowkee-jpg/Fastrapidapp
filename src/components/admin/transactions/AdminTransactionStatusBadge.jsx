@@ -14,6 +14,7 @@ const icons = {
 
 export default function AdminTransactionStatusBadge({ status, label }) {
   const Icon = icons[status] ?? Clock
+  const text = label || (status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending')
 
   return (
     <span
@@ -22,7 +23,7 @@ export default function AdminTransactionStatusBadge({ status, label }) {
       }`}
     >
       <Icon size={12} strokeWidth={2.5} aria-hidden />
-      {label}
+      {text}
     </span>
   )
 }

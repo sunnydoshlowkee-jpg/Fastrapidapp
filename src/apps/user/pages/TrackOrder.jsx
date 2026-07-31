@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Clock, Check, Phone, MessageSquare, Star, Plus, Minus, Crosshair, MapPin, ShoppingCart } from 'lucide-react'
-import { getOrder } from '../../../services/orderService'
+import { getOrder, cancelOrder } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
-import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
-
-const mapContainerStyleMobile = { width: '100%', height: '100%' }
-const mapContainerStyleDesktop = { width: '100%', height: '100%' }
+import GoogleMapView from '../../../components/maps/GoogleMapView'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 // Default positions for demo if real coordinates are missing
 const DEFAULT_HOME = { lat: 6.5400, lng: 3.3900 }
@@ -28,10 +26,10 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 export default function TrackOrder() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { cartItems } = useCart()
-  const [view, setView] = useState('tracking') // 'tracking' | 'rating'
+  const { items: cartItems } = useCart()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [prevStatusIndex, setPrevStatusIndex] = useState(-1)
 
@@ -44,14 +42,38 @@ export default function TrackOrder() {
     ? { lat: Number(order.delivery.destination_lat), lng: Number(order.delivery.destination_lng) }
     : DEFAULT_HOME
 
-  const riderLocation = order?.delivery?.rider_id
-    ? { lat: Number(order.delivery.pickup_lat) + 0.005, lng: Number(order.delivery.pickup_lng) + 0.005 } // Mock intermediate
-    : null
+  const liveRider = order?.delivery?.rider?.latest_location
+  const riderLocation = liveRider?.latitude != null && liveRider?.longitude != null
+    ? { lat: Number(liveRider.latitude), lng: Number(liveRider.longitude) }
+    : (order?.delivery?.rider_id && order?.delivery?.pickup_lat != null
+      ? { lat: Number(order.delivery.pickup_lat), lng: Number(order.delivery.pickup_lng) }
+      : null)
 
   const targetLocation = order?.delivery?.status === 'accepted' || order?.delivery?.status === 'en-route-pickup' ? vendorLocation : homeLocation
   const currentRiderPos = riderLocation || vendorLocation
   const distKm = getDistanceFromLatLonInKm(currentRiderPos.lat, currentRiderPos.lng, targetLocation.lat, targetLocation.lng)
   const estMins = distKm > 0 ? Math.max(1, Math.round(distKm * 4)) : '--'
+
+  const canCancel = order?.status === 'pending'
+    && (!order?.delivery || (order.delivery.status === 'pending' && !order.delivery.rider_id))
+    && order?.status !== 'cancelled'
+
+  const handleCancelOrder = async () => {
+    if (!canCancel || cancelling) return
+    if (!window.confirm('Cancel this order? Paid amounts will be refunded to your wallet.')) return
+
+    try {
+      setCancelling(true)
+      const { data } = await cancelOrder(id)
+      setOrder(data.data)
+      setToastMessage('Order cancelled. Refund credited to your wallet if payment was made.')
+      setTimeout(() => setToastMessage(''), 5000)
+    } catch (err) {
+      alert(err?.response?.data?.message || err?.message || 'Could not cancel order.')
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   useEffect(() => {
     const fetchOrder = async (isBackground = false) => {
@@ -141,7 +163,7 @@ export default function TrackOrder() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Loading tracking information...</p>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -154,6 +176,14 @@ export default function TrackOrder() {
       </div>
     )
   }
+
+  const mapCenter = riderLocation || vendorLocation
+  const mapMarkers = [
+    { ...vendorLocation, title: 'Vendor' },
+    { ...homeLocation, title: 'Delivery' },
+    ...(riderLocation ? [{ ...riderLocation, title: 'Rider' }] : []),
+  ]
+  const mapPath = [vendorLocation, homeLocation]
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-0 relative">
@@ -172,7 +202,7 @@ export default function TrackOrder() {
       {/*                                 MOBILE LAYOUT                                      */}
       {/* -------------------------------------------------------------------------------- */}
       
-      <div className="md:hidden flex items-center gap-3 px-5 pt-12 pb-3 bg-[#FAFAFA] sticky top-0 z-30 border-b border-gray-100">
+      <div className="md:hidden flex items-center gap-3 px-5 pt-app pb-3 bg-[#FAFAFA] sticky top-0 z-30 border-b border-gray-100">
         <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white md:border md:border-gray-200 md:rounded-full hover:bg-gray-50 transition-colors shadow-sm md:w-10 md:h-10 md:flex md:items-center md:justify-center">
           <ArrowLeft size={20} />
         </button>
@@ -180,25 +210,18 @@ export default function TrackOrder() {
       </div>
 
       <div className="md:hidden flex-1 w-full max-w-md mx-auto flex flex-col pt-2">
-        {view === 'tracking' ? (
           <>
             {/* Mobile Map Area */}
             <div className="relative w-full h-[200px] bg-[#E8EAE6] overflow-hidden">
-              <MapContainer 
-                center={riderLocation ? [riderLocation.lat, riderLocation.lng] : [vendorLocation.lat, vendorLocation.lng]} 
-                zoom={13} 
-                zoomControl={false}
-                style={mapContainerStyleMobile}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                <Marker position={[vendorLocation.lat, vendorLocation.lng]} />
-                <Marker position={[homeLocation.lat, homeLocation.lng]} />
-                {riderLocation && <Marker position={[riderLocation.lat, riderLocation.lng]} />}
-                <Polyline positions={[[vendorLocation.lat, vendorLocation.lng], [homeLocation.lat, homeLocation.lng]]} pathOptions={{ color: '#4F46E5', weight: 3, opacity: 0.8, dashArray: '6, 6' }} />
-              </MapContainer>
+              <GoogleMapView
+                center={mapCenter}
+                zoom={13}
+                height="100%"
+                className="absolute inset-0"
+                markers={mapMarkers}
+                path={mapPath}
+                showRecenter
+              />
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-white px-5 py-2.5 rounded-full shadow-md border border-gray-100 flex items-center gap-2 z-[1000] w-max">
                 <Clock size={16} className="text-[#4F46E5]" />
                 <span className="font-bold text-gray-900 text-[13px]">Arriving in {estMins} mins</span>
@@ -285,17 +308,22 @@ export default function TrackOrder() {
             </div>
 
             <div className="px-5 text-center pb-8">
-              <p className="text-[12px] text-gray-400 italic mb-2">Order is in preparation. Cancellation unavailable.</p>
-              <button className="text-[13px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-700 transition-colors">
-                Cancel Order
-              </button>
+              {order?.status === 'cancelled' ? (
+                <p className="text-[13px] font-bold text-red-500 uppercase tracking-wider">Order cancelled</p>
+              ) : canCancel ? (
+                <button
+                  type="button"
+                  disabled={cancelling}
+                  onClick={handleCancelOrder}
+                  className="text-[13px] font-bold text-red-500 uppercase tracking-wider hover:text-red-700 transition-colors disabled:opacity-60"
+                >
+                  {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              ) : (
+                <p className="text-[12px] text-gray-400 italic">Cancellation unavailable once preparation or delivery starts.</p>
+              )}
             </div>
           </>
-        ) : (
-          <div className="flex-1 w-full max-w-md mx-auto px-5 pt-6 flex flex-col pb-10">
-             <p className="text-center">Rating view</p>
-          </div>
-        )}
       </div>
 
       {/* -------------------------------------------------------------------------------- */}
@@ -327,24 +355,21 @@ export default function TrackOrder() {
         
         {/* Left Full Map Area */}
         <div className="flex-1 relative h-[calc(100vh-100px)]">
-          <MapContainer 
-            center={riderLocation ? [riderLocation.lat, riderLocation.lng] : [(vendorLocation.lat + homeLocation.lat)/2, (vendorLocation.lng + homeLocation.lng)/2]} 
-            zoom={14} 
-            zoomControl={false}
-            style={mapContainerStyleDesktop}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <Marker position={[vendorLocation.lat, vendorLocation.lng]} />
-            <Marker position={[homeLocation.lat, homeLocation.lng]} />
-            {riderLocation && <Marker position={[riderLocation.lat, riderLocation.lng]} />}
-            <Polyline positions={[[vendorLocation.lat, vendorLocation.lng], [homeLocation.lat, homeLocation.lng]]} pathOptions={{ color: '#2D2AEE', weight: 3, opacity: 0.8 }} />
-          </MapContainer>
+          <GoogleMapView
+            center={riderLocation || {
+              lat: (vendorLocation.lat + homeLocation.lat) / 2,
+              lng: (vendorLocation.lng + homeLocation.lng) / 2,
+            }}
+            zoom={14}
+            height="100%"
+            className="absolute inset-0"
+            markers={mapMarkers}
+            path={mapPath}
+            showRecenter
+          />
 
           {/* Zoom Controls */}
-          <div className="absolute bottom-10 left-10 flex flex-col gap-3">
+          <div className="absolute bottom-10 left-10 flex flex-col gap-3 z-10">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
               <button className="w-12 h-12 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:text-[#2D2AEE] transition-colors border-b border-gray-100">
                 <Plus size={20} strokeWidth={2.5} />
@@ -477,6 +502,19 @@ export default function TrackOrder() {
               View Receipt
             </button>
           </div>
+
+          {order?.status === 'cancelled' ? (
+            <p className="mt-4 text-center text-[13px] font-bold text-red-500 uppercase tracking-wider">Order cancelled</p>
+          ) : canCancel ? (
+            <button
+              type="button"
+              disabled={cancelling}
+              onClick={handleCancelOrder}
+              className="mt-4 w-full text-[13px] font-bold text-red-500 uppercase tracking-wider hover:text-red-700 transition-colors disabled:opacity-60"
+            >
+              {cancelling ? 'Cancelling...' : 'Cancel Order'}
+            </button>
+          ) : null}
 
         </div>
 

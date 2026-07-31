@@ -114,7 +114,11 @@ export default function Location() {
           </button>
 
           <p className="text-center text-[12px] md:text-[13px] text-[#9CA3AF] px-4 md:px-0">
-            By continuing, you agree to our <span className="text-[#6B7280] underline decoration-gray-300 cursor-pointer hover:text-[#111827]">Terms of Service</span> and <span className="text-[#6B7280] underline decoration-gray-300 cursor-pointer hover:text-[#111827]">Privacy Policy</span>.
+            By continuing, you agree to our{' '}
+            <a href="/legal/terms.html" target="_blank" rel="noopener noreferrer" className="text-[#6B7280] underline decoration-gray-300 cursor-pointer hover:text-[#111827]">Terms of Service</a>
+            {' '}and{' '}
+            <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="text-[#6B7280] underline decoration-gray-300 cursor-pointer hover:text-[#111827]">Privacy Policy</a>
+            .
           </p>
         </div>
 

@@ -49,18 +49,9 @@ describe('User App - Wallet & Payment Features', () => {
     cy.contains('Processing').should('exist')
   })
 
-  it('Tests the CryptoCheckout flow', () => {
-    // Add an item to cart first so total > 0
-    cy.visit('/app/item/1')
-    cy.contains('Add to Cart').click()
-    
-    // Now visit crypto
+  it('Redirects simulated crypto checkout to normal checkout', () => {
     cy.visit('/app/payment/crypto')
-    cy.contains('Crypto Checkout').should('exist')
-    cy.contains('BTC Wallet Address').should('exist')
-    cy.contains('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh').should('exist')
-    
-    // Check initial status
-    cy.contains('Awaiting Payment').should('exist')
+    cy.url().should('include', '/app/checkout')
+    cy.contains('Crypto Checkout').should('not.exist')
   })
 })

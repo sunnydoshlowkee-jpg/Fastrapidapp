@@ -1,6 +1,11 @@
 import { AlertTriangle, Power } from 'lucide-react'
 
-export default function MerchantOperatingHoursMobileEmergency({ emergency }) {
+export default function MerchantOperatingHoursMobileEmergency({
+  emergency,
+  onClose,
+  loading = false,
+  storePaused = false,
+}) {
   return (
     <section>
       <h2 className="text-base font-bold text-merchant-ink">{emergency.sectionTitle}</h2>
@@ -15,10 +20,12 @@ export default function MerchantOperatingHoursMobileEmergency({ emergency }) {
 
         <button
           type="button"
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#991B1B] px-4 py-3 text-sm font-semibold text-white"
+          onClick={onClose}
+          disabled={loading || storePaused}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#991B1B] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Power size={18} strokeWidth={2} aria-hidden />
-          {emergency.buttonLabel}
+          {storePaused ? 'Store already paused' : loading ? 'Closing…' : emergency.buttonLabel}
         </button>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import MerchantAccountSettingsSection from './MerchantAccountSettingsSection'
+import { legalMailto } from '../../../../services/data/legalPaths'
 
 export default function MerchantAccountSettingsDangerZone({ dangerZone }) {
   const aside = (
@@ -8,6 +9,11 @@ export default function MerchantAccountSettingsDangerZone({ dangerZone }) {
     </>
   )
 
+  const mailto = legalMailto({
+    subject: 'Merchant account deactivation request',
+    body: 'Please deactivate my FastRapid merchant account.\n\nBusiness name:\nRegistered email:\nReason:\n',
+  })
+
   return (
     <MerchantAccountSettingsSection aside={aside} danger>
       <div className="rounded-merchant-stat border border-red-200 bg-red-50/80 p-5 lg:p-6">
@@ -15,15 +21,15 @@ export default function MerchantAccountSettingsDangerZone({ dangerZone }) {
           <div className="min-w-0">
             <p className="text-base font-bold text-merchant-ink">{dangerZone.deactivateTitle}</p>
             <p className="mt-1.5 text-sm leading-relaxed text-merchant-muted">
-              {dangerZone.deactivateDescription}
+              {dangerZone.deactivateDescription} Requests are handled by support — this opens a prefilled email.
             </p>
           </div>
-          <button
-            type="button"
-            className="shrink-0 rounded-lg bg-[#B91C1C] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#991B1B] sm:ml-4"
+          <a
+            href={mailto}
+            className="inline-flex shrink-0 items-center justify-center rounded-lg bg-[#B91C1C] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#991B1B] sm:ml-4"
           >
             {dangerZone.deactivateLabel}
-          </button>
+          </a>
         </div>
       </div>
     </MerchantAccountSettingsSection>

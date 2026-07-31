@@ -71,6 +71,8 @@ export default function MerchantOnboardingLocationHoursPage() {
       city: locationValues.city,
       hourDays,
       mapConfirmed,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
     })
 
     if (Object.keys(validationErrors).length > 0) {
@@ -112,6 +114,7 @@ export default function MerchantOnboardingLocationHoursPage() {
     formError,
     fieldErrors,
     onSaveNext: handleSaveNext,
+    coords,
   }
 
   return (

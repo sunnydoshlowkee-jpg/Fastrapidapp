@@ -152,3 +152,12 @@ android/local.properties
 android/keystore.properties
 android/keystore/*.jks
 android/keystore/*.keystore
+
+# iOS build outputs
+releases/*.ipa
+releases/*.app
+ios/App/Pods/
+ios/App/App/public/
+ios/DerivedData/
+ios/**/xcuserdata/
+*.xcuserstate

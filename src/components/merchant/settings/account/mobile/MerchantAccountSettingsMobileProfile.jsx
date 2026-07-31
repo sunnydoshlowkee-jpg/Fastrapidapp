@@ -1,16 +1,12 @@
-import { useState } from 'react'
 import MerchantAccountSettingsField from '../MerchantAccountSettingsField'
 
 export default function MerchantAccountSettingsMobileProfile({ profile }) {
-  const [form, setForm] = useState({
+  const form = {
     fullName: profile.fields.fullName.value,
     email: profile.fields.email.value,
     phone: profile.fields.phone.value,
-  })
-
-  const update = (key) => (e) => {
-    setForm((prev) => ({ ...prev, [key]: e.target.value }))
   }
+  const readOnly = Boolean(profile.readOnly)
 
   return (
     <section className="rounded-merchant-stat bg-merchant-surface p-4 shadow-merchant-stat">
@@ -22,33 +18,39 @@ export default function MerchantAccountSettingsMobileProfile({ profile }) {
           id="mobile-fullName"
           label={profile.fields.fullName.label}
           value={form.fullName}
-          onChange={update('fullName')}
           variant="mobile"
+          readOnly={readOnly}
         />
         <MerchantAccountSettingsField
           id="mobile-email"
           label={profile.fields.email.label}
           type="email"
           value={form.email}
-          onChange={update('email')}
           variant="mobile"
+          readOnly={readOnly}
         />
         <MerchantAccountSettingsField
           id="mobile-phone"
           label={profile.fields.phone.label}
           value={form.phone}
-          onChange={update('phone')}
           variant="mobile"
+          readOnly={readOnly}
         />
 
-        <div className="flex justify-end pt-2">
-          <button
-            type="submit"
-            className="rounded-lg bg-merchant-primary px-5 py-2.5 text-sm font-semibold text-white shadow-merchant-btn"
-          >
-            {profile.saveLabel}
-          </button>
-        </div>
+        {readOnly ? (
+          <p className="pt-1 text-xs text-merchant-muted">
+            Contact support to change account details. Use Privacy &amp; Security for login preferences.
+          </p>
+        ) : (
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="rounded-lg bg-merchant-primary px-5 py-2.5 text-sm font-semibold text-white shadow-merchant-btn"
+            >
+              {profile.saveLabel}
+            </button>
+          </div>
+        )}
       </form>
     </section>
   )

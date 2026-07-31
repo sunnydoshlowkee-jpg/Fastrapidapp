@@ -68,6 +68,15 @@ export default {
         'merchant-empty-panel':
           'radial-gradient(ellipse 85% 70% at 100% 0%, rgba(67, 66, 255, 0.09) 0%, transparent 58%), radial-gradient(ellipse 75% 60% at 0% 100%, rgba(255, 186, 168, 0.22) 0%, transparent 52%), linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 100%)',
       },
+      keyframes: {
+        'branded-loader-pulse': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(0.92)', opacity: '0.85' },
+        },
+      },
+      animation: {
+        'branded-loader-pulse': 'branded-loader-pulse 1.2s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

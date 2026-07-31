@@ -1,0 +1,36 @@
+Task Name,Task Content,Status,Priority,Tags,Time Estimate,Start Date,Due Date,Assignees
+Resend email OTP integration,"ResendEmailService for customer and merchant email OTPs. Config RESEND_API_KEY.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** User email OTP request and verify API",Completed,Urgent,"Backend,Integration,Authentication",8.0h,,,
+Twilio SMS OTP integration,"TwilioSmsService for phone OTP. Config TWILIO_* . Dev bypass when PHONE_OTP_STRICT=false.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** User phone OTP request and verify API",Completed,Urgent,"Backend,Integration,Authentication",8.0h,,,
+Capacitor biometric app lock,"BiometricAppLock BiometricUnlock using @capgo/capacitor-native-biometric and Preferences for user merchant rider.
+
+**Developer:** Frontend
+**Progress:** 100%
+**Sprint:** Sprint 5
+**Milestone:** M1 Authentication
+**Dependencies:** Login security gate UI",Completed,High,"Frontend,Mobile,Security,Authentication",16.0h,,,
+Native persona bootstrap routing,"NativePersonaBootstrap routes to correct splash by VITE_APP_PERSONA on Capacitor builds.
+
+**Developer:** Frontend
+**Progress:** 100%
+**Sprint:** Sprint 5
+**Milestone:** M1 Authentication
+**Dependencies:** User onboarding UI screens",Completed,High,"Frontend,Mobile,Authentication",6.0h,,,
+Production OTP strict flags,"Set EMAIL_OTP_STRICT=true and PHONE_OTP_STRICT=true in production .env. Currently defaults false in .env.example.
+
+**Developer:** DevOps
+**Progress:** 0%
+**Sprint:** Sprint 6
+**Milestone:** M1 Authentication
+**Dependencies:** Resend email OTP integration; Twilio SMS OTP integration",Backlog,Urgent,"Infrastructure,Security,Authentication",2.0h,,,

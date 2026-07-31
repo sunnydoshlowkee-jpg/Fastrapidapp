@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, MapPin, Info, Lock, Wallet, CreditCard, Bitcoin, Search, ShoppingCart, CheckCircle2, ChevronDown, Plus } from 'lucide-react'
+import { ArrowLeft, MapPin, Info, Lock, Wallet, CreditCard, Banknote, Search, ShoppingCart, CheckCircle2, ChevronDown, Plus } from 'lucide-react'
 import { useCart } from '../../../context/CartContext'
 import { getAddresses } from '../../../services/addressService'
 import { createOrder } from '../../../services/orderService'
@@ -25,11 +25,21 @@ export default function Payment() {
   const { data: dashboard } = useDashboard()
 
   useEffect(() => {
-    // If cart is empty, send back to home
     if (items.length === 0) {
       navigate('/app')
     }
   }, [items, navigate])
+
+  useEffect(() => {
+    if (items.length === 0) return undefined
+    trackEvent('begin_checkout', 'cart', null, {
+      item_count: items.length,
+      total,
+    })
+    return undefined
+    // Fire once when checkout page opens with items.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -118,11 +128,6 @@ export default function Payment() {
       return
     }
 
-    if (paymentMethod === 'crypto') {
-      navigate('/app/payment/crypto')
-      return
-    }
-
     setAuthError('')
     setShowOrderAuth(true)
   }
@@ -137,7 +142,7 @@ export default function Payment() {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12 items-center md:justify-center">
         <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
-          <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+          <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
             <button
               onClick={() => { setShowOrderAuth(false); setAuthError('') }}
               className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center"
@@ -168,7 +173,7 @@ export default function Payment() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center gap-3 px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center gap-3 px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
@@ -309,6 +314,26 @@ export default function Payment() {
                 {paymentMethod === 'card' && <div className="w-2.5 h-2.5 bg-[#4F46E5] rounded-full"></div>}
               </div>
             </label>
+
+            <label 
+              onClick={() => setPaymentMethod('cash_on_delivery')}
+              className={`bg-white rounded-2xl p-5 flex items-center gap-4 cursor-pointer border-2 transition-all ${
+                paymentMethod === 'cash_on_delivery' ? 'border-[#4F46E5] shadow-md' : 'border-gray-100 shadow-sm'
+              }`}
+            >
+              <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500">
+                <Banknote size={20} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900 text-[13px] mb-0.5">Cash on Delivery</h4>
+                <p className="text-[11px] text-gray-400">Pay the rider when your order arrives</p>
+              </div>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                paymentMethod === 'cash_on_delivery' ? 'border-[#4F46E5]' : 'border-gray-300'
+              }`}>
+                {paymentMethod === 'cash_on_delivery' && <div className="w-2.5 h-2.5 bg-[#4F46E5] rounded-full"></div>}
+              </div>
+            </label>
           </div>
         </div>
 
@@ -332,7 +357,7 @@ export default function Payment() {
           onClick={handlePayment}
           className="w-full max-w-md mx-auto bg-[#4F46E5] text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors text-[15px] flex items-center justify-between px-6 disabled:opacity-70"
         >
-          <span>{loading ? 'Processing...' : 'Pay Now'}</span>
+          <span>{loading ? 'Processing...' : (paymentMethod === 'cash_on_delivery' ? 'Place Order' : 'Pay Now')}</span>
           {!loading && <span>₦{total.toLocaleString()}</span>}
         </button>
       </div>
@@ -455,24 +480,24 @@ export default function Payment() {
                 </div>
               </label>
 
-              {/* Crypto */}
+              {/* Cash on delivery */}
               <label 
-                onClick={() => setPaymentMethod('crypto')}
+                onClick={() => setPaymentMethod('cash_on_delivery')}
                 className={`bg-white rounded-xl p-6 flex items-center gap-5 cursor-pointer border-2 transition-all ${
-                  paymentMethod === 'crypto' ? 'border-[#2D2AEE] bg-indigo-50/50' : 'border-gray-100 hover:border-gray-200'
+                  paymentMethod === 'cash_on_delivery' ? 'border-[#2D2AEE] bg-indigo-50/50' : 'border-gray-100 hover:border-gray-200'
                 }`}
               >
                 <div className="w-12 h-12 bg-[#F4F5F7] rounded-full flex items-center justify-center text-gray-500">
-                  <Bitcoin size={24} />
+                  <Banknote size={24} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-gray-900 text-[16px] mb-1">Cryptocurrency</h4>
-                  <p className="text-[14px] text-gray-500">BTC, ETH, USDT via RAPID Pay</p>
+                  <h4 className="font-bold text-gray-900 text-[16px] mb-1">Cash on Delivery</h4>
+                  <p className="text-[14px] text-gray-500">Pay the rider when your order arrives</p>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                  paymentMethod === 'crypto' ? 'border-[#2D2AEE]' : 'border-gray-300'
+                  paymentMethod === 'cash_on_delivery' ? 'border-[#2D2AEE]' : 'border-gray-300'
                 }`}>
-                  {paymentMethod === 'crypto' && <div className="w-3 h-3 bg-[#2D2AEE] rounded-full"></div>}
+                  {paymentMethod === 'cash_on_delivery' && <div className="w-3 h-3 bg-[#2D2AEE] rounded-full"></div>}
                 </div>
               </label>
             </div>
@@ -536,7 +561,7 @@ export default function Payment() {
                 onClick={handlePayment}
                 className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold text-[18px] hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50"
               >
-                {loading ? 'Processing...' : 'Pay Now'}
+                {loading ? 'Processing...' : (paymentMethod === 'cash_on_delivery' ? 'Place Order' : 'Pay Now')}
               </button>
             </div>
           </div>

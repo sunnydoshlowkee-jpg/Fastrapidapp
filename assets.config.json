@@ -4,6 +4,9 @@
       "backgroundColor": "#000000"
     }
   },
+  "ios": {
+    "icon": {}
+  },
   "iconBackgroundColor": "#000000",
   "iconBackgroundColorDark": "#000000",
   "splashBackgroundColor": "#000000",

@@ -1,0 +1,1611 @@
+{
+  "meta": {
+    "format": "rapid-clickup-module-v1",
+    "module": "Authentication",
+    "import_instructions": "Create folder and lists first, then create tasks via CSV or API using tasks[]."
+  },
+  "hierarchy": {
+    "workspace_name": "Rapid",
+    "space_name": "Product Development",
+    "folder_name": "Authentication",
+    "lists": [
+      "Database",
+      "Backend API",
+      "Frontend UI",
+      "Integration",
+      "Testing",
+      "Documentation"
+    ]
+  },
+  "module": {
+    "workspace": "Rapid",
+    "space": "Product Development",
+    "folder": "Authentication",
+    "module_completion_percent": 90,
+    "milestone": "M1 Authentication",
+    "phase": "Phase 1 MVP",
+    "statuses": [
+      "Backlog",
+      "Ready",
+      "In Progress",
+      "Code Review",
+      "Testing",
+      "Blocked",
+      "Completed",
+      "Cancelled"
+    ],
+    "priorities": [
+      "Urgent",
+      "High",
+      "Normal",
+      "Low"
+    ],
+    "labels": [
+      "Backend",
+      "Frontend",
+      "API",
+      "Database",
+      "UI",
+      "UX",
+      "Bug",
+      "Security",
+      "Authentication",
+      "Merchant",
+      "Admin",
+      "Mobile",
+      "Infrastructure",
+      "Documentation",
+      "Testing",
+      "Integration"
+    ],
+    "lists": [
+      {
+        "name": "Database",
+        "order": 1
+      },
+      {
+        "name": "Backend API",
+        "order": 2
+      },
+      {
+        "name": "Frontend UI",
+        "order": 3
+      },
+      {
+        "name": "Integration",
+        "order": 4
+      },
+      {
+        "name": "Testing",
+        "order": 5
+      },
+      {
+        "name": "Documentation",
+        "order": 6
+      }
+    ],
+    "summary": {
+      "total_tasks": 42,
+      "completed": 33,
+      "in_progress": 2,
+      "backlog": 7,
+      "estimated_hours_total": 454,
+      "estimated_hours_remaining": 52,
+      "notes": [
+        "Laravel 12 + Sanctum powers all 4 personas via single User model + roles.",
+        "Production OTP strict flags and admin 2FA strict mode are launch blockers.",
+        "Auth PHPUnit coverage is strong; Cypress auth is smoke-only."
+      ]
+    },
+    "code_evidence": {
+      "backend_controllers": [
+        "Api/AuthController.php",
+        "Api/LocationController.php",
+        "Api/User/UserSecurityController.php",
+        "Api/MerchantAuthController.php",
+        "Api/MerchantRegistrationController.php",
+        "Api/MerchantPasswordResetController.php",
+        "Api/AdminAuthController.php",
+        "Api/Rider/RiderAuthController.php"
+      ],
+      "frontend_routes": [
+        "src/routes/OnboardingRoutes.jsx",
+        "src/apps/user/pages/auth/*",
+        "src/apps/user/pages/onboarding/*",
+        "src/routes/MerchantRoutes.jsx (auth)",
+        "src/routes/DispatchRoutes.jsx (auth + onboarding)",
+        "src/routes/AdminRoutes.jsx (auth)"
+      ],
+      "phpunit_auth_tests": [
+        "CustomerEmailAuthTest.php",
+        "LoginPhoneTest.php",
+        "RequestPhoneOtpTest.php",
+        "ResendEmailOtpTest.php",
+        "TwilioPhoneOtpTest.php",
+        "UserAvatarTest.php",
+        "UserOnboardingTest.php",
+        "VerifyPhoneOtpTest.php"
+      ]
+    },
+    "tasks": [
+      {
+        "id": "AUTH-001",
+        "name": "Create users roles and Sanctum tokens schema",
+        "description": "Migrations for users (profile fields) roles role_user personal_access_tokens. Foundation for all personas.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Database",
+          "Backend",
+          "Authentication"
+        ],
+        "labels": [
+          "Database",
+          "Backend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Backend",
+        "dependencies": [],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Database",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-002",
+        "name": "Add user location and avatar fields",
+        "description": "Migrations for user geo fields and avatar_path used during onboarding and profile.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Database",
+          "Backend",
+          "Authentication"
+        ],
+        "labels": [
+          "Database",
+          "Backend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Database",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-003",
+        "name": "Add security settings columns to users",
+        "description": "Migration for TOTP secret biometric flags login/transaction security method preferences.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Database",
+          "Backend",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Database",
+          "Backend",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 6.0,
+        "time_estimate_ms": 21600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 3",
+        "list": "Database",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 3",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-004",
+        "name": "User email OTP request and verify API",
+        "description": "POST /api/auth/email and /api/auth/email/verify via ResendEmailOtpService / CustomerEmailOtpService. Issues Sanctum token.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-005",
+        "name": "User phone OTP request and verify API",
+        "description": "POST /api/auth/phone and /api/auth/phone/verify via TwilioSmsService / PhoneOtpService. Issues Sanctum token.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-006",
+        "name": "User profile completion and update API",
+        "description": "POST/PUT /api/auth/profile completeProfile and updateProfile after OTP. Assigns customer role.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Backend",
+        "dependencies": [
+          "User email OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-007",
+        "name": "User avatar upload API",
+        "description": "POST /api/auth/profile/avatar stores to R2/S3 and updates avatar_path.",
+        "status": "Completed",
+        "priority": "Normal",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 6.0,
+        "time_estimate_ms": 21600000,
+        "developer": "Backend",
+        "dependencies": [
+          "User profile completion and update API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 2",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 2",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-008",
+        "name": "Sanctum me and logout endpoints",
+        "description": "GET /api/auth/me and POST /api/auth/logout. Revokes current personal access token.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-009",
+        "name": "User location get and update API",
+        "description": "GET/PUT /api/auth/location for city lat/lng used by discovery radius.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 6.0,
+        "time_estimate_ms": 21600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Add user location and avatar fields"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 2",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 2",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-010",
+        "name": "Merchant email password auth API",
+        "description": "Merchant login me logout via MerchantAuthController. Sanctum token merchant-login.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "time_estimate_hours": 12.0,
+        "time_estimate_ms": 43200000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-011",
+        "name": "Merchant registration and email verify API",
+        "description": "Register verify-email resend-code via MerchantRegistrationController.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Merchant email password auth API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 2",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 2",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-012",
+        "name": "Merchant password reset API",
+        "description": "Forgot password multi-step via MerchantPasswordResetController.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Merchant"
+        ],
+        "time_estimate_hours": 12.0,
+        "time_estimate_ms": 43200000,
+        "developer": "Backend",
+        "dependencies": [
+          "Merchant email password auth API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 5",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 5",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-013",
+        "name": "Admin password auth and role guard",
+        "description": "POST /api/admin/login plus EnsureAdminRole middleware. Requires roles.name=admin.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Admin",
+          "Security"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication",
+          "Admin",
+          "Security"
+        ],
+        "time_estimate_hours": 10.0,
+        "time_estimate_ms": 36000000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-014",
+        "name": "Admin create artisan command",
+        "description": "php artisan admin:create gated by ADMIN_BOOTSTRAP_SECRET.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Backend",
+          "Authentication",
+          "Admin",
+          "Security"
+        ],
+        "labels": [
+          "Backend",
+          "Authentication",
+          "Admin",
+          "Security"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "Backend",
+        "dependencies": [
+          "Admin password auth and role guard"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-015",
+        "name": "Rider email phone OTP and register API",
+        "description": "Rider auth email/phone OTP register login online toggle via RiderAuthController.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Backend",
+        "dependencies": [
+          "Create users roles and Sanctum tokens schema"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-016",
+        "name": "User security TOTP biometric action codes API",
+        "description": "UserSecurityController: TOTP setup verify biometric flags action codes preferences.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Backend",
+          "API",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "API",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 20.0,
+        "time_estimate_ms": 72000000,
+        "developer": "Backend",
+        "dependencies": [
+          "Add security settings columns to users"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 3",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 3",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-017",
+        "name": "User onboarding UI screens",
+        "description": "Splash slider welcome account-type location phone email OTP profile preferences. 10+ screens under OnboardingRoutes.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "time_estimate_hours": 40.0,
+        "time_estimate_ms": 144000000,
+        "developer": "Frontend",
+        "dependencies": [
+          "User email OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-018",
+        "name": "User login and verify identity UI",
+        "description": "Login EmailLogin EmailVerify VerifyIdentity LoginSecurity BiometricUnlock under /auth/*.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "time_estimate_hours": 24.0,
+        "time_estimate_ms": 86400000,
+        "developer": "Frontend",
+        "dependencies": [
+          "User email OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-019",
+        "name": "AuthContext and API client token handling",
+        "description": "AuthContext getMe logout; axios Bearer per persona; 401 redirects in api.js.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Frontend",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 12.0,
+        "time_estimate_ms": 43200000,
+        "developer": "Frontend",
+        "dependencies": [
+          "Sanctum me and logout endpoints"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-020",
+        "name": "Merchant auth and onboarding UI",
+        "description": "Login Register VerifyEmail VerifyDocuments PendingApproval LocationHours BankDetails ForgotPassword ResetPassword BiometricUnlock.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Authentication",
+          "Merchant"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Authentication",
+          "Merchant"
+        ],
+        "time_estimate_hours": 32.0,
+        "time_estimate_ms": 115200000,
+        "developer": "Frontend",
+        "dependencies": [
+          "Merchant registration and email verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 2",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 2",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-021",
+        "name": "Dispatch rider auth and onboarding UI",
+        "description": "Login BiometricUnlock plus 9-step onboarding (phone verify personal identity vehicle payment success).",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Authentication"
+        ],
+        "time_estimate_hours": 32.0,
+        "time_estimate_ms": 115200000,
+        "developer": "Frontend",
+        "dependencies": [
+          "Rider email phone OTP and register API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-022",
+        "name": "Admin auth UI",
+        "description": "Login Verify2fa ForgotPassword ResetPassword ResetSuccess SessionExpired. AdminAuthGuard.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Authentication",
+          "Admin"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Authentication",
+          "Admin"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Frontend",
+        "dependencies": [
+          "Admin password auth and role guard"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-023",
+        "name": "Login security gate UI",
+        "description": "LoginSecurityGate and LoginSecurity pages selecting email phone biometric methods via securityService.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 12.0,
+        "time_estimate_ms": 43200000,
+        "developer": "Frontend",
+        "dependencies": [
+          "User security TOTP biometric action codes API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 3",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 3",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-024",
+        "name": "Privacy security settings page",
+        "description": "Shared PrivacySecurityPage for user merchant rider TOTP biometric preferences.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "UI",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "UI",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 12.0,
+        "time_estimate_ms": 43200000,
+        "developer": "Frontend",
+        "dependencies": [
+          "User security TOTP biometric action codes API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 3",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 3",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-025",
+        "name": "Admin 2FA strict mode wiring",
+        "description": "Wire real TOTP verification for admin. Currently accepts any 6-digit code unless VITE_ADMIN_2FA_STRICT=true.",
+        "status": "In Progress",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "Backend",
+          "Security",
+          "Authentication",
+          "Admin",
+          "Bug"
+        ],
+        "labels": [
+          "Frontend",
+          "Backend",
+          "Security",
+          "Authentication",
+          "Admin",
+          "Bug"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Full-stack",
+        "dependencies": [
+          "Admin auth UI",
+          "User security TOTP biometric action codes API"
+        ],
+        "progress_percent": 40,
+        "sprint": "Sprint 6",
+        "list": "Frontend UI",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 40,
+          "Developer": "Full-stack",
+          "Sprint": "Sprint 6",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-026",
+        "name": "Resend email OTP integration",
+        "description": "ResendEmailService for customer and merchant email OTPs. Config RESEND_API_KEY.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "Integration",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "Integration",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Backend",
+        "dependencies": [
+          "User email OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Integration",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-027",
+        "name": "Twilio SMS OTP integration",
+        "description": "TwilioSmsService for phone OTP. Config TWILIO_* . Dev bypass when PHONE_OTP_STRICT=false.",
+        "status": "Completed",
+        "priority": "Urgent",
+        "tags": [
+          "Backend",
+          "Integration",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "Integration",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Backend",
+        "dependencies": [
+          "User phone OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 1",
+        "list": "Integration",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Backend",
+          "Sprint": "Sprint 1",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-028",
+        "name": "Capacitor biometric app lock",
+        "description": "BiometricAppLock BiometricUnlock using @capgo/capacitor-native-biometric and Preferences for user merchant rider.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "Mobile",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "Mobile",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "Frontend",
+        "dependencies": [
+          "Login security gate UI"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 5",
+        "list": "Integration",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 5",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-029",
+        "name": "Native persona bootstrap routing",
+        "description": "NativePersonaBootstrap routes to correct splash by VITE_APP_PERSONA on Capacitor builds.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Frontend",
+          "Mobile",
+          "Authentication"
+        ],
+        "labels": [
+          "Frontend",
+          "Mobile",
+          "Authentication"
+        ],
+        "time_estimate_hours": 6.0,
+        "time_estimate_ms": 21600000,
+        "developer": "Frontend",
+        "dependencies": [
+          "User onboarding UI screens"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 5",
+        "list": "Integration",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "Frontend",
+          "Sprint": "Sprint 5",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-030",
+        "name": "Production OTP strict flags",
+        "description": "Set EMAIL_OTP_STRICT=true and PHONE_OTP_STRICT=true in production .env. Currently defaults false in .env.example.",
+        "status": "Backlog",
+        "priority": "Urgent",
+        "tags": [
+          "Infrastructure",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Infrastructure",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 2.0,
+        "time_estimate_ms": 7200000,
+        "developer": "DevOps",
+        "dependencies": [
+          "Resend email OTP integration",
+          "Twilio SMS OTP integration"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 6",
+        "list": "Integration",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "DevOps",
+          "Sprint": "Sprint 6",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-031",
+        "name": "Auth PHPUnit feature tests",
+        "description": "8 Feature/Auth tests: CustomerEmailAuth ResendEmailOtp TwilioPhoneOtp RequestPhoneOtp VerifyPhoneOtp LoginPhone UserOnboarding UserAvatar.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Testing",
+          "Backend",
+          "Authentication"
+        ],
+        "labels": [
+          "Testing",
+          "Backend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 24.0,
+        "time_estimate_ms": 86400000,
+        "developer": "QA",
+        "dependencies": [
+          "User email OTP request and verify API",
+          "User phone OTP request and verify API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 2",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "QA",
+          "Sprint": "Sprint 2",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-032",
+        "name": "Merchant auth and password reset tests",
+        "description": "MerchantLoginTest MerchantRegistrationEmailTest MerchantPasswordResetTest MerchantOnboardingTest.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Testing",
+          "Backend",
+          "Authentication",
+          "Merchant"
+        ],
+        "labels": [
+          "Testing",
+          "Backend",
+          "Authentication",
+          "Merchant"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "QA",
+        "dependencies": [
+          "Merchant email password auth API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 5",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "QA",
+          "Sprint": "Sprint 5",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-033",
+        "name": "Rider registration auth tests",
+        "description": "RiderRegistrationTest RiderDocumentTest covering rider auth flows.",
+        "status": "Completed",
+        "priority": "High",
+        "tags": [
+          "Testing",
+          "Backend",
+          "Authentication"
+        ],
+        "labels": [
+          "Testing",
+          "Backend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "QA",
+        "dependencies": [
+          "Rider email phone OTP and register API"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "QA",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-034",
+        "name": "Admin create command test",
+        "description": "CreateAdminCommandTest for bootstrap admin user.",
+        "status": "Completed",
+        "priority": "Normal",
+        "tags": [
+          "Testing",
+          "Backend",
+          "Authentication",
+          "Admin"
+        ],
+        "labels": [
+          "Testing",
+          "Backend",
+          "Authentication",
+          "Admin"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "QA",
+        "dependencies": [
+          "Admin create artisan command"
+        ],
+        "progress_percent": 100,
+        "sprint": "Sprint 4",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 100,
+          "Developer": "QA",
+          "Sprint": "Sprint 4",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-035",
+        "name": "Cypress user auth smoke tests",
+        "description": "cypress/e2e/user-auth-wallet.cy.js login page smoke (partial coverage).",
+        "status": "Completed",
+        "priority": "Normal",
+        "tags": [
+          "Testing",
+          "Frontend",
+          "Authentication"
+        ],
+        "labels": [
+          "Testing",
+          "Frontend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "QA",
+        "dependencies": [
+          "User login and verify identity UI"
+        ],
+        "progress_percent": 50,
+        "sprint": "Sprint 5",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 50,
+          "Developer": "QA",
+          "Sprint": "Sprint 5",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-036",
+        "name": "Expand Cypress full auth E2E",
+        "description": "Full OTP login profile biometric flows for user merchant rider admin. Currently smoke-only.",
+        "status": "Backlog",
+        "priority": "Normal",
+        "tags": [
+          "Testing",
+          "Frontend",
+          "Authentication"
+        ],
+        "labels": [
+          "Testing",
+          "Frontend",
+          "Authentication"
+        ],
+        "time_estimate_hours": 16.0,
+        "time_estimate_ms": 57600000,
+        "developer": "QA",
+        "dependencies": [
+          "Cypress user auth smoke tests"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "QA",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-037",
+        "name": "Mobile auth QA Android",
+        "description": "Manual QA biometric unlock login security on user merchant dispatch APKs.",
+        "status": "In Progress",
+        "priority": "High",
+        "tags": [
+          "Testing",
+          "Mobile",
+          "Authentication"
+        ],
+        "labels": [
+          "Testing",
+          "Mobile",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "QA",
+        "dependencies": [
+          "Capacitor biometric app lock"
+        ],
+        "progress_percent": 50,
+        "sprint": "Sprint 6",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 50,
+          "Developer": "QA",
+          "Sprint": "Sprint 6",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-038",
+        "name": "Mobile auth QA iOS",
+        "description": "TestFlight biometric and login flows once iOS builds published.",
+        "status": "Backlog",
+        "priority": "High",
+        "tags": [
+          "Testing",
+          "Mobile",
+          "Authentication",
+          "iOS"
+        ],
+        "labels": [
+          "Testing",
+          "Mobile",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "QA",
+        "dependencies": [
+          "Capacitor biometric app lock"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Testing",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "QA",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-039",
+        "name": "Write Authentication module PRD section",
+        "description": "Document auth flows for 4 personas OTP rules token lifetimes security methods.",
+        "status": "Backlog",
+        "priority": "High",
+        "tags": [
+          "Documentation",
+          "Authentication"
+        ],
+        "labels": [
+          "Documentation",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Product",
+        "dependencies": [],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Documentation",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "Product",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-040",
+        "name": "Document auth API endpoints",
+        "description": "OpenAPI or markdown for all /auth /merchant auth /admin /rider auth routes.",
+        "status": "Backlog",
+        "priority": "Urgent",
+        "tags": [
+          "Documentation",
+          "API",
+          "Authentication"
+        ],
+        "labels": [
+          "Documentation",
+          "API",
+          "Authentication"
+        ],
+        "time_estimate_hours": 8.0,
+        "time_estimate_ms": 28800000,
+        "developer": "Backend",
+        "dependencies": [
+          "User email OTP request and verify API"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Documentation",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "Backend",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-041",
+        "name": "Document production auth hardening checklist",
+        "description": "OTP strict admin 2FA rate limiting bootstrap secret rotation.",
+        "status": "Backlog",
+        "priority": "Urgent",
+        "tags": [
+          "Documentation",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Documentation",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 4.0,
+        "time_estimate_ms": 14400000,
+        "developer": "DevOps",
+        "dependencies": [
+          "Production OTP strict flags",
+          "Admin 2FA strict mode wiring"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Documentation",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "DevOps",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      },
+      {
+        "id": "AUTH-042",
+        "name": "Add rate limiting on auth OTP endpoints",
+        "description": "Throttle middleware on email/phone OTP request routes to prevent abuse.",
+        "status": "Backlog",
+        "priority": "High",
+        "tags": [
+          "Backend",
+          "Security",
+          "Authentication"
+        ],
+        "labels": [
+          "Backend",
+          "Security",
+          "Authentication"
+        ],
+        "time_estimate_hours": 6.0,
+        "time_estimate_ms": 21600000,
+        "developer": "Backend",
+        "dependencies": [
+          "User email OTP request and verify API",
+          "User phone OTP request and verify API"
+        ],
+        "progress_percent": 0,
+        "sprint": "Sprint 7",
+        "list": "Backend API",
+        "milestone": "M1 Authentication",
+        "custom_fields": {
+          "Progress %": 0,
+          "Developer": "Backend",
+          "Sprint": "Sprint 7",
+          "Module": "Authentication"
+        }
+      }
+    ],
+    "tasks_by_list": {
+      "Database": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-003"
+      ],
+      "Backend API": [
+        "AUTH-004",
+        "AUTH-005",
+        "AUTH-006",
+        "AUTH-007",
+        "AUTH-008",
+        "AUTH-009",
+        "AUTH-010",
+        "AUTH-011",
+        "AUTH-012",
+        "AUTH-013",
+        "AUTH-014",
+        "AUTH-015",
+        "AUTH-016",
+        "AUTH-042"
+      ],
+      "Frontend UI": [
+        "AUTH-017",
+        "AUTH-018",
+        "AUTH-019",
+        "AUTH-020",
+        "AUTH-021",
+        "AUTH-022",
+        "AUTH-023",
+        "AUTH-024",
+        "AUTH-025"
+      ],
+      "Integration": [
+        "AUTH-026",
+        "AUTH-027",
+        "AUTH-028",
+        "AUTH-029",
+        "AUTH-030"
+      ],
+      "Testing": [
+        "AUTH-031",
+        "AUTH-032",
+        "AUTH-033",
+        "AUTH-034",
+        "AUTH-035",
+        "AUTH-036",
+        "AUTH-037",
+        "AUTH-038"
+      ],
+      "Documentation": [
+        "AUTH-039",
+        "AUTH-040",
+        "AUTH-041"
+      ]
+    }
+  }
+}

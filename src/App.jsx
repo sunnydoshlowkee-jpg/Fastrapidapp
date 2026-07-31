@@ -7,12 +7,14 @@ import AdminRoutes from './routes/AdminRoutes'
 import BiometricAppLock from './components/auth/BiometricAppLock'
 import NativePersonaBootstrap from './components/auth/NativePersonaBootstrap'
 import PushNotificationsBootstrap from './components/auth/PushNotificationsBootstrap'
+import CookieConsentBanner from './components/compliance/CookieConsentBanner'
 
 export default function App() {
   return (
     <BiometricAppLock>
       <NativePersonaBootstrap />
       <PushNotificationsBootstrap />
+      <CookieConsentBanner />
       <Routes>
         <Route path="/app/*" element={<AppRoutes />} />
         <Route path="/merchant/*" element={<MerchantRoutes />} />

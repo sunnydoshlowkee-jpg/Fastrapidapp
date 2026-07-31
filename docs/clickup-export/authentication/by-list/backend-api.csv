@@ -1,0 +1,99 @@
+Task Name,Task Content,Status,Priority,Tags,Time Estimate,Start Date,Due Date,Assignees
+User email OTP request and verify API,"POST /api/auth/email and /api/auth/email/verify via ResendEmailOtpService / CustomerEmailOtpService. Issues Sanctum token.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication",16.0h,,,
+User phone OTP request and verify API,"POST /api/auth/phone and /api/auth/phone/verify via TwilioSmsService / PhoneOtpService. Issues Sanctum token.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication",16.0h,,,
+User profile completion and update API,"POST/PUT /api/auth/profile completeProfile and updateProfile after OTP. Assigns customer role.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** User email OTP request and verify API",Completed,Urgent,"Backend,API,Authentication",8.0h,,,
+User avatar upload API,"POST /api/auth/profile/avatar stores to R2/S3 and updates avatar_path.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 2
+**Milestone:** M1 Authentication
+**Dependencies:** User profile completion and update API",Completed,Normal,"Backend,API,Authentication",6.0h,,,
+Sanctum me and logout endpoints,"GET /api/auth/me and POST /api/auth/logout. Revokes current personal access token.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication",4.0h,,,
+User location get and update API,"GET/PUT /api/auth/location for city lat/lng used by discovery radius.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 2
+**Milestone:** M1 Authentication
+**Dependencies:** Add user location and avatar fields",Completed,High,"Backend,API,Authentication",6.0h,,,
+Merchant email password auth API,"Merchant login me logout via MerchantAuthController. Sanctum token merchant-login.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication,Merchant",12.0h,,,
+Merchant registration and email verify API,"Register verify-email resend-code via MerchantRegistrationController.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 2
+**Milestone:** M1 Authentication
+**Dependencies:** Merchant email password auth API",Completed,Urgent,"Backend,API,Authentication,Merchant",16.0h,,,
+Merchant password reset API,"Forgot password multi-step via MerchantPasswordResetController.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 5
+**Milestone:** M1 Authentication
+**Dependencies:** Merchant email password auth API",Completed,High,"Backend,API,Authentication,Merchant",12.0h,,,
+Admin password auth and role guard,"POST /api/admin/login plus EnsureAdminRole middleware. Requires roles.name=admin.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication,Admin,Security",10.0h,,,
+Admin create artisan command,"php artisan admin:create gated by ADMIN_BOOTSTRAP_SECRET.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 4
+**Milestone:** M1 Authentication
+**Dependencies:** Admin password auth and role guard",Completed,High,"Backend,Authentication,Admin,Security",4.0h,,,
+Rider email phone OTP and register API,"Rider auth email/phone OTP register login online toggle via RiderAuthController.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 4
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,Urgent,"Backend,API,Authentication",16.0h,,,
+User security TOTP biometric action codes API,"UserSecurityController: TOTP setup verify biometric flags action codes preferences.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 3
+**Milestone:** M1 Authentication
+**Dependencies:** Add security settings columns to users",Completed,High,"Backend,API,Security,Authentication",20.0h,,,
+Add rate limiting on auth OTP endpoints,"Throttle middleware on email/phone OTP request routes to prevent abuse.
+
+**Developer:** Backend
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** User email OTP request and verify API; User phone OTP request and verify API",Backlog,High,"Backend,Security,Authentication",6.0h,,,

@@ -1,5 +1,10 @@
 import axios from 'axios'
 import { rewriteStorageUrlsInData } from '../utils/mediaUrl'
+import { getAppPathname, navigateAppPath } from '../utils/appRole'
+import {
+  dropUnauthorizedMerchantAccount,
+  merchantAccountRedirectPath,
+} from './merchantAccountStore'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -20,14 +25,6 @@ api.interceptors.request.use(config => {
     token =
       localStorage.getItem('rapid_admin_token') ||
       sessionStorage.getItem('rapid_admin_session_token')
-    const pendingRaw = sessionStorage.getItem('rapid_admin_pending_session')
-    if (!token && pendingRaw) {
-      try {
-        token = JSON.parse(pendingRaw)?.token ?? null
-      } catch {
-        token = null
-      }
-    }
   } else if (isMerchantApi) {
     token = localStorage.getItem('rapid_merchant_token')
   } else if (isRiderApi) {
@@ -61,31 +58,46 @@ api.interceptors.response.use(
   },
   err => {
     if (err.response?.status === 401) {
-      const path = window.location.pathname
-      const isMerchantRoute = path.startsWith('/merchant')
-      const isAdminRoute = path.startsWith('/admin')
-      const isRiderRoute = path.startsWith('/dispatch')
+      const requestUrl = String(err.config?.url ?? '')
+      const path = getAppPathname()
+      const isMerchantRoute =
+        requestUrl.includes('/merchant') || path.startsWith('/merchant')
+      const isAdminRoute =
+        requestUrl.includes('/admin') || path.startsWith('/admin')
+      const isRiderRoute =
+        requestUrl.includes('/rider') || path.startsWith('/dispatch')
 
       if (isAdminRoute) {
         localStorage.removeItem('rapid_admin_token')
         localStorage.removeItem('rapid_admin_user')
         sessionStorage.removeItem('rapid_admin_session_token')
         sessionStorage.removeItem('rapid_admin_pending_session')
-        window.location.href = '/admin/login'
+        navigateAppPath('/admin/login')
         return Promise.reject(err)
       }
 
       if (isRiderRoute) {
         localStorage.removeItem('rider_token')
         localStorage.removeItem('rider_user')
-        window.location.href = '/dispatch/login'
+        navigateAppPath('/dispatch/login')
         return Promise.reject(err)
       }
 
       localStorage.removeItem('rapid_token')
+
+      if (isMerchantRoute) {
+        const next = dropUnauthorizedMerchantAccount()
+        if (next) {
+          navigateAppPath(merchantAccountRedirectPath(next.user))
+          return Promise.reject(err)
+        }
+        navigateAppPath('/merchant/login')
+        return Promise.reject(err)
+      }
+
       localStorage.removeItem('rapid_merchant_token')
       localStorage.removeItem('rapid_merchant_user')
-      window.location.href = isMerchantRoute ? '/merchant/login' : '/auth/login'
+      navigateAppPath('/auth/login')
     }
     return Promise.reject(err)
   }

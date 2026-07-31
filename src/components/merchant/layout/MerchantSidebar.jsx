@@ -9,7 +9,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react'
-import { clearMerchantSession } from '../../../services/merchantAuthService'
+import { merchantLogout } from '../../../services/merchantAuthService'
 
 const navItems = [
   { to: '/merchant', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -33,8 +33,12 @@ function OrdersNavBadge({ count }) {
 export default function MerchantSidebar({ mobileOpen, onClose, newOrdersCount = 0 }) {
   const navigate = useNavigate()
 
-  const handleSignOut = () => {
-    clearMerchantSession()
+  const handleSignOut = async () => {
+    const { switchedTo } = await merchantLogout({ switchToRemaining: true })
+    if (switchedTo) {
+      window.location.assign('/merchant')
+      return
+    }
     navigate('/merchant/login', { replace: true })
   }
 

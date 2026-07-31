@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, MapPin, ShoppingCart, ChevronDown, Home, Clock, Wallet, User, Rocket } from 'lucide-react'
 import { getPromotions } from '../../../services/promotionService'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function Promotions() {
   const navigate = useNavigate()
@@ -40,7 +41,7 @@ export default function Promotions() {
       {/*                                 MOBILE LAYOUT                                      */}
       {/* -------------------------------------------------------------------------------- */}
       <div className="md:hidden flex flex-col h-full">
-        <div className="px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30 flex items-center gap-3">
+        <div className="px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />
           </button>
@@ -61,7 +62,7 @@ export default function Promotions() {
             ))}
           </div>
           <div className="flex flex-col gap-4 mt-2">
-            {loading && <p className="text-center text-sm text-gray-500 py-4">Loading promotions...</p>}
+            {loading && <BrandedLoader size="md" />}
             {!loading && filteredPromotions.map(promo => (
               <div key={promo.id} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100">
                 <div className="h-[120px] relative">
@@ -146,7 +147,11 @@ export default function Promotions() {
               {/* Promotions Grid */}
               <div className="grid grid-cols-2 gap-6 mb-16">
                 
-                {loading && <p className="col-span-2 text-center text-sm text-gray-500 py-10">Loading promotions...</p>}
+                {loading && (
+                  <div className="col-span-2">
+                    <BrandedLoader size="md" />
+                  </div>
+                )}
                 {!loading && filteredPromotions.map((promo, idx) => {
                   let borderColor = 'border-l-[#2D2AEE]'
                   if (idx % 2 !== 0) borderColor = 'border-l-[#D92D20]'
@@ -245,9 +250,9 @@ export default function Promotions() {
               <div className="flex items-center justify-between border-t border-gray-100 pt-8 pb-4">
                 <p className="text-[12px] text-gray-400 font-medium">© 2024 RAPID Marketplace. All rights reserved.</p>
                 <div className="flex gap-6">
-                  <a href="#" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Privacy Policy</a>
-                  <a href="#" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Terms of Service</a>
-                  <a href="#" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Help Center</a>
+                  <a href="/legal/privacy.html" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Privacy Policy</a>
+                  <a href="/legal/terms.html" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Terms of Service</a>
+                  <a href="mailto:support@fastrapid.com" className="text-[12px] text-gray-400 hover:text-gray-600 font-medium transition-colors">Help Center</a>
                 </div>
               </div>
 

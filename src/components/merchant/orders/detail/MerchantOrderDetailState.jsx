@@ -1,8 +1,10 @@
+import BrandedLoader from '../../../ui/BrandedLoader'
+
 export default function MerchantOrderDetailState({ loading, error, order, children }) {
   if (loading) {
     return (
-      <div className="flex min-h-full flex-1 items-center justify-center p-8 text-sm text-merchant-muted">
-        Loading order details...
+      <div className="flex min-h-full flex-1 flex-col">
+        <BrandedLoader fill className="p-8" />
       </div>
     )
   }

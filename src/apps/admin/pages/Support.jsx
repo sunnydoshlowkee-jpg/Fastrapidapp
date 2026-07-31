@@ -1,5 +1,5 @@
-import AdminSupportTicketsPage from '../../../components/admin/support/AdminSupportTicketsPage'
+import AdminLiveSupportPage from '../../../components/admin/support/AdminLiveSupportPage'
 
 export default function Support() {
-  return <AdminSupportTicketsPage />
+  return <AdminLiveSupportPage />
 }

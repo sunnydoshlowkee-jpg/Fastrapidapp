@@ -1,0 +1,57 @@
+Task Name,Task Content,Status,Priority,Tags,Time Estimate,Start Date,Due Date,Assignees
+Auth PHPUnit feature tests,"8 Feature/Auth tests: CustomerEmailAuth ResendEmailOtp TwilioPhoneOtp RequestPhoneOtp VerifyPhoneOtp LoginPhone UserOnboarding UserAvatar.
+
+**Developer:** QA
+**Progress:** 100%
+**Sprint:** Sprint 2
+**Milestone:** M1 Authentication
+**Dependencies:** User email OTP request and verify API; User phone OTP request and verify API",Completed,High,"Testing,Backend,Authentication",24.0h,,,
+Merchant auth and password reset tests,"MerchantLoginTest MerchantRegistrationEmailTest MerchantPasswordResetTest MerchantOnboardingTest.
+
+**Developer:** QA
+**Progress:** 100%
+**Sprint:** Sprint 5
+**Milestone:** M1 Authentication
+**Dependencies:** Merchant email password auth API",Completed,High,"Testing,Backend,Authentication,Merchant",16.0h,,,
+Rider registration auth tests,"RiderRegistrationTest RiderDocumentTest covering rider auth flows.
+
+**Developer:** QA
+**Progress:** 100%
+**Sprint:** Sprint 4
+**Milestone:** M1 Authentication
+**Dependencies:** Rider email phone OTP and register API",Completed,High,"Testing,Backend,Authentication",8.0h,,,
+Admin create command test,"CreateAdminCommandTest for bootstrap admin user.
+
+**Developer:** QA
+**Progress:** 100%
+**Sprint:** Sprint 4
+**Milestone:** M1 Authentication
+**Dependencies:** Admin create artisan command",Completed,Normal,"Testing,Backend,Authentication,Admin",4.0h,,,
+Cypress user auth smoke tests,"cypress/e2e/user-auth-wallet.cy.js login page smoke (partial coverage).
+
+**Developer:** QA
+**Progress:** 50%
+**Sprint:** Sprint 5
+**Milestone:** M1 Authentication
+**Dependencies:** User login and verify identity UI",Completed,Normal,"Testing,Frontend,Authentication",4.0h,,,
+Expand Cypress full auth E2E,"Full OTP login profile biometric flows for user merchant rider admin. Currently smoke-only.
+
+**Developer:** QA
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** Cypress user auth smoke tests",Backlog,Normal,"Testing,Frontend,Authentication",16.0h,,,
+Mobile auth QA Android,"Manual QA biometric unlock login security on user merchant dispatch APKs.
+
+**Developer:** QA
+**Progress:** 50%
+**Sprint:** Sprint 6
+**Milestone:** M1 Authentication
+**Dependencies:** Capacitor biometric app lock",In Progress,High,"Testing,Mobile,Authentication",8.0h,,,
+Mobile auth QA iOS,"TestFlight biometric and login flows once iOS builds published.
+
+**Developer:** QA
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** Capacitor biometric app lock",Backlog,High,"Testing,Mobile,Authentication,iOS",8.0h,,,

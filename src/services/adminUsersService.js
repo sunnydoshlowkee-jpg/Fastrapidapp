@@ -39,6 +39,14 @@ export async function fetchAdminUserDetail(userId) {
   return data.data
 }
 
+export async function updateAdminUserStatus(userId, status, reason = '') {
+  const { data } = await api.patch(`/admin/users/${userId}/status`, {
+    status,
+    reason: reason || undefined,
+  })
+  return data.data
+}
+
 /**
  * @param {Record<string, unknown>} payload
  */

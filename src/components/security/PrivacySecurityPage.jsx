@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, ShieldCheck, Mail, Smartphone, Fingerprint, KeyRound, CheckCircle2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import QRCode from 'qrcode'
 import {
   SECURITY_METHODS,
   confirmTotp,
@@ -18,12 +19,138 @@ import {
 } from '../../utils/biometricAuth'
 import { setBiometricUnlockEnabled } from '../../utils/biometricSession'
 import { detectAppRole, getRoleConfig } from '../../utils/appRole'
+import { isNativeApp } from '../../utils/userLoginSecurity'
+import { changeWalletPin } from '../../services/walletService'
 
 const ICONS = {
   email: Mail,
   totp: Smartphone,
   biometric: Fingerprint,
   pin: KeyRound,
+}
+
+function TransactionPinCard({ onMessage, onError }) {
+  const [currentPin, setCurrentPin] = useState('')
+  const [newPin, setNewPin] = useState('')
+  const [confirmPin, setConfirmPin] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (e) => {
+    e.preventDefault()
+    onError('')
+    onMessage('')
+    if (!/^\d{4}$/.test(newPin)) {
+      onError('New PIN must be exactly 4 digits.')
+      return
+    }
+    if (newPin !== confirmPin) {
+      onError('New PIN confirmation does not match.')
+      return
+    }
+    try {
+      setBusy(true)
+      await changeWalletPin({
+        newPin,
+        currentPin: currentPin || undefined,
+      })
+      setCurrentPin('')
+      setNewPin('')
+      setConfirmPin('')
+      onMessage('Transaction PIN updated.')
+    } catch (err) {
+      onError(err?.message || 'Could not update PIN.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+      <h3 className="text-[15px] font-bold text-gray-900 mb-1">Transaction PIN</h3>
+      <p className="text-[12px] text-gray-500 mb-4">
+        Change your 4-digit wallet PIN. Enter your current PIN if one is already set.
+      </p>
+      <form onSubmit={submit} className="flex flex-col gap-3">
+        <input
+          type="password"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="Current PIN"
+          value={currentPin}
+          onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] outline-none focus:border-indigo-500"
+        />
+        <input
+          type="password"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="New PIN"
+          value={newPin}
+          onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] outline-none focus:border-indigo-500"
+          required
+        />
+        <input
+          type="password"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="Confirm new PIN"
+          value={confirmPin}
+          onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] outline-none focus:border-indigo-500"
+          required
+        />
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full bg-[#4F46E5] text-white py-3 rounded-xl font-bold text-[14px] disabled:opacity-60"
+        >
+          {busy ? 'Updating…' : 'Update PIN'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+function TotpQrCode({ otpauthUrl }) {
+  const [dataUrl, setDataUrl] = useState('')
+
+  useEffect(() => {
+    let active = true
+    QRCode.toDataURL(otpauthUrl, {
+      width: 220,
+      margin: 2,
+      color: { dark: '#111827', light: '#ffffff' },
+    })
+      .then((url) => {
+        if (active) setDataUrl(url)
+      })
+      .catch(() => {
+        if (active) setDataUrl('')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [otpauthUrl])
+
+  if (!dataUrl) {
+    return (
+      <div className="mx-auto flex h-[220px] w-[220px] items-center justify-center rounded-2xl border border-gray-100 bg-gray-50 text-xs text-gray-500">
+        Generating QR…
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={dataUrl}
+      alt="Authenticator QR code"
+      className="mx-auto rounded-2xl border border-gray-100"
+      width={220}
+      height={220}
+    />
+  )
 }
 
 function MethodOption({ method, selected, disabled, onSelect }) {
@@ -191,7 +318,7 @@ export default function PrivacySecurityPage({
       const data = await enableBiometric('native')
       await setBiometricUnlockEnabled(true, role)
       setSettings(data)
-      setMessage(`Biometric unlock enabled. You can unlock ${roleConfig.brandLabel} with fingerprint or face ID.`)
+      setMessage(`Biometric unlock enabled. You can unlock ${roleConfig.brandLabel} with fingerprint or face ID in the mobile app.`)
       onUserSecurityUpdate?.(data)
     } catch (err) {
       await disableDeviceBiometricUnlock(role).catch(() => {})
@@ -228,15 +355,15 @@ export default function PrivacySecurityPage({
 
   if (loading || !settings) {
     return (
-      <div className={`flex min-h-screen items-center justify-center text-gray-500 ${surfaceClassName}`}>
-        Loading security settings…
+      <div className={`flex min-h-screen items-center justify-center ${surfaceClassName}`}>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
 
   return (
     <div className={`flex flex-col min-h-screen pb-24 md:pb-12 ${surfaceClassName}`}>
-      <div className="px-5 md:px-8 pt-12 md:pt-8 pb-4 flex items-center gap-3 border-b border-gray-100 bg-inherit sticky top-0 z-20">
+      <div className="px-5 md:px-8 pt-app md:pt-8 pb-4 flex items-center gap-3 border-b border-gray-100 bg-inherit sticky top-0 z-20">
         <button type="button" onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full">
           <ArrowLeft size={22} />
         </button>
@@ -252,7 +379,11 @@ export default function PrivacySecurityPage({
 
         <SecuritySection
           title="Login"
-          description={`How you verify yourself when signing in to ${roleConfig.brandLabel}.`}
+          description={
+            isNativeApp()
+              ? `How you verify yourself when signing in to ${roleConfig.brandLabel}.`
+              : `How you verify yourself when signing in to ${roleConfig.brandLabel}. Biometric unlock applies in the mobile app; browsers receive an email code instead.`
+          }
           methods={settings.available_methods.login}
           value={settings.login_method}
           onChange={handleLoginMethod}
@@ -260,14 +391,17 @@ export default function PrivacySecurityPage({
         />
 
         {showTransactionSection ? (
-          <SecuritySection
-            title="Transactions"
-            description="How you confirm wallet transfers and payments."
-            methods={settings.available_methods.transaction}
-            value={settings.transaction_method}
-            onChange={handleTransactionMethod}
-            disabledMethods={[...disabledForTotp, ...disabledForBiometric]}
-          />
+          <>
+            <SecuritySection
+              title="Transactions"
+              description="How you confirm wallet transfers and payments."
+              methods={settings.available_methods.transaction}
+              value={settings.transaction_method}
+              onChange={handleTransactionMethod}
+              disabledMethods={[...disabledForTotp, ...disabledForBiometric]}
+            />
+            <TransactionPinCard onMessage={setMessage} onError={setError} />
+          </>
         ) : null}
 
         {showOrderSection ? (
@@ -302,11 +436,7 @@ export default function PrivacySecurityPage({
 
           {totpSetup ? (
             <div className="space-y-4">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(totpSetup.otpauth_url)}`}
-                alt="Authenticator QR code"
-                className="mx-auto rounded-2xl border border-gray-100"
-              />
+              <TotpQrCode otpauthUrl={totpSetup.otpauth_url} />
               <p className="text-center text-[12px] text-gray-500 break-all">Manual key: {totpSetup.secret}</p>
               <input
                 value={totpCode}
@@ -344,10 +474,12 @@ export default function PrivacySecurityPage({
               <h2 className="text-[16px] font-bold text-gray-900">Biometric unlock</h2>
               <p className="text-[13px] text-gray-500">
                 {settings.biometric_enabled
-                  ? 'Face ID, fingerprint, or device lock can confirm actions.'
+                  ? isNativeApp()
+                    ? 'Face ID, fingerprint, or device lock can confirm sign-in on this device.'
+                    : 'Enabled for the mobile app. When you sign in here, we email you a one-time code instead.'
                   : biometricSupported
-                    ? 'Use your device biometrics for faster confirmation.'
-                    : 'Biometric unlock is not available in this browser or device.'}
+                    ? 'Use your device biometrics for faster sign-in in the mobile app.'
+                    : 'Available in the Fast Rapid mobile app. Browsers use an email verification code instead.'}
               </p>
             </div>
           </div>
@@ -371,6 +503,37 @@ export default function PrivacySecurityPage({
               {biometricBusy ? 'Updating…' : 'Disable biometric unlock'}
             </button>
           )}
+        </section>
+
+        <section className="bg-white rounded-[28px] border border-gray-100 shadow-sm p-5 md:p-6">
+          <h2 className="text-[16px] font-bold text-gray-900 mb-1">Your data rights</h2>
+          <p className="text-[13px] text-gray-500 mb-4">
+            Request a copy of your account data or ask us to delete your account. Our team handles these by email while automated flows are finalized.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <a
+              href={`mailto:support@fastrapid.com?subject=${encodeURIComponent('Data export request')}&body=${encodeURIComponent('Please export the personal data linked to my FastRapid account.\n\nRegistered email:\n')}`}
+              className="inline-flex flex-1 items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-800"
+            >
+              Request my data
+            </a>
+            <a
+              href={`mailto:support@fastrapid.com?subject=${encodeURIComponent('Account deletion request')}&body=${encodeURIComponent('Please delete my FastRapid account and associated personal data, subject to legal retention rules.\n\nRegistered email:\n')}`}
+              className="inline-flex flex-1 items-center justify-center rounded-xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600"
+            >
+              Request account deletion
+            </a>
+          </div>
+          <p className="mt-3 text-[12px] text-gray-400">
+            Policies:{' '}
+            <a href="/legal/privacy.html" className="font-semibold text-rapid-orange hover:underline">
+              Privacy
+            </a>
+            {' · '}
+            <a href="/legal/terms.html" className="font-semibold text-rapid-orange hover:underline">
+              Terms
+            </a>
+          </p>
         </section>
 
         {saving ? <p className="text-center text-sm text-gray-500">Saving…</p> : null}

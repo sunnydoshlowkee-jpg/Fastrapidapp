@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { updateLocation as updateLocationApi } from '../services/locationService'
+import { reverseGeocode } from '../lib/googleGeocode'
 import {
   DEFAULT_LOCATION,
   formatLocationDisplay,
@@ -7,9 +8,31 @@ import {
   requestDevicePosition,
   storeLocation,
 } from '../utils/geo'
+import { watchDevicePosition } from '../utils/nativeLocation'
 import { useAuth } from './AuthContext'
 
 const LocationContext = createContext(null)
+
+const WATCH_MOVE_METERS = 35
+const GEOCODE_MIN_INTERVAL_MS = 45_000
+const SERVER_SYNC_MIN_INTERVAL_MS = 20_000
+
+function toRad(value) {
+  return (value * Math.PI) / 180
+}
+
+function distanceMeters(a, b) {
+  if (!a || !b) return Infinity
+  const earth = 6371000
+  const dLat = toRad(b.latitude - a.latitude)
+  const dLng = toRad(b.longitude - a.longitude)
+  const lat1 = toRad(a.latitude)
+  const lat2 = toRad(b.latitude)
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2
+  return 2 * earth * Math.asin(Math.min(1, Math.sqrt(h)))
+}
 
 function normalizeLocation(input) {
   if (input?.latitude == null || input?.longitude == null) return null
@@ -22,6 +45,8 @@ function normalizeLocation(input) {
     state: input.state || DEFAULT_LOCATION.state,
     country_code: input.country_code || DEFAULT_LOCATION.country_code,
     source: input.source || 'manual',
+    accuracy: input.accuracy,
+    updatedAt: input.updatedAt || Date.now(),
   }
 
   return {
@@ -36,21 +61,29 @@ export function LocationProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [detecting, setDetecting] = useState(false)
   const [error, setError] = useState(null)
+  const locationRef = useRef(null)
+  const lastGeocodeAtRef = useRef(0)
+  const lastSyncAtRef = useRef(0)
 
   const applyLocation = useCallback((next) => {
     const normalized = normalizeLocation(next)
     if (!normalized) return null
 
     setLocation(normalized)
+    locationRef.current = normalized
     storeLocation(normalized)
     setError(null)
 
     return normalized
   }, [])
 
-  const syncToServer = useCallback(async (next) => {
+  const syncToServer = useCallback(async (next, { force = false } = {}) => {
     const token = localStorage.getItem('rapid_token')
     if (!token) return
+
+    const now = Date.now()
+    if (!force && now - lastSyncAtRef.current < SERVER_SYNC_MIN_INTERVAL_MS) return
+    lastSyncAtRef.current = now
 
     try {
       await updateLocationApi({
@@ -66,11 +99,69 @@ export function LocationProvider({ children }) {
     }
   }, [])
 
+  const enrichAndApply = useCallback(async (coords, { forceGeocode = false } = {}) => {
+    const base = {
+      latitude: Number(coords.latitude ?? coords.lat),
+      longitude: Number(coords.longitude ?? coords.lng),
+      accuracy: coords.accuracy,
+      updatedAt: coords.updatedAt || Date.now(),
+      source: 'gps',
+    }
+
+    if (!Number.isFinite(base.latitude) || !Number.isFinite(base.longitude)) {
+      return null
+    }
+
+    // Apply coords immediately so discovery can start without waiting on geocode.
+    const previous = locationRef.current
+    const quick = applyLocation({
+      ...base,
+      location_label: previous?.location_label || 'Current location',
+      city: previous?.city || DEFAULT_LOCATION.city,
+      state: previous?.state || DEFAULT_LOCATION.state,
+      country_code: previous?.country_code || DEFAULT_LOCATION.country_code,
+    })
+
+    const now = Date.now()
+    const movedFar =
+      !previous || distanceMeters(previous, base) >= WATCH_MOVE_METERS
+    const shouldGeocode =
+      forceGeocode ||
+      movedFar ||
+      now - lastGeocodeAtRef.current >= GEOCODE_MIN_INTERVAL_MS
+
+    if (shouldGeocode) {
+      lastGeocodeAtRef.current = now
+      try {
+        const geo = await reverseGeocode(base.latitude, base.longitude)
+        if (geo) {
+          applyLocation({
+            ...base,
+            location_label: geo.location_label,
+            city: geo.city || DEFAULT_LOCATION.city,
+            state: geo.state || DEFAULT_LOCATION.state,
+            country_code: geo.country_code || DEFAULT_LOCATION.country_code,
+            source: geo.source || 'gps',
+          })
+        }
+      } catch {
+        // Keep quick GPS label.
+      }
+    }
+
+    const current = locationRef.current || quick
+    if (current) {
+      await syncToServer(current, { force: forceGeocode || !previous })
+    }
+
+    return locationRef.current || quick
+  }, [applyLocation, syncToServer])
+
   const setUserLocation = useCallback(async (input) => {
     const normalized = applyLocation(input)
     if (!normalized) return null
 
-    await syncToServer(normalized)
+    await syncToServer(normalized, { force: true })
     return normalized
   }, [applyLocation, syncToServer])
 
@@ -80,25 +171,17 @@ export function LocationProvider({ children }) {
 
     try {
       const coords = await requestDevicePosition()
-      const normalized = await setUserLocation({
-        ...coords,
-        location_label: 'Current location',
-        city: DEFAULT_LOCATION.city,
-        state: DEFAULT_LOCATION.state,
-        country_code: DEFAULT_LOCATION.country_code,
-        source: 'gps',
-      })
-      return normalized
+      return await enrichAndApply(coords, { forceGeocode: true })
     } catch (err) {
       const message = err?.code === 1
-        ? 'Location permission denied. Enable location or pick an area below.'
+        ? 'Location permission denied. Enable location to see nearby stores.'
         : (err?.message || 'Could not detect your location.')
       setError(message)
       return null
     } finally {
       setDetecting(false)
     }
-  }, [setUserLocation])
+  }, [enrichAndApply])
 
   useEffect(() => {
     const stored = readStoredLocation()
@@ -110,21 +193,44 @@ export function LocationProvider({ children }) {
       applyLocation(stored)
     } else {
       setLocation(null)
+      locationRef.current = null
     }
 
     setLoading(false)
   }, [user, applyLocation])
 
-  // Prompt for GPS once when we have no saved location.
+  // Live GPS watch — keeps discovery aligned with the user's realtime position.
+  useEffect(() => {
+    let cancelled = false
+    let stop = () => {}
+
+    ;(async () => {
+      stop = await watchDevicePosition(
+        (coords) => {
+          if (cancelled) return
+          enrichAndApply(coords)
+        },
+        (err) => {
+          if (cancelled) return
+          if (!locationRef.current) {
+            setError(err?.message || 'Enable location to see nearby stores.')
+          }
+        },
+      )
+    })()
+
+    return () => {
+      cancelled = true
+      stop?.()
+    }
+  }, [enrichAndApply])
+
+  // One-shot prompt when we still have no location after hydrate.
   useEffect(() => {
     if (loading || location?.latitude != null) return undefined
 
     let cancelled = false
-    let attempted = false
-
     ;(async () => {
-      if (attempted) return
-      attempted = true
       const result = await detectCurrentLocation()
       if (cancelled || result) return
     })()
@@ -132,7 +238,6 @@ export function LocationProvider({ children }) {
     return () => {
       cancelled = true
     }
-    // Intentionally run once after initial load when location is still missing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading])
 

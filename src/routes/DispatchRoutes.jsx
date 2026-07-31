@@ -21,6 +21,7 @@ import ActiveDelivery from '../apps/dispatch/pages/ActiveDelivery'
 import DeliverySuccess from '../apps/dispatch/pages/DeliverySuccess'
 import Earnings from '../apps/dispatch/pages/Earnings'
 import Withdraw from '../apps/dispatch/pages/Withdraw'
+import BankAccount from '../apps/dispatch/pages/BankAccount'
 import PayoutHistory from '../apps/dispatch/pages/PayoutHistory'
 import Deliveries from '../apps/dispatch/pages/Deliveries'
 import CustomerChat from '../apps/dispatch/pages/CustomerChat'
@@ -65,6 +66,7 @@ export default function DispatchRoutes() {
         <Route path="deliveries" element={<Deliveries />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="earnings/withdraw" element={<Withdraw />} />
+        <Route path="profile/bank" element={<BankAccount />} />
         <Route path="earnings/history" element={<PayoutHistory />} />
         <Route path="profile" element={<RiderProfile />} />
         <Route path="profile/privacy-security" element={<RiderPrivacySecurity />} />

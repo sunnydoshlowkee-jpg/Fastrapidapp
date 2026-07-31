@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
 import {
   Bell,
   ChevronLeft,
@@ -33,7 +33,13 @@ const pageConfig = ADMIN_MERCHANTS_UI
 
 export default function AdminMerchantsPage() {
   const outletCtx = useOutletContext() ?? {}
-  const [activeTab, setActiveTab] = useState('all')
+  const [searchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || 'all'
+  const [activeTab, setActiveTab] = useState(
+    ['all', 'pending', 'active', 'suspended', 'rejected'].includes(initialStatus)
+      ? initialStatus
+      : 'all',
+  )
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [merchants, setMerchants] = useState([])

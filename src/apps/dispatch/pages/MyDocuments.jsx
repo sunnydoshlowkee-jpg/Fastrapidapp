@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Clock,
 } from 'lucide-react'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 import {
   getDocuments,
   uploadDocument,
@@ -139,7 +140,7 @@ export default function MyDocuments() {
         </div>
       )}
 
-      <div className="sticky top-0 z-40 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-white px-5 pt-app pb-4 flex items-center justify-between">
         <button type="button" onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center">
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
@@ -213,9 +214,7 @@ export default function MyDocuments() {
           </div>
 
           {loading ? (
-            <div className="text-center text-gray-400 py-8">
-              <Loader2 size={24} className="mx-auto animate-spin" />
-            </div>
+            <BrandedLoader size="md" />
           ) : (
             <div className="flex flex-col gap-3">
               {REQUIRED_DOCS.map((docConfig) => {

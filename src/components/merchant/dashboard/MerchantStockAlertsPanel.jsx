@@ -1,4 +1,5 @@
 import { AlertCircle, AlertTriangle, Package } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const severityBar = {
   critical: 'bg-[#E67E22]',
@@ -12,8 +13,10 @@ function AlertIcon({ severity }) {
   return null
 }
 
-export default function MerchantStockAlertsPanel({ stockAlerts }) {
+export default function MerchantStockAlertsPanel({ stockAlerts, onRestock }) {
+  const navigate = useNavigate()
   const { badge, items, inventoryHealth } = stockAlerts
+  const goRestock = onRestock || (() => navigate('/merchant/menu'))
 
   return (
     <section className="flex flex-col rounded-merchant-stat bg-merchant-surface p-5 shadow-merchant-stat lg:p-6">
@@ -24,29 +27,34 @@ export default function MerchantStockAlertsPanel({ stockAlerts }) {
         </span>
       </div>
 
-      <ul className="flex flex-col gap-4">
-        {items.map((item) => (
-          <li key={item.id} className="flex gap-3">
-            <span
-              className={`mt-0.5 w-1 shrink-0 self-stretch rounded-full ${severityBar[item.severity] || severityBar.warning}`}
-              aria-hidden
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-semibold text-merchant-ink">{item.title}</p>
-                {item.showIcon && <AlertIcon severity={item.severity} />}
+      {items.length === 0 ? (
+        <p className="text-sm text-merchant-muted">No low-stock items right now.</p>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {items.map((item) => (
+            <li key={item.id} className="flex gap-3">
+              <span
+                className={`mt-0.5 w-1 shrink-0 self-stretch rounded-full ${severityBar[item.severity] || severityBar.warning}`}
+                aria-hidden
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold text-merchant-ink">{item.title}</p>
+                  {item.showIcon && <AlertIcon severity={item.severity} />}
+                </div>
+                <p className="mt-0.5 text-xs text-merchant-muted">{item.detail}</p>
+                <button
+                  type="button"
+                  onClick={goRestock}
+                  className="mt-1.5 text-xs font-semibold text-merchant-primary hover:text-[#3837e6]"
+                >
+                  {item.action}
+                </button>
               </div>
-              <p className="mt-0.5 text-xs text-merchant-muted">{item.detail}</p>
-              <button
-                type="button"
-                className="mt-1.5 text-xs font-semibold text-merchant-primary hover:text-[#3837e6]"
-              >
-                {item.action}
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="mt-5 rounded-lg bg-merchant-icon-tile p-4">
         <div className="flex items-center gap-2">
@@ -70,4 +78,3 @@ export default function MerchantStockAlertsPanel({ stockAlerts }) {
     </section>
   )
 }
-

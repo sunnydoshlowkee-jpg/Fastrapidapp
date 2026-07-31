@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { verifyPhoneOtp } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
+import { navigateAfterUserLogin } from '../../../../utils/userLoginSecurity'
 
 const OTP_LENGTH = 4
 
@@ -101,14 +102,11 @@ export default function VerifyIdentity() {
         window.dispatchEvent(new Event('rapid-auth-changed'))
       }
 
-      if (user?.status === 'pending_profile') {
-        navigate('/onboarding/profile', {
-          state: { signupMethod: 'phone', phoneE164, phone: nationalPhone },
-        })
-        return
-      }
-
-      navigate('/app')
+      navigateAfterUserLogin(navigate, user, {
+        signupMethod: 'phone',
+        phoneE164,
+        phone: nationalPhone,
+      })
     } catch (err) {
       setCodeError(getApiFieldError(err, 'code') || getApiFieldError(err, 'phone'))
     } finally {

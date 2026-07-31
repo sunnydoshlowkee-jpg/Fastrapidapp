@@ -3,15 +3,12 @@ import MerchantAccountSettingsField from './MerchantAccountSettingsField'
 import MerchantAccountSettingsSection from './MerchantAccountSettingsSection'
 
 export default function MerchantAccountSettingsProfileForm({ profile }) {
-  const [form, setForm] = useState({
+  const [form] = useState({
     fullName: profile.fields.fullName.value,
     email: profile.fields.email.value,
     phone: profile.fields.phone.value,
   })
-
-  const update = (key) => (e) => {
-    setForm((prev) => ({ ...prev, [key]: e.target.value }))
-  }
+  const readOnly = Boolean(profile.readOnly)
 
   const aside = (
     <>
@@ -31,31 +28,37 @@ export default function MerchantAccountSettingsProfileForm({ profile }) {
             id="fullName"
             label={profile.fields.fullName.label}
             value={form.fullName}
-            onChange={update('fullName')}
+            readOnly={readOnly}
           />
           <MerchantAccountSettingsField
             id="email"
             label={profile.fields.email.label}
             type="email"
             value={form.email}
-            onChange={update('email')}
+            readOnly={readOnly}
           />
           <MerchantAccountSettingsField
             id="phone"
             label={profile.fields.phone.label}
             value={form.phone}
-            onChange={update('phone')}
+            readOnly={readOnly}
           />
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            className="rounded-lg bg-merchant-primary px-6 py-3 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6]"
-          >
-            {profile.saveLabel}
-          </button>
-        </div>
+        {!readOnly ? (
+          <div className="mt-6 flex justify-end">
+            <button
+              type="submit"
+              className="rounded-lg bg-merchant-primary px-6 py-3 text-sm font-semibold text-white shadow-merchant-btn transition-colors hover:bg-[#3837e6]"
+            >
+              {profile.saveLabel}
+            </button>
+          </div>
+        ) : (
+          <p className="mt-6 text-xs text-merchant-muted">
+            Account contact details are managed through support. Use Privacy &amp; Security for login preferences.
+          </p>
+        )}
       </form>
     </MerchantAccountSettingsSection>
   )

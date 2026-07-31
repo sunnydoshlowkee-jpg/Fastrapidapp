@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import {
   getMerchantNotifications,
   markMerchantAsRead,
+  markMerchantAllAsRead,
 } from '../../../services/notificationService'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 function getIcon(type, data) {
   if (data?.kind === 'rider_arrived_at_pickup') {
@@ -73,12 +75,29 @@ export default function MerchantNotifications() {
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-lg font-semibold text-merchant-ink-slate">Notifications</h1>
+        <h1 className="flex-1 text-lg font-semibold text-merchant-ink-slate">Notifications</h1>
+        {notifications.some((n) => !n.is_read) ? (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await markMerchantAllAsRead()
+                setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+                refreshUnread()
+              } catch (err) {
+                console.error(err)
+              }
+            }}
+            className="text-xs font-semibold text-merchant-primary"
+          >
+            Mark all read
+          </button>
+        ) : null}
       </header>
 
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 lg:px-8">
         {loading ? (
-          <p className="text-sm text-merchant-muted">Loading notifications...</p>
+          <BrandedLoader size="md" />
         ) : notifications.length === 0 ? (
           <div className="rounded-merchant-stat border border-merchant-divider bg-merchant-surface px-6 py-12 text-center">
             <Bell size={28} className="mx-auto text-merchant-muted" />

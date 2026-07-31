@@ -1,17 +1,23 @@
 import MerchantAnalyticsDesktop from '../../../components/merchant/analytics/MerchantAnalyticsDesktop'
 import MerchantAnalyticsMobile from '../../../components/merchant/analytics/MerchantAnalyticsMobile'
 import useMerchantAnalytics from '../../../components/merchant/analytics/useMerchantAnalytics'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 import { MERCHANT_ANALYTICS_PERIODS } from '../../../services/merchantAnalyticsService'
 
 export default function Analytics() {
-  const { data, loading, error, activePeriod, setActivePeriod, refresh } = useMerchantAnalytics('today')
+  const {
+    data,
+    loading,
+    error,
+    activePeriod,
+    setActivePeriod,
+    customRange,
+    setCustomRange,
+    refresh,
+  } = useMerchantAnalytics('today')
 
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-sm text-merchant-muted">
-        Loading analytics…
-      </div>
-    )
+    return <BrandedLoader fill className="p-8" />
   }
 
   if (error || !data) {
@@ -36,12 +42,16 @@ export default function Analytics() {
         periods={MERCHANT_ANALYTICS_PERIODS}
         activePeriod={activePeriod}
         onPeriodChange={setActivePeriod}
+        customRange={customRange}
+        onCustomRangeChange={setCustomRange}
       />
       <MerchantAnalyticsDesktop
         data={data}
         periods={MERCHANT_ANALYTICS_PERIODS}
         activePeriod={activePeriod}
         onPeriodChange={setActivePeriod}
+        customRange={customRange}
+        onCustomRangeChange={setCustomRange}
       />
     </>
   )

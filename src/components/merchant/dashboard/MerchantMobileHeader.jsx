@@ -1,17 +1,13 @@
-import { useNavigate } from 'react-router-dom'
-import NotificationBellButton from '../../notifications/NotificationBellButton'
-import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import MerchantHeaderActions from '../layout/MerchantHeaderActions'
 
 export default function MerchantMobileHeader({ variant = 'inline' }) {
-  const navigate = useNavigate()
-  const { unread } = useUnreadNotifications({ role: 'merchant' })
   const isBar = variant === 'bar'
 
   return (
     <header
       className={
         isBar
-          ? 'sticky top-0 z-30 flex h-16 items-center justify-between gap-4 bg-merchant-input px-4 lg:hidden'
+          ? 'sticky top-0 z-30 flex min-h-16 items-center justify-between gap-4 bg-merchant-input px-4 pt-app pb-2 lg:hidden'
           : 'flex items-center justify-between gap-4'
       }
     >
@@ -24,15 +20,7 @@ export default function MerchantMobileHeader({ variant = 'inline' }) {
       >
         {isBar ? 'MERCHANT PORTAL' : 'Merchant Portal'}
       </h1>
-      <NotificationBellButton
-        onClick={() => navigate('/merchant/notifications')}
-        count={unread}
-        tone="indigo"
-        iconSize={18}
-        iconClassName="text-merchant-link"
-        className="h-10 w-10 rounded-full"
-        ariaLabel={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
-      />
+      <MerchantHeaderActions />
     </header>
   )
 }

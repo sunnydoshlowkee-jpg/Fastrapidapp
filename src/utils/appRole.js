@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core'
+
 export const APP_ROLES = {
   user: 'user',
   rider: 'rider',
@@ -55,7 +57,46 @@ export function getNativeAppRole() {
   return PERSONA_TO_ROLE[getNativePersona()] || APP_ROLES.user
 }
 
-export function detectAppRole(pathname = window.location.pathname) {
+/**
+ * App route path that works with BrowserRouter and HashRouter (Capacitor).
+ * Prefer this over raw `window.location.pathname` outside React Router.
+ */
+export function getAppPathname() {
+  const hash = window.location.hash || ''
+  if (hash.startsWith('#')) {
+    const withoutHash = hash.slice(1)
+    const path = (withoutHash.startsWith('/') ? withoutHash : `/${withoutHash}`).split('?')[0]
+    return path || '/'
+  }
+
+  return window.location.pathname || '/'
+}
+
+/**
+ * Navigate within the SPA (hash on native Capacitor, path on web).
+ */
+export function navigateAppPath(path) {
+  if (!path || typeof path !== 'string') return
+  const normalized = path.startsWith('/') ? path : `/${path}`
+
+  if (Capacitor.isNativePlatform()) {
+    if (window.location.hash !== `#${normalized}`) {
+      window.location.hash = normalized
+    }
+    return
+  }
+
+  if (window.location.pathname !== normalized) {
+    window.location.href = normalized
+  }
+}
+
+export function detectAppRole(pathname = getAppPathname()) {
+  // Dedicated Capacitor flavor builds pin the role via VITE_APP_PERSONA.
+  if (import.meta.env.VITE_APP_PERSONA) {
+    return getNativeAppRole()
+  }
+
   if (pathname.startsWith('/dispatch')) return APP_ROLES.rider
   if (pathname.startsWith('/merchant')) return APP_ROLES.merchant
   return APP_ROLES.user

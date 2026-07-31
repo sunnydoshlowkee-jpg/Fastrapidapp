@@ -69,6 +69,18 @@ export async function downloadMerchantProductImportTemplate() {
   }
 }
 
+export async function importMerchantProductsCsv(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const { data } = await api.post('/merchant/products/import', formData)
+    return data?.data ?? null
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'file') || getApiFieldError(err, 'form') || 'Could not import CSV.')
+  }
+}
+
 export async function fetchMerchantInventory({ search = '', page = 1, perPage = 4 } = {}) {
   try {
     const { data } = await api.get('/merchant/products', {
@@ -126,6 +138,7 @@ function buildMerchantProductFormData({
   mediaFile,
   mediaFiles = [],
   allowsMultipleImages = false,
+  announce = false,
 }) {
   const formData = new FormData()
   formData.append('name', productName.trim())
@@ -135,6 +148,7 @@ function buildMerchantProductFormData({
   if (description?.trim()) {
     formData.append('description', description.trim())
   }
+  formData.append('announce', announce ? '1' : '0')
 
   const files = allowsMultipleImages
     ? (mediaFiles.length > 0 ? mediaFiles : mediaFile ? [mediaFile] : [])
@@ -162,6 +176,7 @@ export async function createMerchantProduct({
   mediaFile,
   mediaFiles,
   allowsMultipleImages,
+  announce = false,
 }) {
   const formData = buildMerchantProductFormData({
     productName,
@@ -172,6 +187,7 @@ export async function createMerchantProduct({
     mediaFile,
     mediaFiles,
     allowsMultipleImages,
+    announce,
   })
 
   try {

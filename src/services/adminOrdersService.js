@@ -158,3 +158,15 @@ export function buildAdminOrdersPaginationPages(pagination) {
 
   return [...new Set(pages)]
 }
+
+export async function updateAdminOrderStatus(orderId, status, reason = '') {
+  try {
+    const { data } = await api.patch(`/admin/orders/${orderId}/status`, {
+      status,
+      reason: reason || undefined,
+    })
+    return data?.data
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form') || err.response?.data?.message || 'Could not update order status.')
+  }
+}

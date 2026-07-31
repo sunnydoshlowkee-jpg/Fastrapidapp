@@ -1,8 +1,10 @@
 import { MERCHANT_SETTINGS_ACCOUNT_PATH } from './merchantAccountSettings.mock'
 import { MERCHANT_SETTINGS_BUSINESS_PATH } from './merchantBusinessProfile.mock'
 import { MERCHANT_SETTINGS_OPERATING_HOURS_PATH } from './merchantOperatingHours.mock'
+import { MERCHANT_SETTINGS_PAYOUT_PATH } from './merchantSettingsPayout.mock'
 
 export const MERCHANT_SETTINGS_PRIVACY_PATH = '/merchant/settings/privacy-security'
+export const MERCHANT_SETTINGS_ACCOUNTS_PATH = '/merchant/settings/accounts'
 
 /** Desktop [272:11459](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=272-11459) · Mobile [622:1768](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=622-1768) */
 export const MERCHANT_SETTINGS = {
@@ -33,6 +35,15 @@ export const MERCHANT_SETTINGS = {
       description: 'Link bank accounts, manage payout schedules, and view fees.',
       icon: 'banknote',
       highlighted: false,
+      to: MERCHANT_SETTINGS_PAYOUT_PATH,
+    },
+    {
+      id: 'merchant-accounts',
+      title: 'Switch merchant',
+      description: 'Add another merchant account or switch between signed-in merchants.',
+      icon: 'users',
+      highlighted: false,
+      to: MERCHANT_SETTINGS_ACCOUNTS_PATH,
     },
     {
       id: 'account-settings',
@@ -71,6 +82,20 @@ export const MERCHANT_SETTINGS = {
         to: MERCHANT_SETTINGS_OPERATING_HOURS_PATH,
       },
       {
+        id: 'payment-methods',
+        title: 'Payment Methods',
+        description: 'Link bank accounts, manage payout schedules, and view fees.',
+        icon: 'credit-card',
+        to: MERCHANT_SETTINGS_PAYOUT_PATH,
+      },
+      {
+        id: 'merchant-accounts',
+        title: 'Switch merchant',
+        description: 'Add another merchant or switch between accounts.',
+        icon: 'users',
+        to: MERCHANT_SETTINGS_ACCOUNTS_PATH,
+      },
+      {
         id: 'account-settings',
         title: 'Account Settings',
         description: 'Update contact email, phone number, and security preferences.',
@@ -83,12 +108,6 @@ export const MERCHANT_SETTINGS = {
         description: 'Enable biometric unlock, authenticator app, and login preferences.',
         icon: 'shield',
         to: MERCHANT_SETTINGS_PRIVACY_PATH,
-      },
-      {
-        id: 'payment-methods',
-        title: 'Payment Methods',
-        description: 'Link bank accounts, manage payout schedules, and view fees.',
-        icon: 'credit-card',
       },
     ],
   },

@@ -1,30 +1,12 @@
-import { useState } from 'react'
 import { CalendarDays } from 'lucide-react'
 import { merchantOperatingHoursCardClass } from './merchantOperatingHoursCardStyles'
 import MerchantOperatingHoursDayRow from './MerchantOperatingHoursDayRow'
 
-export default function MerchantOperatingHoursWeeklySchedule({ schedule }) {
-  const [days, setDays] = useState(schedule.days)
-
-  const handleToggle = (id, open) => {
-    setDays((prev) =>
-      prev.map((day) =>
-        day.id === id
-          ? {
-              ...day,
-              open,
-              openTime: day.openTime ?? '09:00 AM',
-              closeTime: day.closeTime ?? '09:00 PM',
-            }
-          : day,
-      ),
-    )
-  }
-
-  const handleTimeChange = (id, field, value) => {
-    setDays((prev) => prev.map((day) => (day.id === id ? { ...day, [field]: value } : day)))
-  }
-
+export default function MerchantOperatingHoursWeeklySchedule({
+  schedule,
+  onToggle,
+  onTimeChange,
+}) {
   return (
     <section className={merchantOperatingHoursCardClass}>
       <div className="flex items-center justify-between gap-4 border-b border-merchant-divider pb-4">
@@ -40,14 +22,14 @@ export default function MerchantOperatingHoursWeeklySchedule({ schedule }) {
       </div>
 
       <ul className="mt-4 space-y-2.5">
-        {days.map((day) => (
+        {schedule.days.map((day) => (
           <MerchantOperatingHoursDayRow
             key={day.id}
             day={day}
             closedLabel={schedule.closedLabel}
             toLabel={schedule.toLabel}
-            onToggle={handleToggle}
-            onTimeChange={handleTimeChange}
+            onToggle={onToggle}
+            onTimeChange={onTimeChange}
           />
         ))}
       </ul>

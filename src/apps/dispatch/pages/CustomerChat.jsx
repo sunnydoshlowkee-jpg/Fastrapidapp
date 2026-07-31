@@ -5,6 +5,7 @@ import {
   fetchRiderDeliveryChat,
   sendRiderDeliveryChat,
 } from '../../../services/deliveryChatService'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const MAX_LENGTH = 1000
 const POLL_MS = 3000
@@ -115,7 +116,7 @@ export default function CustomerChat() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 max-w-md mx-auto">
-      <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-50 bg-white px-5 pt-app pb-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
         <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
@@ -162,7 +163,7 @@ export default function CustomerChat() {
         </div>
 
         {loading ? (
-          <p className="text-center text-sm text-gray-500 py-10">Loading chat…</p>
+          <BrandedLoader size="md" />
         ) : error && messages.length === 0 ? (
           <div className="text-center py-10 space-y-3">
             <p className="text-sm text-red-500">{error}</p>

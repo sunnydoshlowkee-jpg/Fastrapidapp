@@ -11,6 +11,9 @@ export default function MerchantBusinessProfileMobile({
   onSaveCategory,
   savingCategory = false,
   onLogoUpdated,
+  onTogglePaused,
+  savingStoreStatus = false,
+  onDocumentUpload,
 }) {
   const mobile = profile.mobile
 
@@ -33,8 +36,16 @@ export default function MerchantBusinessProfileMobile({
         saving={savingCategory}
         className={merchantBusinessProfileMobileCardClass}
       />
-      <MerchantBusinessProfileMobileStoreStatus storeStatus={mobile.storeStatus} />
-      <MerchantBusinessProfileMobileDocuments documents={mobile.documents} />
+      <MerchantBusinessProfileMobileStoreStatus
+        storeStatus={mobile.storeStatus}
+        onTogglePaused={onTogglePaused}
+        saving={savingStoreStatus}
+      />
+      <MerchantBusinessProfileMobileDocuments
+        documents={mobile.documents}
+        onUpload={onDocumentUpload}
+        onReupload={onDocumentUpload}
+      />
       <MerchantBusinessProfileMobileLocation location={mobile.location} />
     </div>
   )

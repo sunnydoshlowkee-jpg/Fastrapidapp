@@ -8,18 +8,13 @@ import { useRiderEarnings } from '../../../hooks/useRiderEarnings'
 import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
-import { MapContainer, TileLayer, Marker, Circle } from 'react-leaflet'
+import GoogleMapView from '../../../components/maps/GoogleMapView'
 
 const ZONES = [
   { id: 'yaba', name: 'Yaba', activeRiders: 14, center: { lat: 6.5095, lng: 3.3711 } },
   { id: 'lekki', name: 'Lekki', activeRiders: 42, center: { lat: 6.4442, lng: 3.4831 } },
   { id: 'ikeja', name: 'Ikeja', activeRiders: 28, center: { lat: 6.5866, lng: 3.3563 } },
 ]
-
-const mapContainerStyle = {
-  width: '100%',
-  height: '100%',
-}
 
 export default function RiderDashboard() {
   const navigate = useNavigate()
@@ -127,7 +122,7 @@ export default function RiderDashboard() {
     <div className="min-h-screen bg-gray-50 pb-4">
 
       {/* ── Header ── */}
-      <div className="sticky top-0 z-50 bg-gray-50 px-5 pt-12 pb-4 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-gray-50 px-5 pt-app pb-4 flex items-center justify-between">
         <div>
           <p className="text-[17px] font-bold" style={{ color: '#5B5BFF' }}>
             Good morning, {riderName} 👋
@@ -258,28 +253,29 @@ export default function RiderDashboard() {
             <p className="text-sm font-black" style={{ color: '#5B5BFF' }}>Current Zone: {activeZone.name}</p>
             <button onClick={() => setShowZoneModal(true)} className="text-xs font-bold text-gray-500 uppercase tracking-wider hover:text-gray-900 transition-colors">CHANGE</button>
           </div>
-          {/* Map placeholder */}
+          {/* Map */}
           <div className="relative mx-3 mb-3 rounded-2xl overflow-hidden bg-gray-100" style={{ height: '140px' }}>
-            <MapContainer 
-              center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} 
-              zoom={13} 
-              zoomControl={false}
-              style={mapContainerStyle}
+            <GoogleMapView
               key={`${activeZone.center?.lat || 6.5095}-${activeZone.center?.lng || 3.3711}`}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <Marker position={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]} />
-              {showHeatmap && (
-                <Circle
-                  center={[activeZone.center?.lat || 6.5095, activeZone.center?.lng || 3.3711]}
-                  radius={2500}
-                  pathOptions={{ fillColor: '#EF4444', fillOpacity: 0.2, color: '#EF4444', opacity: 0.5, weight: 1 }}
-                />
-              )}
-            </MapContainer>
+              center={
+                riderPosition?.lat != null
+                  ? { lat: riderPosition.lat, lng: riderPosition.lng }
+                  : { lat: activeZone.center?.lat || 6.5095, lng: activeZone.center?.lng || 3.3711 }
+              }
+              zoom={13}
+              height="100%"
+              className="absolute inset-0"
+              markers={[
+                {
+                  lat: activeZone.center?.lat || 6.5095,
+                  lng: activeZone.center?.lng || 3.3711,
+                  title: showHeatmap ? `${activeZone.name} Zone (heatmap)` : `${activeZone.name} Zone`,
+                },
+                ...(riderPosition?.lat != null
+                  ? [{ lat: riderPosition.lat, lng: riderPosition.lng, title: 'You' }]
+                  : []),
+              ]}
+            />
             
             {/* Button */}
             <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
@@ -333,7 +329,7 @@ export default function RiderDashboard() {
                         </div>
                       </div>
                       <p className="font-black text-gray-900 text-sm">
-                        ₦{Number(d.order?.delivery_fee || 650).toLocaleString()}
+                        ₦{Number(d.rider_payout ?? Math.round(Number(d.order?.delivery_fee || d.delivery_fee || 0) * 0.8)).toLocaleString()}
                       </p>
                     </div>
 

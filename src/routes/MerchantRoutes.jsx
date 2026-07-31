@@ -23,8 +23,10 @@ import MerchantWallet from '../apps/merchant/pages/Wallet'
 import MerchantSendMoney from '../apps/merchant/pages/SendMoney'
 import Settings from '../apps/merchant/pages/Settings'
 import SettingsAccount from '../apps/merchant/pages/SettingsAccount'
+import SettingsAccounts from '../apps/merchant/pages/SettingsAccounts'
 import SettingsBusiness from '../apps/merchant/pages/SettingsBusiness'
 import SettingsOperatingHours from '../apps/merchant/pages/SettingsOperatingHours'
+import SettingsPayout from '../apps/merchant/pages/SettingsPayout'
 import HelpSupport from '../apps/merchant/pages/HelpSupport'
 import MerchantNotifications from '../apps/merchant/pages/Notifications'
 import MerchantPrivacySecurity from '../apps/merchant/pages/PrivacySecurity'
@@ -64,8 +66,10 @@ export default function MerchantRoutes() {
             <Route path="wallet/send" element={<MerchantSendMoney />} />
             <Route path="settings" element={<Settings />} />
             <Route path="settings/account" element={<SettingsAccount />} />
+            <Route path="settings/accounts" element={<SettingsAccounts />} />
             <Route path="settings/business" element={<SettingsBusiness />} />
             <Route path="settings/hours" element={<SettingsOperatingHours />} />
+            <Route path="settings/payout" element={<SettingsPayout />} />
             <Route path="settings/privacy-security" element={<MerchantPrivacySecurity />} />
             <Route path="support" element={<HelpSupport />} />
           </Route>

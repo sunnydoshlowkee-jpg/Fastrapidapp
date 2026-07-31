@@ -4,6 +4,7 @@ import { ArrowLeft, Search, PhoneCall, MapPin, ShoppingCart, Home, Clock, Wallet
 import { getOrders } from '../../../services/orderService'
 import { useCart } from '../../../context/CartContext'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const ORDERS_TTL_MS = 2 * 60 * 1000
 
@@ -48,7 +49,7 @@ export default function Orders() {
         if (cancelled) return
         const nextOrders = data.data || []
         const nextPage = 1
-        const nextHasMore = data.current_page < data.last_page
+        const nextHasMore = (data.meta?.current_page ?? 1) < (data.meta?.last_page ?? 1)
         setCached(key, { orders: nextOrders, page: nextPage, hasMore: nextHasMore })
         setOrders(nextOrders)
         setHasMore(nextHasMore)
@@ -74,7 +75,7 @@ export default function Orders() {
       const nextPage = page + 1
       const { data } = await getOrders({ page: nextPage })
       setOrders(prev => [...prev, ...(data.data || [])])
-      setHasMore(data.current_page < data.last_page)
+      setHasMore((data.meta?.current_page ?? nextPage) < (data.meta?.last_page ?? nextPage))
       setPage(nextPage)
     } catch (err) {
       console.error('Failed to load more orders', err)
@@ -122,7 +123,7 @@ export default function Orders() {
 
       <div className="md:hidden flex flex-col min-h-screen">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30 h-[88px]">
+        <div className="flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30 h-[88px]">
           {!isSearching ? (
             <>
               <div className="flex items-center gap-3">
@@ -246,7 +247,7 @@ export default function Orders() {
           {activeTab === 'Ongoing' && (
             <div className="flex flex-col gap-6">
               {loading ? (
-                <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
+                <BrandedLoader size="md" />
               ) : filteredOngoing.length === 0 ? (
                 <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders found.</div>
               ) : (
@@ -288,7 +289,7 @@ export default function Orders() {
           {activeTab === 'Completed' && (
             <div className="flex flex-col gap-4">
               {loading ? (
-                <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
+                <BrandedLoader size="md" />
               ) : filteredCompleted.length === 0 ? (
                 <div className="text-center py-10 text-gray-500 text-sm">No completed orders found.</div>
               ) : (
@@ -461,7 +462,7 @@ export default function Orders() {
               {activeTab === 'Ongoing' && (
                 <div className="flex flex-col gap-6">
                   {loading ? (
-                    <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
+                    <BrandedLoader size="md" />
                   ) : filteredOngoing.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 text-sm">No ongoing orders found.</div>
                   ) : (
@@ -528,7 +529,7 @@ export default function Orders() {
               {activeTab === 'Completed' && (
                 <div className="flex flex-col gap-6">
                   {loading ? (
-                    <div className="text-center py-10 text-gray-500 text-sm">Loading orders...</div>
+                    <BrandedLoader size="md" />
                   ) : filteredCompleted.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 text-sm">No completed orders found.</div>
                   ) : (

@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   getMerchantBusinessProfile,
   updateMerchantBusinessCategory,
+  updateMerchantStoreStatus,
 } from '../../../../services/merchantBusinessProfileService'
+import { uploadMerchantDocument } from '../../../../services/merchantVerificationDocumentsService'
 import { getStoredMerchantSession } from '../../../../services/merchantAuthService'
+import BrandedLoader from '../../../ui/BrandedLoader'
 import MerchantBusinessProfileDesktop from './MerchantBusinessProfileDesktop'
 import MerchantBusinessProfileMobile from './MerchantBusinessProfileMobile'
 
@@ -13,6 +16,7 @@ export default function MerchantBusinessProfilePage() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [savingCategory, setSavingCategory] = useState(false)
+  const [savingStoreStatus, setSavingStoreStatus] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -64,12 +68,26 @@ export default function MerchantBusinessProfilePage() {
     setProfile(next)
   }, [])
 
+  const handleTogglePaused = useCallback(async (paused) => {
+    setSavingStoreStatus(true)
+    try {
+      const next = await updateMerchantStoreStatus(paused)
+      setProfile(next)
+      return next
+    } finally {
+      setSavingStoreStatus(false)
+    }
+  }, [])
+
+  const handleDocumentUpload = useCallback(async (documentType, file) => {
+    await uploadMerchantDocument(documentType, file)
+    const next = await getMerchantBusinessProfile()
+    setProfile(next)
+    return next
+  }, [])
+
   if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-sm text-merchant-muted">
-        Loading business profile…
-      </div>
-    )
+    return <BrandedLoader fill className="p-8" />
   }
 
   if (error || !profile) {
@@ -94,12 +112,18 @@ export default function MerchantBusinessProfilePage() {
         onSaveCategory={handleSaveCategory}
         savingCategory={savingCategory}
         onLogoUpdated={handleLogoUpdated}
+        onTogglePaused={handleTogglePaused}
+        savingStoreStatus={savingStoreStatus}
+        onDocumentUpload={handleDocumentUpload}
       />
       <MerchantBusinessProfileDesktop
         profile={profile}
         onSaveCategory={handleSaveCategory}
         savingCategory={savingCategory}
         onLogoUpdated={handleLogoUpdated}
+        onTogglePaused={handleTogglePaused}
+        savingStoreStatus={savingStoreStatus}
+        onDocumentUpload={handleDocumentUpload}
       />
     </>
   )

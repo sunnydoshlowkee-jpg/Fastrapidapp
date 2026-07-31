@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
 import Logo from '../../../../components/brand/Logo'
+import { getMe } from '../../../../services/authService'
 import { hasAuthToken, isBiometricUnlockEnabled } from '../../../../utils/biometricSession'
 import { APP_ROLES, getRoleConfig } from '../../../../utils/appRole'
+import {
+  clearLoginSecurityVerified,
+  isLoginSecurityVerified,
+  markLoginSecurityVerified,
+  resolveUserLoginSecurity,
+} from '../../../../utils/userLoginSecurity'
 
 export default function Splash() {
   const navigate = useNavigate()
@@ -19,9 +26,45 @@ export default function Splash() {
     const routeReturningUser = async () => {
       if (!hasAuthToken(role)) return false
 
-      if (Capacitor.isNativePlatform() && await isBiometricUnlockEnabled(role)) {
-        navigate(roleConfig.biometricUnlockPath, { replace: true })
+      let user = null
+      let security = null
+
+      try {
+        const { data } = await getMe()
+        if (cancelled) return true
+        user = data?.data?.user || null
+        security = resolveUserLoginSecurity(user)
+      } catch {
+        // Offline / expired — fall through with local biometric flag only.
+      }
+
+      // Authenticator login method: always challenge TOTP on cold start.
+      if (security?.method === 'totp' && security.totpEnabled) {
+        clearLoginSecurityVerified()
+        navigate('/auth/login-security', {
+          replace: true,
+          state: { method: 'totp' },
+        })
         return true
+      }
+
+      let forceBiometric =
+        Capacitor.isNativePlatform() && (await isBiometricUnlockEnabled(role))
+
+      if (!forceBiometric && Capacitor.isNativePlatform() && security) {
+        forceBiometric = security.biometricEnabled
+      }
+
+      if (forceBiometric) {
+        navigate(roleConfig.biometricUnlockPath, {
+          replace: true,
+          state: { setupDevice: true },
+        })
+        return true
+      }
+
+      if (!isLoginSecurityVerified()) {
+        markLoginSecurityVerified()
       }
 
       navigate(roleConfig.homePath, { replace: true })
@@ -49,7 +92,7 @@ export default function Splash() {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [navigate])
+  }, [navigate, role, roleConfig.biometricUnlockPath, roleConfig.homePath])
 
   return (
     <div className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden"

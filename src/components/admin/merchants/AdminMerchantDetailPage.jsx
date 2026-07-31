@@ -11,6 +11,7 @@ import {
   approveAdminMerchant,
   mapAdminMerchantDetailFromApi,
   rejectAdminMerchant,
+  updateAdminMerchantStatus,
 } from '../../../services/adminMerchantsService'
 
 function EmptyTab({ label }) {
@@ -128,6 +129,21 @@ export default function AdminMerchantDetailPage({
           ) : null}
           <button
             type="button"
+            onClick={async () => {
+              try {
+                const next =
+                  merchant.status === 'suspended' || merchant.suspendLabel === 'Reinstate'
+                    ? 'active'
+                    : 'suspended'
+                const rawId = String(merchant.id || '').replace(/\D+/g, '')
+                const payload = await updateAdminMerchantStatus(rawId || merchant.id, next)
+                const mapped = mapAdminMerchantDetailFromApi(payload)
+                setMerchant(mapped)
+                onMerchantUpdated?.(mapped)
+              } catch (err) {
+                window.alert(err.response?.data?.message || err.message || 'Could not update merchant status.')
+              }
+            }}
             className="rounded-lg bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
           >
             {merchant.suspendLabel}

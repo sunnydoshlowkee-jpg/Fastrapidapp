@@ -4,6 +4,7 @@ import { ArrowLeft, ShoppingCart, Search, Navigation, Star, Truck, SlidersHorizo
 import { useDiscovery } from '../../../hooks/useDiscovery'
 import { useCart } from '../../../context/CartContext'
 import { normalizeVendorType, storeFormatFromFilter, browseCategoryTitle } from '../../../utils/merchantBusinessType'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function Vendors() {
   const { type } = useParams()
@@ -46,7 +47,7 @@ export default function Vendors() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#FAFAFA]">
-        <p className="text-gray-500">Loading vendors...</p>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -59,7 +60,7 @@ export default function Vendors() {
       {/* -------------------------------------------------------------------------------- */}
       
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />

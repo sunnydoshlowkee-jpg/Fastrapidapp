@@ -13,6 +13,8 @@ export default function MerchantAnalyticsDesktop({
   periods,
   activePeriod,
   onPeriodChange,
+  customRange,
+  onCustomRangeChange,
 }) {
   const { openMobileNav } = useOutletContext()
 
@@ -29,6 +31,8 @@ export default function MerchantAnalyticsDesktop({
         periods={periods}
         activePeriod={activePeriod}
         onChange={onPeriodChange}
+        customRange={customRange}
+        onCustomRangeChange={onCustomRangeChange}
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

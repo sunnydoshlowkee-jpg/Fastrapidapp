@@ -36,6 +36,10 @@ export const MERCHANT_MENU_ITEM_CREATE = {
       label: 'Description',
       placeholder: 'Tell your customers about the ingredients and flavor profile...',
     },
+    announce: {
+      label: 'Announce',
+      hint: 'Notify all Rapid users that this item is now available in your store.',
+    },
   },
   categories: [],
   actions: {

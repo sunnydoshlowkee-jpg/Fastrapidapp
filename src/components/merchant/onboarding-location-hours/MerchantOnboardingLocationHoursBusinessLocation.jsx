@@ -11,6 +11,7 @@ export default function MerchantOnboardingLocationHoursBusinessLocation({
   fieldErrors = {},
   bareInputs = false,
   hideSectionNumber = false,
+  coords = null,
 }) {
   const { fields } = location
 
@@ -64,6 +65,9 @@ export default function MerchantOnboardingLocationHoursBusinessLocation({
         confirmed={mapConfirmed}
         onConfirm={onMapConfirm}
         error={fieldErrors.map}
+        coords={coords}
+        street={values.street}
+        city={values.city}
       />
     </MerchantOnboardingLocationHoursSection>
   )

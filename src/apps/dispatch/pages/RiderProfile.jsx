@@ -7,13 +7,14 @@ import { toggleStatus, getProfile, getRiderApprovalStatus, clearRiderSession } f
 import { useRiderLocationTracking } from '../../../hooks/useRiderLocationTracking'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 const MENU = [
   { icon: FileText,  label: 'My Documents',        to: '/dispatch/profile/documents' },
-  { icon: Building2, label: 'Bank Account',          to: '/dispatch/earnings/withdraw' },
+  { icon: Building2, label: 'Bank Account',          to: '/dispatch/profile/bank' },
   { icon: Shield,    label: 'Privacy & Security',    to: '/dispatch/profile/privacy-security' },
   { icon: BellRing,  label: 'Notification Settings', to: '/dispatch/notifications' },
   { icon: HelpCircle,label: 'Help Center',           to: '/dispatch/profile/help' },
-  { icon: ScrollText,label: 'Terms',                 to: '/dispatch/profile/help' },
+  { icon: ScrollText,label: 'Terms',                 href: '/legal/terms.html' },
 ]
 
 export default function RiderProfile() {
@@ -92,8 +93,17 @@ export default function RiderProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white max-w-md mx-auto flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Loading profile…</p>
+      <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
+        <div className="sticky top-0 z-50 bg-white px-5 pt-app pb-4 flex items-center justify-between">
+          <h1 className="text-xl font-black text-gray-900">Profile</h1>
+          <NotificationBellButton
+            onClick={() => navigate('/dispatch/notifications')}
+            count={unread}
+            className="w-10 h-10"
+            iconSize={22}
+          />
+        </div>
+        <BrandedLoader size="md" />
       </div>
     )
   }
@@ -101,7 +111,7 @@ export default function RiderProfile() {
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
 
-      <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-white px-5 pt-app pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">Profile</h1>
         <NotificationBellButton
           onClick={() => navigate('/dispatch/notifications')}
@@ -201,10 +211,16 @@ export default function RiderProfile() {
         </div>
 
         <div className="bg-gray-50 rounded-3xl overflow-hidden divide-y divide-gray-100">
-          {MENU.map(({ icon: Icon, label, to }) => (
+          {MENU.map(({ icon: Icon, label, to, href }) => (
             <button
               key={label}
-              onClick={() => to && navigate(to)}
+              onClick={() => {
+                if (href) {
+                  window.open(href, '_blank', 'noopener,noreferrer')
+                  return
+                }
+                if (to) navigate(to)
+              }}
               className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors active:bg-gray-100"
             >
               <Icon size={18} className="text-gray-500 flex-shrink-0" />

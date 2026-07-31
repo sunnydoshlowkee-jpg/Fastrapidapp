@@ -1,0 +1,22 @@
+Task Name,Task Content,Status,Priority,Tags,Time Estimate,Start Date,Due Date,Assignees
+Write Authentication module PRD section,"Document auth flows for 4 personas OTP rules token lifetimes security methods.
+
+**Developer:** Product
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** None",Backlog,High,"Documentation,Authentication",8.0h,,,
+Document auth API endpoints,"OpenAPI or markdown for all /auth /merchant auth /admin /rider auth routes.
+
+**Developer:** Backend
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** User email OTP request and verify API",Backlog,Urgent,"Documentation,API,Authentication",8.0h,,,
+Document production auth hardening checklist,"OTP strict admin 2FA rate limiting bootstrap secret rotation.
+
+**Developer:** DevOps
+**Progress:** 0%
+**Sprint:** Sprint 7
+**Milestone:** M1 Authentication
+**Dependencies:** Production OTP strict flags; Admin 2FA strict mode wiring",Backlog,Urgent,"Documentation,Security,Authentication",4.0h,,,

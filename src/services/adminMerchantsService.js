@@ -322,6 +322,14 @@ export async function rejectAdminMerchant(merchantId, payload) {
   return data.data
 }
 
+export async function updateAdminMerchantStatus(merchantId, status, reason = '') {
+  const { data } = await api.patch(`/admin/merchants/${merchantId}/status`, {
+    status,
+    reason: reason || undefined,
+  })
+  return data.data
+}
+
 /**
  * @param {Record<string, unknown>} payload
  */

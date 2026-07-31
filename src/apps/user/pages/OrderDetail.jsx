@@ -1,45 +1,37 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, MapPin, Download, CheckCircle2, Info, Search, Home, Clock, Wallet, User, ShoppingCart, CreditCard, Copy, PhoneCall } from 'lucide-react'
+import { ArrowLeft, MapPin, Download, CheckCircle2, Info, Search, Home, Clock, Wallet, User, ShoppingCart, CreditCard, Copy, PhoneCall, Star } from 'lucide-react'
 import { getOrder } from '../../../services/orderService'
-import { useCart } from '../../../context/CartContext'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import { echo } from '../../../services/echo'
 import OrderReviewPanel from '../../../components/orders/OrderReviewPanel'
-import { Star } from 'lucide-react'
+import { useCart } from '../../../context/CartContext'
+import GoogleMapView from '../../../components/maps/GoogleMapView'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function OrderDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const { cartItems } = useCart()
+  const { items: cartItems } = useCart()
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    let cancelled = false
+    const fetchOrder = async (isBackground = false) => {
       try {
-        setLoading(true)
+        if (!isBackground) setLoading(true)
         const { data } = await getOrder(id)
-        setOrder(data.data)
+        if (!cancelled) setOrder(data.data)
       } catch (err) {
         console.error('Failed to fetch order details', err)
       } finally {
-        setLoading(false)
+        if (!cancelled && !isBackground) setLoading(false)
       }
     }
     fetchOrder()
-
-    const channel = echo.channel(`orders.${id}`)
-    channel.listen('OrderUpdated', (e) => {
-      console.log('Real-time order update received:', e)
-      if (e.order) {
-        setOrder(e.order)
-      }
-    })
-
+    const interval = window.setInterval(() => fetchOrder(true), 15000)
     return () => {
-      echo.leaveChannel(`orders.${id}`)
+      cancelled = true
+      window.clearInterval(interval)
     }
   }, [id])
 
@@ -63,7 +55,7 @@ export default function OrderDetail() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Loading order details...</p>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -85,7 +77,7 @@ export default function OrderDetail() {
       {/* -------------------------------------------------------------------------------- */}
       <div className="md:hidden flex flex-col min-h-screen">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+        <div className="flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
               <ArrowLeft size={24} />
@@ -211,27 +203,28 @@ export default function OrderDetail() {
             </div>
           </div>
 
+
           {/* Review Section */}
           {order.status === 'delivered' && (
             <div className="mt-2">
               {!order.review ? (
-                <OrderReviewPanel 
-                  orderId={order.id} 
-                  onReviewSubmitted={(review) => setOrder({...order, review})} 
+                <OrderReviewPanel
+                  orderId={order.id}
+                  onReviewSubmitted={(review) => setOrder({ ...order, review })}
                 />
               ) : (
                 <div className="bg-[#F8F9FA] rounded-[24px] p-5 border border-gray-100 mb-2">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-[14px] font-bold text-gray-900">Your Review</h3>
                     <div className="flex text-yellow-400">
-                      {[1, 2, 3, 4, 5].map(star => (
+                      {[1, 2, 3, 4, 5].map((star) => (
                         <Star key={star} size={14} className={star <= order.review.rating ? 'fill-yellow-400' : 'text-gray-300'} />
                       ))}
                     </div>
                   </div>
-                  {order.review.comment && (
+                  {order.review.comment ? (
                     <p className="text-[13px] text-gray-500 italic mt-2">"{order.review.comment}"</p>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
@@ -377,31 +370,27 @@ export default function OrderDetail() {
                 <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col h-[320px]">
                   <h3 className="text-[16px] font-bold text-gray-900 mb-4">Delivery Map</h3>
                   <div className="w-full flex-1 rounded-2xl overflow-hidden relative border border-gray-200 bg-gray-100 group cursor-pointer">
-                    <MapContainer 
-                      center={[6.5244, 3.3792]} 
-                      zoom={13} 
-                      zoomControl={false}
-                      style={{ width: '100%', height: '100%' }}
-                    >
-                      <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                      />
-                      <Marker position={[6.5244, 3.3792]}>
-                        <Popup>
-                          Delivery Location<br/>
-                          {order.delivery_address?.address || 'N/A'}
-                        </Popup>
-                      </Marker>
-                      
-                      {order.delivery?.rider && (
-                        <Marker position={[6.51, 3.37]}>
-                          <Popup>
-                            Rider: {order.delivery.rider.first_name || 'Assigned'}
-                          </Popup>
-                        </Marker>
-                      )}
-                    </MapContainer>
+                    <GoogleMapView
+                      center={{ lat: 6.5244, lng: 3.3792 }}
+                      zoom={13}
+                      height="100%"
+                      className="absolute inset-0"
+                      markers={[
+                        {
+                          lat: 6.5244,
+                          lng: 3.3792,
+                          title: order.delivery_address?.address || 'Delivery Location',
+                        },
+                        ...(order.delivery?.rider
+                          ? [{
+                              lat: 6.51,
+                              lng: 3.37,
+                              title: `Rider: ${order.delivery.rider.first_name || 'Assigned'}`,
+                            }]
+                          : []),
+                      ]}
+                      showRecenter
+                    />
                   </div>
                 </div>
 
@@ -465,27 +454,28 @@ export default function OrderDetail() {
                 {order.status === 'delivered' && (
                   <div>
                     {!order.review ? (
-                      <OrderReviewPanel 
-                        orderId={order.id} 
-                        onReviewSubmitted={(review) => setOrder({...order, review})} 
+                      <OrderReviewPanel
+                        orderId={order.id}
+                        onReviewSubmitted={(review) => setOrder({ ...order, review })}
                       />
                     ) : (
                       <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-[16px] font-bold text-gray-900">Your Review</h3>
                           <div className="flex text-yellow-400">
-                            {[1, 2, 3, 4, 5].map(star => (
+                            {[1, 2, 3, 4, 5].map((star) => (
                               <Star key={star} size={16} className={star <= order.review.rating ? 'fill-yellow-400' : 'text-gray-300'} />
                             ))}
                           </div>
                         </div>
-                        {order.review.comment && (
+                        {order.review.comment ? (
                           <p className="text-[14px] text-gray-500 italic">"{order.review.comment}"</p>
-                        )}
+                        ) : null}
                       </div>
                     )}
                   </div>
                 )}
+
 
                 <div className="flex flex-col gap-3">
                   <button onClick={() => window.print()} className="w-full bg-[#2D2AEE] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-colors text-[14px]">

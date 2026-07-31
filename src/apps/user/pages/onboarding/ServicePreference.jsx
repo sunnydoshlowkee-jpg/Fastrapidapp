@@ -103,12 +103,12 @@ export default function ServicePreference() {
               Card
             </button>
             <button
-              onClick={() => setPayment('crypto')}
+              onClick={() => setPayment('cash_on_delivery')}
               className={`flex-1 md:flex-none md:w-32 py-3 rounded-full text-[14px] md:text-[16px] font-bold transition-all ${
-                payment === 'crypto' ? 'bg-[#4342FF] text-white shadow-sm' : 'bg-[#F3F4F6] text-[#4B5563] hover:bg-gray-200'
+                payment === 'cash_on_delivery' ? 'bg-[#4342FF] text-white shadow-sm' : 'bg-[#F3F4F6] text-[#4B5563] hover:bg-gray-200'
               }`}
             >
-              Crypto
+              Cash
             </button>
           </div>
         </div>

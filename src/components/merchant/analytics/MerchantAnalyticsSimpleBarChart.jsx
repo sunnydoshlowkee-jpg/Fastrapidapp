@@ -4,27 +4,45 @@ export default function MerchantAnalyticsSimpleBarChart({
   barClassName = 'bg-merchant-nav-active',
   peakBarClassName = 'bg-merchant-primary',
   showLabels = true,
+  height = 140,
 }) {
-  const max = Math.max(...data.map((d) => d.value), 1)
+  const points = Array.isArray(data) ? data : []
+  const max = Math.max(...points.map((d) => Number(d.value) || 0), 1)
+  const barArea = showLabels ? Math.max(height - 24, 80) : height
 
   return (
-    <div className="flex h-40 items-end justify-between gap-1 sm:gap-2" role="img" aria-hidden>
-      {data.map((item) => {
-        const isPeak = item[peakKey]
-        return (
-          <div key={item.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <div
-              className={`w-full max-w-[2.5rem] rounded-t-md transition-all ${
-                isPeak ? peakBarClassName : barClassName
-              }`}
-              style={{ height: `${(item.value / max) * 100}%`, minHeight: item.value > 0 ? '4px' : 0 }}
-            />
-            {showLabels && (
-              <span className="text-[10px] font-medium text-merchant-muted sm:text-xs">{item.label}</span>
-            )}
-          </div>
-        )
-      })}
+    <div className="w-full" role="img" aria-hidden>
+      <div className="flex items-end justify-between gap-1 sm:gap-2" style={{ height: `${barArea}px` }}>
+        {points.map((item) => {
+          const value = Number(item.value) || 0
+          const isPeak = Boolean(item[peakKey])
+          const barHeight = value > 0 ? Math.max((value / max) * barArea, 6) : 0
+
+          return (
+            <div key={item.label} className="flex h-full min-w-0 flex-1 items-end justify-center">
+              <div
+                className={`w-full max-w-[2.5rem] rounded-t-md transition-all ${
+                  isPeak ? peakBarClassName : barClassName
+                }`}
+                style={{ height: `${barHeight}px` }}
+                title={`${item.label}: ${value}`}
+              />
+            </div>
+          )
+        })}
+      </div>
+      {showLabels ? (
+        <div className="mt-2 flex justify-between gap-1 sm:gap-2">
+          {points.map((item) => (
+            <span
+              key={`label-${item.label}`}
+              className="min-w-0 flex-1 truncate text-center text-[10px] font-medium text-merchant-muted sm:text-xs"
+            >
+              {item.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

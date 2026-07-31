@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { MERCHANT_MENU_NEW_PATH } from '../../../services/data/merchantMenuItemCreate.mock'
 import { MERCHANT_MENU_IMPORT_SUCCESS_PATH } from '../../../services/data/merchantMenuImportSuccess.mock'
 import { MERCHANT_MENU_UPLOAD } from '../../../services/data/merchantMenuUpload.mock'
-import { downloadMerchantProductImportTemplate } from '../../../services/merchantProductsService'
+import {
+  downloadMerchantProductImportTemplate,
+  importMerchantProductsCsv,
+} from '../../../services/merchantProductsService'
 import MerchantMenuUploadCsvCard from './MerchantMenuUploadCsvCard'
 import MerchantMenuUploadHeader from './MerchantMenuUploadHeader'
 import MerchantMenuUploadHelp from './MerchantMenuUploadHelp'
@@ -13,13 +17,28 @@ export default function MerchantMenuUploadDesktop() {
   const navigate = useNavigate()
   const { openMobileNav } = useOutletContext()
   const data = MERCHANT_MENU_UPLOAD
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleStartEntry = () => {
     navigate(MERCHANT_MENU_NEW_PATH)
   }
 
-  const handleUpload = () => {
-    navigate(MERCHANT_MENU_IMPORT_SUCCESS_PATH)
+  const handleUpload = async (file) => {
+    if (!file) {
+      setError('Choose a CSV file first.')
+      return
+    }
+    setUploading(true)
+    setError('')
+    try {
+      const result = await importMerchantProductsCsv(file)
+      navigate(MERCHANT_MENU_IMPORT_SUCCESS_PATH, { state: { importResult: result } })
+    } catch (err) {
+      setError(err.message || 'Could not import CSV.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleDownloadTemplate = async () => {
@@ -55,6 +74,8 @@ export default function MerchantMenuUploadDesktop() {
               csvUpload={data.csvUpload}
               onUpload={handleUpload}
               onDownloadTemplate={handleDownloadTemplate}
+              uploading={uploading}
+              error={error}
             />
           </div>
 

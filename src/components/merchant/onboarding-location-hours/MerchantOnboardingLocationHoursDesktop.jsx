@@ -16,6 +16,7 @@ export default function MerchantOnboardingLocationHoursDesktop({
   formError,
   fieldErrors,
   onSaveNext,
+  coords = null,
 }) {
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
@@ -58,6 +59,7 @@ export default function MerchantOnboardingLocationHoursDesktop({
           formError={formError}
           onSaveNext={handleSaveNext}
           submitting={submitting}
+          coords={coords}
         />
       </main>
     </div>

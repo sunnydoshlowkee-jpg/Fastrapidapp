@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { requestEmailOtp, verifyEmailOtp } from '../../../../services/authService'
 import { getApiFieldError } from '../../../../utils/apiErrors'
+import { navigateAfterUserLogin } from '../../../../utils/userLoginSecurity'
 
 const OTP_LENGTH = 6
 
@@ -58,12 +59,7 @@ export default function EmailVerify() {
         window.dispatchEvent(new Event('rapid-auth-changed'))
       }
 
-      if (user?.status === 'pending_profile') {
-        navigate('/onboarding/profile', { state: { signupMethod: 'email' } })
-        return
-      }
-
-      navigate('/app')
+      navigateAfterUserLogin(navigate, user, { signupMethod: 'email' })
     } catch (err) {
       setCodeError(getApiFieldError(err, 'code') || getApiFieldError(err, 'email'))
     } finally {

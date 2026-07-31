@@ -1,23 +1,86 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Plus } from 'lucide-react'
-import {
-  ADMIN_DELIVERY_ZONES,
-  cloneZones,
-} from '../../../services/data/adminDeliveryZones.mock'
+import { ADMIN_DELIVERY_ZONES } from '../../../services/data/adminDeliveryZones.mock'
 import { ADMIN_NOTIFICATIONS_PATH } from '../../../services/data/adminNotifications.mock'
+import {
+  fetchAdminSettingsGroup,
+  saveAdminSettingsGroup,
+} from '../../../services/adminSettingsService'
 import AdminDeliveryZoneCard from './AdminDeliveryZoneCard'
 import AdminDeliveryZoneEditPanel from './AdminDeliveryZoneEditPanel'
 import AdminSettingsBreadcrumbs from './AdminSettingsBreadcrumbs'
 
+function fromApiZone(z) {
+  return {
+    id: z.id,
+    name: z.name,
+    baseFee: String(z.base_fee ?? z.baseFee ?? ''),
+    surge: String(z.surge ?? '1'),
+    active: Boolean(z.active),
+  }
+}
+
+function toApiZone(z) {
+  return {
+    id: z.id,
+    name: z.name,
+    base_fee: Number(z.baseFee) || 0,
+    surge: Number(z.surge) || 1,
+    active: Boolean(z.active),
+  }
+}
+
 export default function AdminDeliveryZonesPage() {
   const data = ADMIN_DELIVERY_ZONES
-  const [zones, setZones] = useState(() => cloneZones(data.zones))
-  const defaultZone = data.zones[0]
-  const [editingId, setEditingId] = useState(defaultZone?.id ?? null)
-  const [draft, setDraft] = useState(() =>
-    defaultZone ? { ...defaultZone } : null,
-  )
+  const [zones, setZones] = useState([])
+  const [editingId, setEditingId] = useState(null)
+  const [draft, setDraft] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  const persist = async (nextZones) => {
+    setSaving(true)
+    setError('')
+    try {
+      const result = await saveAdminSettingsGroup('delivery_zones', {
+        zones: nextZones.map(toApiZone),
+      })
+      const saved = (result.data?.zones || []).map(fromApiZone)
+      setZones(saved)
+      setMessage('Delivery zones saved.')
+      return saved
+    } catch (err) {
+      setError(err.message || 'Could not save zones.')
+      throw err
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      try {
+        const result = await fetchAdminSettingsGroup('delivery_zones')
+        const list = (result.data?.zones || []).map(fromApiZone)
+        if (!cancelled) setZones(list.length ? list : data.zones.map((z) => ({ ...z })))
+      } catch (err) {
+        if (!cancelled) {
+          setZones(data.zones.map((z) => ({ ...z })))
+          setError(err.message || 'Could not load zones.')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [data.zones])
 
   const editingZone = useMemo(
     () => zones.find((z) => z.id === editingId) ?? null,
@@ -45,18 +108,42 @@ export default function AdminDeliveryZonesPage() {
     else closeEdit()
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!draft) return
-    setZones((prev) => prev.map((z) => (z.id === draft.id ? { ...draft } : z)))
-    closeEdit()
+    const next = zones.map((z) => (z.id === draft.id ? { ...draft } : z))
+    try {
+      await persist(next)
+      closeEdit()
+    } catch {
+      /* error already set */
+    }
   }
 
-  const toggleActive = (id) => {
-    setZones((prev) =>
-      prev.map((z) => (z.id === id ? { ...z, active: !z.active } : z)),
-    )
+  const toggleActive = async (id) => {
+    const next = zones.map((z) => (z.id === id ? { ...z, active: !z.active } : z))
+    setZones(next)
     if (editingId === id && draft) {
       setDraft((prev) => (prev ? { ...prev, active: !prev.active } : prev))
+    }
+    try {
+      await persist(next)
+    } catch {
+      /* keep optimistic UI; error shown */
+    }
+  }
+
+  const addZone = async () => {
+    const id = `zone-${Date.now()}`
+    const next = [
+      ...zones,
+      { id, name: 'New zone', baseFee: '1000', surge: '1.0', active: true },
+    ]
+    try {
+      const saved = await persist(next)
+      const created = saved.find((z) => z.id === id) || next[next.length - 1]
+      openEdit(created.id)
+    } catch {
+      /* error already set */
     }
   }
 
@@ -71,7 +158,6 @@ export default function AdminDeliveryZonesPage() {
             aria-label="Notifications"
           >
             <Bell size={18} strokeWidth={1.75} />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
           </Link>
         </header>
 
@@ -79,12 +165,26 @@ export default function AdminDeliveryZonesPage() {
           <p className="max-w-xl text-sm text-gray-600">{data.intro}</p>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15]"
+            disabled={saving || loading}
+            onClick={addZone}
+            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15] disabled:opacity-50"
           >
             {data.addZoneLabel}
             <Plus size={16} strokeWidth={2.5} aria-hidden />
           </button>
         </div>
+
+        {message ? (
+          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            {message}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+        {loading ? <p className="mb-4 text-sm text-gray-500">Loading zones…</p> : null}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {zones.map((zone) => (

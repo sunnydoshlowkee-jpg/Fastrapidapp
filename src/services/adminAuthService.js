@@ -1,17 +1,12 @@
 import api from './api'
 import { getApiFieldError } from '../utils/apiErrors'
-import { ADMIN_2FA_OTP, ADMIN_RESET_OTP } from './data/adminAuth.mock'
 
 const ADMIN_TOKEN_KEY = 'rapid_admin_token'
 const ADMIN_SESSION_TOKEN_KEY = 'rapid_admin_session_token'
 const ADMIN_USER_KEY = 'rapid_admin_user'
 const ADMIN_PENDING_KEY = 'rapid_admin_pending_session'
 const ADMIN_PENDING_BACKUP_KEY = 'rapid_admin_pending_session_backup'
-
-/** When false (default), any 6-digit code is accepted until email OTP is wired. */
-const ADMIN_2FA_STRICT = import.meta.env.VITE_ADMIN_2FA_STRICT === 'true'
-
-const delay = (ms = 600) => new Promise((resolve) => setTimeout(resolve, ms))
+const ADMIN_RESET_EMAIL_KEY = 'rapid_admin_reset_email'
 
 function writePendingSession(session) {
   const json = JSON.stringify(session)
@@ -62,7 +57,6 @@ export function getAdminAuthToken() {
   return (
     localStorage.getItem(ADMIN_TOKEN_KEY) ||
     sessionStorage.getItem(ADMIN_SESSION_TOKEN_KEY) ||
-    getAdminPendingSession()?.token ||
     null
   )
 }
@@ -78,6 +72,9 @@ function persistAdminSession(session) {
   if (session.rememberMe) {
     localStorage.setItem(ADMIN_TOKEN_KEY, session.token)
     localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(session.user))
+  } else {
+    localStorage.removeItem(ADMIN_TOKEN_KEY)
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(session.user))
   }
 }
 
@@ -86,12 +83,14 @@ export async function adminLogin({ email, password, rememberMe = false }) {
     const { data } = await api.post('/admin/login', {
       email: email.trim(),
       password,
+      remember_me: Boolean(rememberMe),
     })
 
     const session = {
-      token: data.data.token,
+      challengeId: data.data.challenge_id,
       user: data.data.user,
       rememberMe,
+      method: data.data.method || 'email',
     }
 
     writePendingSession(session)
@@ -106,10 +105,8 @@ export async function adminLogin({ email, password, rememberMe = false }) {
 }
 
 export async function adminVerify2fa({ code }) {
-  await delay()
-
   const pending = getAdminPendingSession()
-  if (!pending) {
+  if (!pending?.challengeId) {
     const error = new Error('Session expired. Please sign in again.')
     error.code = 'SESSION_EXPIRED'
     throw error
@@ -123,30 +120,53 @@ export async function adminVerify2fa({ code }) {
     throw error
   }
 
-  if (ADMIN_2FA_STRICT && normalized !== ADMIN_2FA_OTP) {
-    const error = new Error('Invalid code. Please try again.')
+  try {
+    const { data } = await api.post('/admin/2fa/verify', {
+      challenge_id: pending.challengeId,
+      code: normalized,
+    })
+
+    const session = {
+      token: data.data.token,
+      user: data.data.user,
+      rememberMe: Boolean(data.data.remember_me ?? pending.rememberMe),
+    }
+
+    persistAdminSession(session)
+    clearAdminPendingSession()
+    return session
+  } catch (err) {
+    const message = err.response?.data?.message || 'Invalid code. Please try again.'
+    const error = new Error(message)
     error.code = 'INVALID_OTP'
     throw error
   }
-
-  persistAdminSession(pending)
-  clearAdminPendingSession()
-  return pending
 }
 
 export async function adminResend2fa() {
-  await delay(400)
-  if (!getAdminPendingSession()) {
+  const pending = getAdminPendingSession()
+  if (!pending?.challengeId) {
     throw new Error('Session expired. Please sign in again.')
   }
-  return { message: 'A new code has been sent to your authenticator app.' }
+
+  const { data } = await api.post('/admin/2fa/resend', {
+    challenge_id: pending.challengeId,
+  })
+
+  return { message: data?.message || 'A new code has been sent to your email.' }
 }
 
-const ADMIN_RESET_EMAIL_KEY = 'rapid_admin_reset_email'
+export async function adminLogout() {
+  try {
+    await api.post('/admin/logout')
+  } catch {
+    // Clear local session even if the API call fails.
+  } finally {
+    clearAdminSession()
+  }
+}
 
 export async function adminRequestPasswordReset(email) {
-  await delay(800)
-
   const normalizedEmail = email.trim().toLowerCase()
   if (!normalizedEmail || !normalizedEmail.includes('@')) {
     const error = new Error('Enter a valid email address.')
@@ -154,11 +174,15 @@ export async function adminRequestPasswordReset(email) {
     throw error
   }
 
-  sessionStorage.setItem(ADMIN_RESET_EMAIL_KEY, normalizedEmail)
-
-  return {
-    message: `We've sent a secure reset link to ${normalizedEmail}.`,
-    email: normalizedEmail,
+  try {
+    const { data } = await api.post('/admin/forgot-password', { email: normalizedEmail })
+    sessionStorage.setItem(ADMIN_RESET_EMAIL_KEY, normalizedEmail)
+    return {
+      message: data?.message || `We've sent a secure code to ${normalizedEmail}.`,
+      email: normalizedEmail,
+    }
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Could not send reset code.')
   }
 }
 
@@ -171,26 +195,17 @@ export function clearAdminResetEmail() {
 }
 
 export async function adminResendResetCode(email) {
-  await delay(600)
   const normalizedEmail = (email || getAdminResetEmail()).trim().toLowerCase()
   if (!normalizedEmail) {
     throw new Error('Session expired. Please start again.')
   }
-  sessionStorage.setItem(ADMIN_RESET_EMAIL_KEY, normalizedEmail)
-  return { message: 'A new verification code has been sent.', email: normalizedEmail }
+  return adminRequestPasswordReset(normalizedEmail)
 }
 
 export async function adminResetPassword({ email, code, newPassword, confirmPassword }) {
-  await delay(800)
-
   const normalizedEmail = (email || getAdminResetEmail()).trim().toLowerCase()
   if (!normalizedEmail) {
     throw new Error('Session expired. Please start again.')
-  }
-  if (code !== ADMIN_RESET_OTP) {
-    const error = new Error('Invalid verification code. Try again.')
-    error.code = 'INVALID_OTP'
-    throw error
   }
   if (!newPassword || newPassword.length < 8) {
     throw new Error('Password must be at least 8 characters.')
@@ -202,9 +217,22 @@ export async function adminResetPassword({ email, code, newPassword, confirmPass
     throw new Error('Passwords do not match.')
   }
 
-  clearAdminResetEmail()
-  return {
-    message: 'Password reset successful. Sign in with your new password.',
-    email: normalizedEmail,
+  try {
+    const { data } = await api.post('/admin/forgot-password/reset', {
+      email: normalizedEmail,
+      code: String(code).replace(/\D/g, ''),
+      password: newPassword,
+      password_confirmation: confirmPassword,
+    })
+    clearAdminResetEmail()
+    return {
+      message: data?.message || 'Password reset successful. Sign in with your new password.',
+      email: normalizedEmail,
+    }
+  } catch (err) {
+    const message = err.response?.data?.message || 'Invalid verification code. Try again.'
+    const error = new Error(message)
+    error.code = 'INVALID_OTP'
+    throw error
   }
 }

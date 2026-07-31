@@ -185,6 +185,7 @@ export default function RiderPayment() {
       vehicle_year: vehicle.year ? parseInt(vehicle.year) : undefined,
       plate_number: vehicle.plate || 'ABC-1234',
       payout_bank_name: bankName,
+      payout_bank_code: bankCode,
       payout_account_number: accountNumber,
       payout_account_name: accountName,
     }

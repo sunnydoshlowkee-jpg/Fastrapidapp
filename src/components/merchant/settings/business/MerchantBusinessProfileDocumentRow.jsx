@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { CheckCircle2, Clock, CreditCard, FileText, XCircle } from 'lucide-react'
 
 const iconToneClass = {
@@ -29,10 +30,26 @@ const statusConfig = {
   },
 }
 
-export default function MerchantBusinessProfileDocumentRow({ document }) {
+export default function MerchantBusinessProfileDocumentRow({ document, onReupload }) {
+  const inputRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
   const status = document.status ? statusConfig[document.status] : null
   const StatusIcon = status?.icon
   const DocIcon = documentIcons[document.icon] ?? FileText
+
+  const handleFile = async (file) => {
+    if (!file || !onReupload) return
+    setUploading(true)
+    setError('')
+    try {
+      await onReupload(document.id, file)
+    } catch (err) {
+      setError(err?.message || 'Upload failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <li className="flex flex-col gap-3 rounded-lg bg-merchant-input px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -51,6 +68,7 @@ export default function MerchantBusinessProfileDocumentRow({ document }) {
           >
             {document.meta}
           </p>
+          {error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null}
         </div>
       </div>
 
@@ -62,15 +80,25 @@ export default function MerchantBusinessProfileDocumentRow({ document }) {
           </span>
         ) : null}
         {document.reuploadLabel && (
-          <button
-            type="button"
-            className="rounded-lg bg-[#B91C1C] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#991B1B]"
-          >
-            {document.reuploadLabel}
-          </button>
+          <>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".pdf,image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(e) => handleFile(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+              className="rounded-lg bg-[#B91C1C] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#991B1B] disabled:opacity-60"
+            >
+              {uploading ? 'Uploading…' : document.reuploadLabel}
+            </button>
+          </>
         )}
       </div>
     </li>
   )
 }
-

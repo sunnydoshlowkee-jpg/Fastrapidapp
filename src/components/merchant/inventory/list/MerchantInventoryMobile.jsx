@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import { Bell } from 'lucide-react'
 import { MERCHANT_MENU_UPLOAD_PATH } from '../../../../services/data/merchantMenuUpload.mock'
 import { MERCHANT_INVENTORY } from '../../../../services/data/merchantInventory.mock'
+import BrandedLoader from '../../../ui/BrandedLoader'
+import MerchantHeaderActions from '../../layout/MerchantHeaderActions'
 import MerchantInventoryMobileInsights from './mobile/MerchantInventoryMobileInsights'
 import MerchantInventoryMobilePagination from './mobile/MerchantInventoryMobilePagination'
 import MerchantInventoryMobileProductList from './mobile/MerchantInventoryMobileProductList'
@@ -36,14 +37,12 @@ export default function MerchantInventoryMobile() {
           <h1 className="text-lg font-bold tracking-[-0.02em] text-merchant-ink">{data.pageTitle}</h1>
           <p className="mt-1 text-sm text-merchant-muted">{mobile.subtitle}</p>
         </div>
-        <button
-          type="button"
-          className="relative flex h-10 w-10 shrink-0 items-center justify-center text-merchant-primary"
-          aria-label="Notifications"
-        >
-          <Bell size={22} strokeWidth={1.75} />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" aria-hidden />
-        </button>
+        <MerchantHeaderActions
+          iconClassName="text-merchant-primary"
+          iconSize={20}
+          bellClassName="h-10 w-10 rounded-full"
+          profileClassName="h-10 w-10 rounded-full border border-merchant-field-border bg-white text-merchant-ink"
+        />
       </header>
 
       <MerchantInventoryMobileToolbar
@@ -62,7 +61,7 @@ export default function MerchantInventoryMobile() {
       <MerchantInventoryMobileSummaryCards summary={summary} />
 
       {loading ? (
-        <p className="text-sm text-merchant-muted">Loading inventory…</p>
+        <BrandedLoader size="md" />
       ) : (
         <MerchantInventoryMobileProductList
           products={products}

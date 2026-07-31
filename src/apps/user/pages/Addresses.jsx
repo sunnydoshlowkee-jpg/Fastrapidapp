@@ -4,6 +4,8 @@ import { ArrowLeft, Trash2, Briefcase, Home, MapPin, Plus, Edit2, User, Clock, C
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from '../../../services/addressService'
 import { useAuth } from '../../../context/AuthContext'
 import { getDisplayName } from '../../../utils/userDisplay'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
+import { getDevicePosition } from '../../../utils/nativeLocation'
 
 export default function Addresses() {
   const { user, logout } = useAuth()
@@ -83,19 +85,9 @@ export default function Addresses() {
       let latitude
       let longitude
       try {
-        const position = await new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject(new Error('Geolocation unavailable'))
-            return
-          }
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 8000,
-            maximumAge: 60_000,
-          })
-        })
-        latitude = position.coords.latitude
-        longitude = position.coords.longitude
+        const position = await getDevicePosition()
+        latitude = position.lat
+        longitude = position.lng
       } catch {
         // Coordinates are optional; delivery can still be created without them.
       }
@@ -151,7 +143,7 @@ export default function Addresses() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />
@@ -171,7 +163,7 @@ export default function Addresses() {
 
         <div className="flex flex-col gap-6">
           {loading ? (
-            <div className="text-center py-10 text-gray-500 text-sm">Loading addresses...</div>
+            <BrandedLoader size="md" />
           ) : addresses.length === 0 ? (
             <div className="text-center py-10 text-gray-500 text-sm">No saved addresses found.</div>
           ) : (
@@ -286,7 +278,9 @@ export default function Addresses() {
 
           <div className="grid grid-cols-2 gap-6">
             {loading ? (
-              <div className="col-span-2 text-center py-10 text-gray-500">Loading addresses...</div>
+              <div className="col-span-2">
+                <BrandedLoader size="md" />
+              </div>
             ) : addresses.length === 0 ? (
               <div className="col-span-2 text-center py-10 text-gray-500">No saved addresses found. Click "Add New Address" to add one.</div>
             ) : (

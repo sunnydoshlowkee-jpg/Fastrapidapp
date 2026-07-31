@@ -1,7 +1,17 @@
-/** Default map pin when merchant confirms location without geocoding API. */
+/** Default map pin — never save this unless the address is actually Lagos CBD. */
 export const DEFAULT_MERCHANT_MAP_COORDS = {
   latitude: 6.5244,
   longitude: 3.3792,
+}
+
+export function isDefaultMerchantPin(latitude, longitude) {
+  const lat = Number(latitude)
+  const lng = Number(longitude)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false
+  return (
+    Math.abs(lat - DEFAULT_MERCHANT_MAP_COORDS.latitude) < 0.00015 &&
+    Math.abs(lng - DEFAULT_MERCHANT_MAP_COORDS.longitude) < 0.00015
+  )
 }
 
 export function mergeLocationHoursDraft(templateHours, savedDays = []) {
@@ -43,7 +53,7 @@ export function buildLocationHoursPayload({ street, city, postalCode, latitude, 
   }
 }
 
-export function validateLocationHoursForm({ street, city, hourDays, mapConfirmed }) {
+export function validateLocationHoursForm({ street, city, hourDays, mapConfirmed, latitude, longitude }) {
   const errors = {}
 
   if (!street?.trim()) {
@@ -56,6 +66,13 @@ export function validateLocationHoursForm({ street, city, hourDays, mapConfirmed
 
   if (!mapConfirmed) {
     errors.map = 'Please confirm your location on the map.'
+  } else if (
+    !Number.isFinite(Number(latitude)) ||
+    !Number.isFinite(Number(longitude))
+  ) {
+    errors.map = 'Please confirm a valid pin on the map.'
+  } else if (isDefaultMerchantPin(latitude, longitude)) {
+    errors.map = 'Move the pin to your real store location, or confirm after the address is found on the map.'
   }
 
   const openDays = hourDays.filter((day) => day.open)

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Bell, MessageSquare } from 'lucide-react'
-import { getRiderNotifications, markRiderAsRead } from '../../../services/notificationService'
+import { getRiderNotifications, markRiderAsRead, markRiderAllAsRead } from '../../../services/notificationService'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const TABS = ['All', 'Chats', 'Orders', 'Earnings', 'System']
 
@@ -59,18 +60,44 @@ export default function Notifications() {
     const title = (n.title || '').toLowerCase()
     if (activeTab === 'Chats') return type === 'chat'
     if (activeTab === 'Orders') return type.includes('order') || title.includes('order') || title.includes('delivery')
-    if (activeTab === 'Earnings') return type.includes('earning') || title.includes('earn') || title.includes('payment')
+    if (activeTab === 'Earnings') {
+      return (
+        type === 'wallet'
+        || type.includes('earning')
+        || title.includes('earn')
+        || title.includes('payment')
+        || title.includes('payout')
+        || (n?.data?.kind || '') === 'rider_payout'
+      )
+    }
     if (activeTab === 'System') return type.includes('system') || title.includes('system') || title.includes('update')
     return true
   })
 
   return (
     <div className="min-h-screen bg-white max-w-md mx-auto pb-8">
-      <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center gap-3">
+      <div className="sticky top-0 z-50 bg-white px-5 pt-app pb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="w-9 h-9 flex items-center justify-center -ml-2">
           <ArrowLeft size={20} className="text-gray-700" />
         </button>
-        <h1 className="text-xl font-black text-gray-900">Notifications</h1>
+        <h1 className="flex-1 text-xl font-black text-gray-900">Notifications</h1>
+        {notifications.some((n) => !n.is_read) ? (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await markRiderAllAsRead()
+                setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+                refreshUnread()
+              } catch (err) {
+                console.error(err)
+              }
+            }}
+            className="text-xs font-bold text-[#5B5BFF]"
+          >
+            Mark all read
+          </button>
+        ) : null}
       </div>
 
       <div className="px-5 mb-6 flex gap-2 overflow-x-auto scrollbar-hide">
@@ -92,7 +119,7 @@ export default function Notifications() {
 
       <div className="px-5 space-y-6">
         {loading ? (
-          <div className="text-center text-gray-500 py-10 font-medium text-sm">Loading notifications...</div>
+          <BrandedLoader size="md" />
         ) : filteredNotifications.length === 0 ? (
           <div className="text-center text-gray-500 py-10 font-medium text-sm">No new notifications in this tab.</div>
         ) : (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AlertTriangle, Ban, Octagon, X } from 'lucide-react'
 
-export default function AdminUserBanModal({ isOpen, onClose, config }) {
+export default function AdminUserBanModal({ isOpen, onClose, config, onSubmit, submitting = false }) {
   const [evidence, setEvidence] = useState('')
   const [confirmation, setConfirmation] = useState('')
 
@@ -120,12 +120,12 @@ export default function AdminUserBanModal({ isOpen, onClose, config }) {
           </button>
           <button
             type="button"
-            onClick={onClose}
-            disabled={!canConfirm}
+            onClick={() => onSubmit?.({ status: 'banned', confirmation })}
+            disabled={!canConfirm || submitting}
             className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Ban size={16} strokeWidth={2.25} aria-hidden />
-            {config.submitLabel}
+            {submitting ? 'Saving…' : config.submitLabel}
           </button>
         </footer>
       </div>

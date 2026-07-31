@@ -1,5 +1,5 @@
-import AdminDisputesPage from '../../../components/admin/disputes/AdminDisputesPage'
+import AdminLiveDisputesPage from '../../../components/admin/disputes/AdminLiveDisputesPage'
 
 export default function Disputes() {
-  return <AdminDisputesPage />
+  return <AdminLiveDisputesPage />
 }

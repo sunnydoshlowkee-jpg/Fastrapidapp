@@ -15,7 +15,7 @@ export const SECURITY_METHODS = {
   biometric: {
     id: 'biometric',
     label: 'Biometric unlock',
-    description: 'Use Face ID, fingerprint, or device screen lock.',
+    description: 'Use Face ID or fingerprint in the mobile app. Browsers use an email code instead.',
   },
   pin: {
     id: 'pin',
@@ -91,4 +91,23 @@ export async function disableBiometric() {
 export async function sendSecurityActionCode(purpose) {
   const { data } = await api.post('/user/security/action-code', { purpose })
   return data
+}
+
+export async function verifyLoginSecurity({ method, auth_code, biometric_verified = false }) {
+  try {
+    const { data } = await api.post('/user/security/verify', {
+      purpose: 'login',
+      method,
+      auth_code,
+      biometric_verified: Boolean(biometric_verified),
+    })
+    return data
+  } catch (err) {
+    const message =
+      err.response?.data?.message ||
+      getApiFieldError(err, 'auth_code') ||
+      getApiFieldError(err, 'code') ||
+      'Verification failed.'
+    throw new Error(message)
+  }
 }

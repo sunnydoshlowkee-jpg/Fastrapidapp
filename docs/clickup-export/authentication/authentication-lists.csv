@@ -1,0 +1,7 @@
+List Name,Folder,Space,Description
+Database,Authentication,Product Development,Auth-related schema migrations and tables
+Backend API,Authentication,Product Development,Laravel Sanctum auth APIs for all personas
+Frontend UI,Authentication,Product Development,React onboarding and auth screens
+Integration,Authentication,Product Development,Resend Twilio biometric Capacitor OTP providers
+Testing,Authentication,Product Development,PHPUnit and Cypress auth coverage
+Documentation,Authentication,Product Development,Auth docs and production hardening notes

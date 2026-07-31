@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Mail, Phone, Search } from 'lucide-react'
 import { ADMIN_NOTIFICATIONS_PATH } from '../../../services/data/adminNotifications.mock'
+import { updateAdminUserStatus } from '../../../services/adminUsersService'
 import AdminUserBanModal from './AdminUserBanModal'
 import AdminUserDetailMobilePage from './AdminUserDetailMobilePage'
 import AdminUserKpiCard from './AdminUserKpiCard'
@@ -180,10 +181,28 @@ function NotesPanel({ notes }) {
   )
 }
 
-export default function AdminUserDetailPage({ user }) {
+export default function AdminUserDetailPage({ user, onStatusUpdated }) {
   const [activeTab, setActiveTab] = useState('orders')
   const [suspendOpen, setSuspendOpen] = useState(false)
   const [banOpen, setBanOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  const runStatusUpdate = async (status) => {
+    setSubmitting(true)
+    setActionError('')
+    try {
+      const rawId = String(user.id || '').replace(/\D+/g, '')
+      await updateAdminUserStatus(rawId || user.id, status)
+      setSuspendOpen(false)
+      setBanOpen(false)
+      await onStatusUpdated?.()
+    } catch (err) {
+      setActionError(err.response?.data?.message || err.message || 'Could not update user status.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -267,10 +286,18 @@ export default function AdminUserDetailPage({ user }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end gap-2">
+              {actionError ? <p className="text-xs font-medium text-red-600">{actionError}</p> : null}
+              <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setSuspendOpen(true)}
+                onClick={() => {
+                  if (user.status === 'suspended') {
+                    runStatusUpdate('active')
+                    return
+                  }
+                  setSuspendOpen(true)
+                }}
                 className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-200"
               >
                 {user.suspendLabel}
@@ -282,6 +309,7 @@ export default function AdminUserDetailPage({ user }) {
               >
                 {user.banLabel}
               </button>
+              </div>
             </div>
           </div>
 
@@ -341,11 +369,15 @@ export default function AdminUserDetailPage({ user }) {
         isOpen={suspendOpen}
         onClose={() => setSuspendOpen(false)}
         config={user.suspendModal}
+        submitting={submitting}
+        onSubmit={() => runStatusUpdate('suspended')}
       />
       <AdminUserBanModal
         isOpen={banOpen}
         onClose={() => setBanOpen(false)}
         config={user.banModal}
+        submitting={submitting}
+        onSubmit={() => runStatusUpdate('banned')}
       />
     </>
   )

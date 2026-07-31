@@ -1,24 +1,18 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, X, Minus, Plus, Info, Trash2, ArrowRight, Search, MapPin, ShoppingCart } from 'lucide-react'
 import { useCart } from '../../../context/CartContext'
-
-// Mobile Mock Data
-const mobileCartItems = [
-  { id: 1, name: 'Party Jollof Rice & Chicken', price: '₦4,500', quantity: 1, img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&h=500&fit=crop' },
-  { id: 2, name: 'Pounded Yam & Efo Riro', price: '₦5,200', quantity: 1, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop' },
-  { id: 3, name: 'Beef Meat Pie (2pcs)', price: '₦1,800', quantity: 1, img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop' }
-]
-
-// Desktop Mock Data
-const desktopCartItems = [
-  { id: 101, name: 'Elite Runner 300', specs: 'Size: 42 • Color: Electric Red', price: '₦120.00', qty: 1, img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop' },
-  { id: 102, name: 'Studio Beats Pro', specs: 'Connectivity: Wireless • Color: Matte Black', price: '₦299.00', qty: 1, img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop' },
-  { id: 103, name: 'Nomad Classic Watch', specs: 'Strap: Genuine Leather • Movement: Quartz', price: '₦185.00', qty: 1, img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop' },
-]
+import { trackEvent } from '../../../services/analyticsService'
 
 export default function CartDetail() {
   const navigate = useNavigate()
   const { items, updateQty, remove, count, subtotal, deliveryFee, serviceCharge, total, clear } = useCart()
+
+  useEffect(() => {
+    trackEvent('view_cart', 'cart', null, { item_count: count, subtotal })
+    // Track once on cart page open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">
@@ -28,7 +22,7 @@ export default function CartDetail() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center gap-3 px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30 border-b border-gray-100">
+      <div className="md:hidden flex items-center gap-3 px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30 border-b border-gray-100">
         <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
@@ -211,29 +205,6 @@ export default function CartDetail() {
               <div className="flex justify-between items-center py-6 border-y border-gray-100 mb-8">
                 <span className="text-[20px] font-bold text-gray-900">Total</span>
                 <span className="text-[24px] font-bold text-[#2D2AEE]">₦{total.toLocaleString()}</span>
-              </div>
-
-              <div className="mb-8">
-                <label className="block text-[11px] font-bold text-gray-500 tracking-wider uppercase mb-3">Promo Code</label>
-                <div className="flex gap-3">
-                  <input 
-                    id="promo-input"
-                    type="text" 
-                    placeholder="Enter code" 
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-[14px] outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-                  />
-                  <button onClick={() => {
-                    const el = document.getElementById('promo-input');
-                    if (el && el.value) {
-                      alert('Validating promo code ' + el.value + ' with server...');
-                      // Here you would call promotionService.applyPromo(...)
-                    } else {
-                      alert('Please enter a promo code first.');
-                    }
-                  }} className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-6 py-3 rounded-xl text-[14px] transition-colors">
-                    Apply
-                  </button>
-                </div>
               </div>
 
               <button 

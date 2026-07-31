@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Banknote, Clock, CreditCard, Shield, Store, User, UserCog } from 'lucide-react'
+import { Banknote, Clock, CreditCard, Shield, Store, User, UserCog, Users } from 'lucide-react'
 
 const iconMap = {
   store: Store,
@@ -7,6 +7,7 @@ const iconMap = {
   banknote: Banknote,
   'credit-card': CreditCard,
   user: User,
+  users: Users,
   'user-cog': UserCog,
   shield: Shield,
 }

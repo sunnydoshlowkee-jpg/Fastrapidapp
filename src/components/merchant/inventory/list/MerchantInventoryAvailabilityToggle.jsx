@@ -1,12 +1,20 @@
-export default function MerchantInventoryAvailabilityToggle({ enabled, onChange, label }) {
+export default function MerchantInventoryAvailabilityToggle({
+  enabled,
+  onChange,
+  label,
+  disabled = false,
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={enabled}
       aria-label={label ?? 'Toggle availability'}
-      onClick={() => onChange(!enabled)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors ${
+      disabled={disabled}
+      onClick={() => {
+        if (!disabled) onChange(!enabled)
+      }}
+      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full p-0.5 transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
         enabled ? 'bg-merchant-primary' : 'bg-merchant-divider'
       }`}
     >

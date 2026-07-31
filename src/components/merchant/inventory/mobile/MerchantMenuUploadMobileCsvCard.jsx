@@ -6,14 +6,16 @@ export default function MerchantMenuUploadMobileCsvCard({
   mobileCsv,
   onUpload,
   onDownloadTemplate,
+  uploading = false,
+  error = '',
 }) {
   const inputRef = useRef(null)
-  const [fileName, setFileName] = useState(null)
+  const [file, setFile] = useState(null)
   const [dragOver, setDragOver] = useState(false)
 
   const handleFiles = (files) => {
-    const file = files?.[0]
-    if (file) setFileName(file.name)
+    const next = files?.[0]
+    if (next) setFile(next)
   }
 
   const handleDrop = (e) => {
@@ -75,18 +77,20 @@ export default function MerchantMenuUploadMobileCsvCard({
         <p className="text-center text-[11px] leading-4 text-merchant-mobile-muted">
           {mobileCsv.dropzoneSubtext}
         </p>
-        {fileName ? (
-          <p className="text-xs font-medium text-merchant-ink">Selected: {fileName}</p>
+        {file ? (
+          <p className="text-xs font-medium text-merchant-ink">Selected: {file.name}</p>
         ) : null}
       </div>
+      {error ? <p className="relative mt-2 text-xs text-red-600">{error}</p> : null}
 
       <div className="relative mt-3 flex flex-col gap-3">
         <button
           type="button"
-          onClick={onUpload}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-merchant-link to-merchant-primary py-4 text-sm font-semibold leading-[21px] text-white shadow-merchant-btn transition-opacity hover:opacity-95"
+          onClick={() => onUpload?.(file)}
+          disabled={!file || uploading}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-merchant-link to-merchant-primary py-4 text-sm font-semibold leading-[21px] text-white shadow-merchant-btn transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {mobileCsv.uploadLabel}
+          {uploading ? 'Importing…' : mobileCsv.uploadLabel}
           <Upload size={12} strokeWidth={2.5} aria-hidden />
         </button>
 

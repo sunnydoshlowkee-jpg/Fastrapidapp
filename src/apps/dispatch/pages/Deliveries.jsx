@@ -4,6 +4,7 @@ import { ArrowRight, Clock, SlidersHorizontal, Search } from 'lucide-react'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const TABS = ['All', 'Completed', 'Declined', 'Cancelled']
 
@@ -44,7 +45,7 @@ export default function Deliveries() {
     <div className="min-h-screen bg-white max-w-md mx-auto">
 
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white px-5 pt-12 pb-4 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-white px-5 pt-app pb-4 flex items-center justify-between">
         <h1 className="text-xl font-black text-gray-900">My Deliveries</h1>
         <NotificationBellButton
           onClick={() => navigate('/dispatch/notifications')}
@@ -89,7 +90,7 @@ export default function Deliveries() {
 
       {/* Delivery list */}
       <div className="px-5">
-        {loading && <p className="text-center py-10 text-gray-500">Loading deliveries...</p>}
+        {loading && <BrandedLoader size="md" />}
         {error && <p className="text-center py-10 text-red-500">{error}</p>}
         {!loading && !error && filtered.length === 0 ? (
           <div className="text-center py-16">

@@ -106,3 +106,9 @@ APKs land in `releases/`:
 - In-app notification inbox + polling still works without FCM.
 - Push is skipped when `FCM_ENABLED=false` or credentials are missing.
 - Invalid/expired FCM tokens are deleted automatically on send failure.
+
+## 5. iOS (TestFlight)
+
+Register matching iOS apps in Firebase with the same bundle IDs (`com.fastrapid.user` / `.rider` / `.merchant`), download each `GoogleService-Info.plist` into `ios/config/<persona>/`, upload an APNs auth key to Firebase, then follow [IOS_PUBLISHING.md](./IOS_PUBLISHING.md).
+
+Until Firebase iOS + APNs are configured, Android push continues to work; iOS installs still run but may not receive FCM pushes.

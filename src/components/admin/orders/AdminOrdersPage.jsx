@@ -9,6 +9,7 @@ import {
   formatAdminOrdersPaginationSummary,
   mapAdminOrderFromApi,
 } from '../../../services/adminOrdersService'
+import { exportAdminOrdersCsv } from '../../../services/adminExportService'
 import { getAdminAuthToken } from '../../../services/adminAuthService'
 import AdminOrdersMobileCard from './AdminOrdersMobileCard'
 import AdminOrdersStatusBadge from './AdminOrdersStatusBadge'
@@ -26,6 +27,7 @@ export default function AdminOrdersPage() {
   const [tabs, setTabs] = useState(pageConfig.tabs)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   const loadOrders = useCallback(async () => {
     if (!getAdminAuthToken()) {
@@ -177,10 +179,22 @@ export default function AdminOrdersPage() {
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-rapid-orange transition-colors hover:bg-orange-100"
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true)
+                setError('')
+                try {
+                  await exportAdminOrdersCsv({ search, status: activeTab })
+                } catch (err) {
+                  setError(err.message || 'Export failed.')
+                } finally {
+                  setExporting(false)
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-rapid-orange transition-colors hover:bg-orange-100 disabled:opacity-50"
             >
               <Download size={16} strokeWidth={2} aria-hidden />
-              {pageConfig.exportLabel}
+              {exporting ? 'Exporting…' : pageConfig.exportLabel}
             </button>
             <button
               type="button"

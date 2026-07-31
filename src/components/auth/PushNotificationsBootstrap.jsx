@@ -14,6 +14,11 @@ export default function PushNotificationsBootstrap() {
       const role = getNativeAppRole()
       const { tokenKey } = getRoleConfig(role)
       if (localStorage.getItem(tokenKey)) {
+        // Honour rider opt-out from Edit Profile.
+        if (role === 'rider') {
+          const saved = localStorage.getItem('rider_push_notifs')
+          if (saved !== null && JSON.parse(saved) === false) return
+        }
         syncPushTokenAfterLogin()
       } else {
         initPushNotifications()

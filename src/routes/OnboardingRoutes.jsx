@@ -14,6 +14,7 @@ import EmailLogin from '../apps/user/pages/auth/EmailLogin'
 import EmailVerify from '../apps/user/pages/auth/EmailVerify'
 import VerifyIdentity from '../apps/user/pages/auth/VerifyIdentity'
 import BiometricUnlock from '../apps/user/pages/auth/BiometricUnlock'
+import LoginSecurity from '../apps/user/pages/auth/LoginSecurity'
 
 export default function OnboardingRoutes() {
   return (
@@ -32,6 +33,7 @@ export default function OnboardingRoutes() {
       <Route path="auth/login/phone" element={<EmailLogin />} />
       <Route path="auth/verify-email" element={<EmailVerify />} />
       <Route path="auth/verify" element={<VerifyIdentity />} />
+      <Route path="auth/login-security" element={<LoginSecurity />} />
       <Route path="auth/biometric-unlock" element={<BiometricUnlock />} />
     </Routes>
   )

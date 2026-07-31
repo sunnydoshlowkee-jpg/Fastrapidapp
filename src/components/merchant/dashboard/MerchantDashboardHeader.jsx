@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import NotificationBellButton from '../../notifications/NotificationBellButton'
+import MerchantHeaderActions from '../layout/MerchantHeaderActions'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 
 export default function MerchantDashboardHeader({
@@ -47,20 +48,29 @@ export default function MerchantDashboardHeader({
         </h1>
       </div>
 
-      <div className="flex shrink-0 items-center gap-4">
-        <NotificationBellButton
-          onClick={() => navigate('/merchant/notifications')}
-          count={unread}
-          tone="indigo"
-          iconSize={18}
-          iconClassName="text-[#64748B]"
-          className="h-9 w-8"
-          ariaLabel={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
-        />
-        {isBar ? <span className="h-8 w-px bg-merchant-divider" aria-hidden /> : null}
-        <p className="text-xs font-medium leading-4 text-merchant-header-muted">
-          Merchant ID: <span className="text-merchant-header-muted">#{merchantId}</span>
-        </p>
+      <div className="flex shrink-0 items-center gap-3 lg:gap-4">
+        <div className="lg:hidden">
+          <MerchantHeaderActions
+            iconClassName="text-[#64748B]"
+            bellClassName="h-9 w-9 rounded-full"
+            profileClassName="h-9 w-9 rounded-full border border-merchant-field-border bg-white text-merchant-ink"
+          />
+        </div>
+        <div className="hidden items-center gap-4 lg:flex">
+          <NotificationBellButton
+            onClick={() => navigate('/merchant/notifications')}
+            count={unread}
+            tone="indigo"
+            iconSize={18}
+            iconClassName="text-[#64748B]"
+            className="h-9 w-8"
+            ariaLabel={unread > 0 ? `${unread} unread notifications` : 'Notifications'}
+          />
+          {isBar ? <span className="h-8 w-px bg-merchant-divider" aria-hidden /> : null}
+          <p className="text-xs font-medium leading-4 text-merchant-header-muted">
+            Merchant ID: <span className="text-merchant-header-muted">#{merchantId}</span>
+          </p>
+        </div>
       </div>
     </header>
   )

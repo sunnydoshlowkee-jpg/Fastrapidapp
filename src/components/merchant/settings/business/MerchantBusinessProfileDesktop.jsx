@@ -10,6 +10,9 @@ export default function MerchantBusinessProfileDesktop({
   onSaveCategory,
   savingCategory = false,
   onLogoUpdated,
+  onTogglePaused,
+  savingStoreStatus = false,
+  onDocumentUpload,
 }) {
   const { openMobileNav } = useOutletContext()
 
@@ -27,14 +30,22 @@ export default function MerchantBusinessProfileDesktop({
             businessInfo={profile.businessInfo}
             onLogoUpdated={onLogoUpdated}
           />
-          <MerchantBusinessProfileStoreStatus storeStatus={profile.storeStatus} />
+          <MerchantBusinessProfileStoreStatus
+            storeStatus={profile.storeStatus}
+            onTogglePaused={onTogglePaused}
+            saving={savingStoreStatus}
+          />
         </div>
         <MerchantBusinessCategoryCard
           businessInfo={profile.businessInfo}
           onSave={onSaveCategory}
           saving={savingCategory}
         />
-        <MerchantBusinessProfileDocuments documents={profile.documents} />
+        <MerchantBusinessProfileDocuments
+          documents={profile.documents}
+          onUpload={onDocumentUpload}
+          onReupload={onDocumentUpload}
+        />
       </div>
     </div>
   )

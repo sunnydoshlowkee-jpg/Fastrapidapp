@@ -1,6 +1,7 @@
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { MERCHANT_MENU_UPLOAD_PATH } from '../../../../services/data/merchantMenuUpload.mock'
 import { MERCHANT_INVENTORY } from '../../../../services/data/merchantInventory.mock'
+import BrandedLoader from '../../../ui/BrandedLoader'
 import MerchantDashboardHeader from '../../dashboard/MerchantDashboardHeader'
 import MerchantInventoryInsightCards from './MerchantInventoryInsightCards'
 import MerchantInventorySummaryCards from './MerchantInventorySummaryCards'
@@ -54,7 +55,7 @@ export default function MerchantInventoryDesktop() {
       <MerchantInventorySummaryCards summary={summary} />
 
       {loading ? (
-        <p className="text-sm text-merchant-muted">Loading inventory…</p>
+        <BrandedLoader size="md" />
       ) : (
         <MerchantInventoryTable
           products={products}

@@ -145,6 +145,7 @@ export default function SendMoney() {
 
   const closePinScreen = () => {
     setShowPin(false)
+    setError('')
     resetPinEntry()
   }
 
@@ -249,7 +250,8 @@ export default function SendMoney() {
           bankName: selectedBank ? selectedBank.name : bankCode,
           accountNumber,
           amount: numAmount,
-          pin: pinToUse,
+          pin: transactionMethod === 'pin' ? pinToUse : undefined,
+          auth_code: authCode,
         })
         navigate('/app/wallet')
       } else {
@@ -268,7 +270,11 @@ export default function SendMoney() {
       }
     } catch (err) {
       setError(err?.message || 'Transfer failed.')
-      resetPinEntry()
+      submittedRef.current = false
+      if (transactionMethod === 'pin') {
+        resetPinEntry()
+      }
+      throw err
     } finally {
       setLoading(false)
     }
@@ -315,7 +321,7 @@ export default function SendMoney() {
       return (
         <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
           <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
-            <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+            <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
               <button onClick={closePinScreen} className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center">
                 <ArrowLeft size={20} />
               </button>
@@ -331,9 +337,12 @@ export default function SendMoney() {
               onCancel={closePinScreen}
               onVerified={(payload) => {
                 submittedRef.current = true
+                setError('')
                 completeTransfer(payload)
               }}
             />
+            {error ? <p className="px-5 pb-6 text-sm text-red-600 text-center">{error}</p> : null}
+            {loading ? <p className="px-5 pb-6 text-sm text-gray-500 text-center">Processing transfer…</p> : null}
           </div>
         </div>
       )
@@ -342,7 +351,7 @@ export default function SendMoney() {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
         <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
-          <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+          <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
             <button onClick={closePinScreen} className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center">
               <ArrowLeft size={20} />
             </button>
@@ -407,7 +416,7 @@ export default function SendMoney() {
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8 items-center md:justify-center">
       <div className="w-full max-w-md mx-auto flex flex-col md:bg-white md:rounded-3xl md:shadow-lg md:shadow-gray-200/50 md:border md:border-gray-100 md:min-h-0 md:my-12 overflow-hidden flex-1 md:flex-initial">
-        <div className="px-5 md:px-8 pt-12 md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
+        <div className="px-5 md:px-8 pt-app md:pt-8 pb-3 md:pb-6 flex items-center gap-3 bg-[#FAFAFA] md:bg-transparent border-b border-transparent md:border-gray-100">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:shadow-none md:w-10 md:h-10 md:flex md:items-center md:justify-center">
             <ArrowLeft size={20} />
           </button>

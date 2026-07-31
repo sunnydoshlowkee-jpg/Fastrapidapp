@@ -272,7 +272,7 @@ export default function MerchantSendMoney() {
   if (showPin) {
     return (
       <div className="flex min-h-screen flex-col bg-[#FAFAFA] pb-24 lg:pb-8">
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-12">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-app">
           <button type="button" onClick={closePinScreen} className="mb-6 self-start rounded-full bg-white p-2 shadow-sm">
             <ArrowLeft size={20} />
           </button>
@@ -324,7 +324,7 @@ export default function MerchantSendMoney() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAFA] pb-24 lg:pb-8">
-      <div className="flex items-center gap-3 border-b border-gray-100 px-5 pb-3 pt-12 md:px-8 md:pt-8">
+      <div className="flex items-center gap-3 border-b border-gray-100 px-5 pb-3 pt-app md:px-8 md:pt-8">
         <button
           type="button"
           onClick={() => navigate('/merchant/wallet')}

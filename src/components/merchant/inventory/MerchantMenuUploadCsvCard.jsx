@@ -1,14 +1,20 @@
 import { useRef, useState } from 'react'
 import { Download, FileSpreadsheet, UploadCloud } from 'lucide-react'
 
-export default function MerchantMenuUploadCsvCard({ csvUpload, onUpload, onDownloadTemplate }) {
+export default function MerchantMenuUploadCsvCard({
+  csvUpload,
+  onUpload,
+  onDownloadTemplate,
+  uploading = false,
+  error = '',
+}) {
   const inputRef = useRef(null)
-  const [fileName, setFileName] = useState(null)
+  const [file, setFile] = useState(null)
   const [dragOver, setDragOver] = useState(false)
 
   const handleFiles = (files) => {
-    const file = files?.[0]
-    if (file) setFileName(file.name)
+    const next = files?.[0]
+    if (next) setFile(next)
   }
 
   const handleDrop = (e) => {
@@ -55,19 +61,21 @@ export default function MerchantMenuUploadCsvCard({ csvUpload, onUpload, onDownl
             {csvUpload.dropzoneHint}{' '}
             <span className="font-semibold text-merchant-link">{csvUpload.browseLabel}</span>
           </p>
-          {fileName ? (
-            <p className="text-xs font-medium text-merchant-ink">Selected: {fileName}</p>
+          {file ? (
+            <p className="text-xs font-medium text-merchant-ink">Selected: {file.name}</p>
           ) : null}
         </div>
+        {error ? <p className="mt-3 text-xs text-red-600">{error}</p> : null}
       </div>
 
       <div className="flex w-full max-w-[376px] flex-col gap-4">
         <button
           type="button"
-          onClick={onUpload}
-          className="w-full rounded-xl bg-merchant-link py-4 text-base font-semibold text-white shadow-merchant-btn transition-colors hover:bg-merchant-primary-dark"
+          onClick={() => onUpload?.(file)}
+          disabled={!file || uploading}
+          className="w-full rounded-xl bg-merchant-link py-4 text-base font-semibold text-white shadow-merchant-btn transition-colors hover:bg-merchant-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {csvUpload.uploadLabel}
+          {uploading ? 'Importing…' : csvUpload.uploadLabel}
         </button>
 
         <button

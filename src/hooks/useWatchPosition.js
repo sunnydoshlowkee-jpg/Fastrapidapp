@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { watchPosition } from '../utils/geolocation'
+import { watchDevicePosition } from '../utils/nativeLocation'
 
 export function useWatchPosition({ enabled = true, onUpdate } = {}) {
   const [position, setPosition] = useState(null)
@@ -17,16 +17,27 @@ export function useWatchPosition({ enabled = true, onUpdate } = {}) {
       return undefined
     }
 
-    const stop = watchPosition(
-      (next) => {
-        setPosition(next)
-        setError(null)
-        onUpdateRef.current?.(next)
-      },
-      (err) => setError(err),
-    )
+    let cancelled = false
+    let stop = () => {}
 
-    return stop
+    ;(async () => {
+      stop = await watchDevicePosition(
+        (next) => {
+          if (cancelled) return
+          setPosition(next)
+          setError(null)
+          onUpdateRef.current?.(next)
+        },
+        (err) => {
+          if (!cancelled) setError(err)
+        },
+      )
+    })()
+
+    return () => {
+      cancelled = true
+      stop?.()
+    }
   }, [enabled])
 
   return { position, error }

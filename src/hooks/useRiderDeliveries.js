@@ -52,8 +52,10 @@ export const useRiderDeliveries = () => {
     try {
       const response = await getDeliveryDetails(id);
       const data = response.data?.delivery || response.delivery || response.data || response;
-      setDeliveryDetails(data);
-      return data;
+      const payout = response.data?.rider_payout ?? response.rider_payout;
+      const enriched = payout != null ? { ...data, rider_payout: payout } : data;
+      setDeliveryDetails(enriched);
+      return enriched;
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch delivery details');
       throw err;

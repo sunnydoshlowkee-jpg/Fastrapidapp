@@ -1,6 +1,11 @@
 import { Sparkles } from 'lucide-react'
 
-export default function MerchantOperatingHoursInstantClose({ instantClose }) {
+export default function MerchantOperatingHoursInstantClose({
+  instantClose,
+  onClose,
+  loading = false,
+  storePaused = false,
+}) {
   return (
     <section className="rounded-merchant-stat bg-[#FEF2F2] p-5 shadow-merchant-stat lg:p-6">
       <div className="flex items-center gap-2">
@@ -12,9 +17,11 @@ export default function MerchantOperatingHoursInstantClose({ instantClose }) {
 
       <button
         type="button"
-        className="mt-5 w-full rounded-lg bg-[#DC2626] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#B91C1C]"
+        onClick={onClose}
+        disabled={loading || storePaused}
+        className="mt-5 w-full rounded-lg bg-[#DC2626] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {instantClose.buttonLabel}
+        {storePaused ? 'Store already paused' : loading ? 'Closing…' : instantClose.buttonLabel}
       </button>
     </section>
   )

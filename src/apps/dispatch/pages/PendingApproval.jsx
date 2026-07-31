@@ -9,7 +9,7 @@ export default function PendingApproval() {
   const approvalStatus = getRiderApprovalStatus()
 
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-12 pb-10">
+    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto px-6 pt-app pb-10">
       <div className="flex justify-center mb-8">
         <div
           className="w-28 h-28 rounded-full flex items-center justify-center"

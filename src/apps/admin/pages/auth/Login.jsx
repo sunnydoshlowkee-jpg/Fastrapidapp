@@ -7,7 +7,6 @@ import {
   isAdminAuthenticated,
 } from '../../../../services/adminAuthService'
 import {
-  ADMIN_DUMMY_CREDENTIALS,
   ADMIN_LOGIN_COPY,
   ADMIN_VERIFY_2FA_PATH,
 } from '../../../../services/data/adminAuth.mock'
@@ -15,8 +14,8 @@ import {
 export default function AdminLogin() {
   const navigate = useNavigate()
   const copy = ADMIN_LOGIN_COPY
-  const [email, setEmail] = useState(ADMIN_DUMMY_CREDENTIALS.email)
-  const [password, setPassword] = useState(ADMIN_DUMMY_CREDENTIALS.password)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')

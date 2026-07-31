@@ -33,7 +33,7 @@ export default function CenteredLayout({ children, showBackButton = false, backT
       <div className="hidden md:block absolute top-0 left-0 w-[400px] h-[400px] bg-indigo-50/50 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 -z-10"></div>
       
       {/* Top Header area */}
-      <div className="w-full flex items-center justify-between px-6 pt-12 pb-4 md:px-12 md:pt-12 absolute top-0 left-0 right-0 z-10">
+      <div className="w-full flex items-center justify-between px-6 pt-app pb-4 md:px-12 md:pt-12 absolute top-0 left-0 right-0 z-10">
         <div>
           {showBackButton && (
             <button 

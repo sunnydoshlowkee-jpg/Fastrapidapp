@@ -7,6 +7,7 @@ import MerchantMenuItemCreateField from './MerchantMenuItemCreateField'
 import MerchantMenuItemCreateMediaUpload, { inputClassName } from './MerchantMenuItemCreateMediaUpload'
 import MerchantMenuItemCreateMultiMediaUpload from './MerchantMenuItemCreateMultiMediaUpload'
 import MerchantMenuItemCreateProTip from './MerchantMenuItemCreateProTip'
+import MerchantCheckbox from '../../auth/MerchantCheckbox'
 
 const emptyForm = {
   productName: '',
@@ -14,6 +15,7 @@ const emptyForm = {
   stockQuantity: '',
   price: '',
   description: '',
+  announce: false,
 }
 
 function resolveFormCopy(copy, variant) {
@@ -45,6 +47,7 @@ export default function MerchantMenuItemCreateForm({
   variant = 'desktop',
   initialForm = null,
   initialImageUrls = [],
+  showAnnounce = false,
 }) {
   const isMobile = variant === 'mobile'
   const { fields, proTip } = resolveFormCopy(copy, variant)
@@ -248,6 +251,21 @@ export default function MerchantMenuItemCreateForm({
       </MerchantMenuItemCreateField>
 
       {isMobile && <MerchantMenuItemCreateProTip proTip={proTip} compact />}
+
+      {showAnnounce ? (
+        <div className="rounded-xl border border-merchant-input bg-merchant-input/40 px-4 py-3">
+          <MerchantCheckbox
+            id="announce-new-item"
+            label={fields.announce?.label || 'Announce'}
+            checked={Boolean(form.announce)}
+            onChange={(e) => setForm((prev) => ({ ...prev, announce: e.target.checked }))}
+          />
+          <p className="mt-2 text-xs leading-relaxed text-merchant-muted md:pl-7">
+            {fields.announce?.hint ||
+              'Send a push notification to all Rapid users that this item is now available in your store.'}
+          </p>
+        </div>
+      ) : null}
 
       {actionsBlock}
 

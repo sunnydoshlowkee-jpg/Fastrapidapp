@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FastRapid APK Downloads</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #101828;
+      --muted: #667085;
+      --accent: #4f46e5;
+      --border: #e4e7ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(circle at top left, #eef2ff, transparent 40%), var(--bg);
+      color: var(--text);
+      padding: 40px 20px;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    p { margin: 0 0 8px; color: var(--muted); }
+    .built { margin: 0 0 24px; font-size: 0.9rem; color: var(--muted); }
+    ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+    a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      background: #fafafa;
+    }
+    a:hover { border-color: var(--accent); background: #eef2ff; }
+    .label { font-weight: 600; }
+    .meta { color: var(--muted); font-size: 0.9rem; text-align: right; }
+    .meta small { display: block; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>FastRapid APK Downloads</h1>
+    <p>Install on Android. Use the flavor that matches your role.</p>
+    <p class="built" id="built-at">Latest builds ready for download.</p>
+    <ul>
+      <li>
+        <a href="./FastRapid-User-release.apk" download>
+          <span class="label">User app</span>
+          <span class="meta">FastRapid-User-release.apk<span data-file="FastRapid-User-release.apk"></span></span>
+        </a>
+      </li>
+      <li>
+        <a href="./FastRapid-Merchant-release.apk" download>
+          <span class="label">Merchant app</span>
+          <span class="meta">FastRapid-Merchant-release.apk<span data-file="FastRapid-Merchant-release.apk"></span></span>
+        </a>
+      </li>
+      <li>
+        <a href="./FastRapid-Dispatch-release.apk" download>
+          <span class="label">Dispatch / Rider app</span>
+          <span class="meta">FastRapid-Dispatch-release.apk<span data-file="FastRapid-Dispatch-release.apk"></span></span>
+        </a>
+      </li>
+    </ul>
+  </main>
+  <script>
+    (async () => {
+      const files = [...document.querySelectorAll('[data-file]')]
+      let newest = 0
+      for (const el of files) {
+        const name = el.getAttribute('data-file')
+        try {
+          const res = await fetch('./' + name, { method: 'HEAD', cache: 'no-store' })
+          const len = Number(res.headers.get('content-length') || 0)
+          const modified = res.headers.get('last-modified')
+          const mb = len ? (len / (1024 * 1024)).toFixed(1) + ' MB' : ''
+          const when = modified ? new Date(modified) : null
+          if (when && when.getTime() > newest) newest = when.getTime()
+          el.innerHTML = when
+            ? `<small>${mb}${mb && when ? ' · ' : ''}${when.toLocaleString()}</small>`
+            : (mb ? `<small>${mb}</small>` : '')
+        } catch {
+          // ignore
+        }
+      }
+      if (newest) {
+        document.getElementById('built-at').textContent =
+          'Built ' + new Date(newest).toLocaleString()
+      }
+    })()
+  </script>
+</body>
+</html>

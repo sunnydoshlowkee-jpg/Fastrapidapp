@@ -13,6 +13,8 @@ export default function MerchantAnalyticsMobile({
   periods,
   activePeriod,
   onPeriodChange,
+  customRange,
+  onCustomRangeChange,
 }) {
   const mobile = data.mobile
 
@@ -33,6 +35,8 @@ export default function MerchantAnalyticsMobile({
         periods={periods}
         activePeriod={activePeriod}
         onChange={onPeriodChange}
+        customRange={customRange}
+        onCustomRangeChange={onCustomRangeChange}
       />
 
       <MerchantAnalyticsMobileRevenueCard

@@ -7,6 +7,7 @@ import { useProfileAvatarUpload } from '../../../hooks/useProfileAvatarUpload'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
 import ProfileAvatar from '../../../components/profile/ProfileAvatar'
 import NotificationBellButton from '../../../components/notifications/NotificationBellButton'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -55,8 +56,8 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] text-gray-500">
-        Loading profile…
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA]">
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -71,7 +72,7 @@ export default function Profile() {
         onChange={handleFileChange}
       />
 
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <button type="button" onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>

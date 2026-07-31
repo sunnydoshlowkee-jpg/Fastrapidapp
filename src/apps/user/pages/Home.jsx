@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Heart, Plus, Star, ChevronRight, Search, ShoppingCart, Car, Utensils, ShoppingBasket, Package, Pill } from 'lucide-react'
 import AppLocationBar from '../../../components/location/AppLocationBar'
@@ -8,22 +8,15 @@ import { useDiscovery } from '../../../hooks/useDiscovery'
 import { useDashboard } from '../../../hooks/useDashboard'
 import { useCart } from '../../../context/CartContext'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
+import { trackEvent } from '../../../services/analyticsService'
 
-// Mock Data (Desktop Only)
 const desktopServices = [
   { name: 'Rides', icon: Car },
   { name: 'Food', icon: Utensils },
   { name: 'Grocery', icon: ShoppingBasket },
   { name: 'Package', icon: Package },
   { name: 'Health', icon: Pill },
-]
-
-const desktopQuickReorder = [
-  { id: 1, name: 'Margherita\nPizza', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&h=500&fit=crop', color: 'ring-blue-500' },
-  { id: 2, name: 'Cheeseburger\nMeal', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=500&fit=crop', color: 'ring-yellow-500' },
-  { id: 3, name: 'Greek\nBowl', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=500&fit=crop', color: 'ring-green-500' },
-  { id: 4, name: 'Salmon\nSushi', img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&h=500&fit=crop', color: 'ring-orange-500' },
-  { id: 5, name: 'Grill\nMix', img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&h=500&fit=crop', color: 'ring-red-500' },
 ]
 
 export default function Home() {
@@ -37,6 +30,10 @@ export default function Home() {
     role: 'user',
     enabled: Boolean(localStorage.getItem('rapid_token')),
   })
+
+  useEffect(() => {
+    trackEvent('view_home', 'page', 'home')
+  }, [])
 
   const toggleFavorite = (e, id) => {
     e.stopPropagation()
@@ -82,7 +79,7 @@ export default function Home() {
       {/* -------------------------------------------------------------------------------- */}
       
       {/* Mobile Top Bar */}
-      <div className="md:hidden px-5 pt-12 pb-3 flex items-center justify-between sticky top-0 bg-[#FAFAFA]/95 backdrop-blur-md z-40 border-b border-gray-100">
+      <div className="md:hidden px-5 pt-app pb-3 flex items-center justify-between sticky top-0 bg-[#FAFAFA]/95 backdrop-blur-md z-40 border-b border-gray-100">
         <AppLocationBar variant="mobile" />
         <div className="flex items-center gap-2">
           <NotificationBellButton
@@ -253,7 +250,7 @@ export default function Home() {
             {nearbyCount > 0 && ` · ${nearbyCount} nearby`}
           </p>
           {discoveryLoading && (
-            <p className="text-sm text-gray-500 mb-4">Loading nearby results…</p>
+            <BrandedLoader size="md" className="mb-4" />
           )}
           {discoveryError && (
             <p className="text-sm text-red-600 mb-4">{discoveryError}</p>
@@ -490,7 +487,7 @@ export default function Home() {
             <span onClick={() => navigate(`/app/vendors/food`)} className="text-[16px] font-bold text-[#2D2AEE] cursor-pointer hover:underline">View all vendors</span>
           </div>
           {discoveryLoading && (
-            <p className="text-gray-500 mb-4">Loading nearby restaurants…</p>
+            <BrandedLoader size="md" className="mb-4" />
           )}
           {discoveryError && (
             <p className="text-red-600 mb-4 py-4 px-4 text-center bg-red-50 rounded-2xl text-sm">

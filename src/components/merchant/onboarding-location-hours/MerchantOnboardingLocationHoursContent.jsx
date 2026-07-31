@@ -18,6 +18,7 @@ export default function MerchantOnboardingLocationHoursContent({
   submitting = false,
   variant = 'desktop',
   mobileSection = 'all',
+  coords = null,
 }) {
   const isMobile = variant === 'mobile'
   const showLocation = !isMobile || mobileSection === 'all' || mobileSection === 'location'
@@ -68,6 +69,7 @@ export default function MerchantOnboardingLocationHoursContent({
             fieldErrors={fieldErrors}
             bareInputs={isMobile}
             hideSectionNumber={isMobile}
+            coords={coords}
           />
         ) : null}
         {showHours ? (

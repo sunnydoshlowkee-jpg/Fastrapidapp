@@ -45,8 +45,6 @@ export const ADMIN_MERCHANT_DETAIL_UI = {
     { id: 'info', label: 'Info' },
     { id: 'documents', label: 'Documents' },
     { id: 'orders', label: 'Orders' },
-    { id: 'performance', label: 'Performance' },
-    { id: 'notes', label: 'Notes' },
   ],
   kpis: {
     orders: { label: 'Total Orders', showTrend: false },

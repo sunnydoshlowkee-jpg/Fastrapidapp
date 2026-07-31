@@ -1,11 +1,8 @@
-import { MERCHANT_ACCOUNT_SETTINGS } from '../../../../services/data/merchantAccountSettings.mock'
 import MerchantAccountSettingsMobileDangerZone from './mobile/MerchantAccountSettingsMobileDangerZone'
 import MerchantAccountSettingsMobileHeader from './mobile/MerchantAccountSettingsMobileHeader'
 import MerchantAccountSettingsMobileProfile from './mobile/MerchantAccountSettingsMobileProfile'
-import MerchantAccountSettingsMobileTeam from './mobile/MerchantAccountSettingsMobileTeam'
 
-export default function MerchantAccountSettingsMobile() {
-  const data = MERCHANT_ACCOUNT_SETTINGS
+export default function MerchantAccountSettingsMobile({ data }) {
   const mobile = data.mobile
 
   return (
@@ -13,7 +10,6 @@ export default function MerchantAccountSettingsMobile() {
       <MerchantAccountSettingsMobileHeader title={data.pageTitle} merchantId={mobile.merchantId} />
 
       <MerchantAccountSettingsMobileProfile profile={mobile.profile} />
-      <MerchantAccountSettingsMobileTeam team={mobile.team} />
       <MerchantAccountSettingsMobileDangerZone dangerZone={mobile.dangerZone} />
     </div>
   )

@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { Home, Truck, BarChart2, User } from 'lucide-react'
 import { NavBadge } from '../components/notifications/NotificationBellButton'
+import BrandedLoader from '../components/ui/BrandedLoader'
+import PullToRefresh from '../components/ui/PullToRefresh'
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications'
 import { isRiderApproved, refreshRiderSession } from '../services/riderAuthService'
+import { createPullRefreshHandler } from '../utils/pullRefresh'
 
 const navItems = [
   { to: '/dispatch', icon: Home, label: 'Home', end: true },
@@ -19,8 +22,11 @@ const PENDING_ALLOWED_PREFIXES = [
 
 export default function DispatchLayout() {
   const location = useLocation()
+  const mainRef = useRef(null)
   const [syncing, setSyncing] = useState(true)
   const [approved, setApproved] = useState(isRiderApproved())
+  const [refreshKey, setRefreshKey] = useState(0)
+  const handlePullRefresh = useCallback(createPullRefreshHandler(setRefreshKey), [])
 
   const isAuthed = Boolean(localStorage.getItem('rider_token') || localStorage.getItem('rapid_token'))
   const pendingAllowed = PENDING_ALLOWED_PREFIXES.some((prefix) => location.pathname.startsWith(prefix))
@@ -70,18 +76,18 @@ export default function DispatchLayout() {
   const homePath = approved ? '/dispatch' : '/dispatch/pending'
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 max-w-md mx-auto relative">
-      <main className="flex-1 overflow-y-auto pb-20">
+    <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-gray-50">
+      <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto pb-dispatch-nav">
         {syncing ? (
-          <div className="flex min-h-[50vh] items-center justify-center text-sm text-gray-500">
-            Loading…
-          </div>
+          <BrandedLoader size="md" />
         ) : (
-          <Outlet />
+          <PullToRefresh scrollRef={mainRef} onRefresh={handlePullRefresh}>
+            <Outlet key={refreshKey} />
+          </PullToRefresh>
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-100 flex justify-around items-center h-[68px] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      <nav className="fixed bottom-0 left-1/2 z-50 flex h-auto min-h-[68px] w-full max-w-md -translate-x-1/2 items-center justify-around border-t border-gray-100 bg-white pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         {navItems.map(({ to, icon: Icon, label, end }) => {
           const target = to === '/dispatch' ? homePath : to
           const disabled = !approved && !to.startsWith('/dispatch/profile') && to !== '/dispatch'
@@ -98,7 +104,7 @@ export default function DispatchLayout() {
                 const routeActive = isHome
                   ? (approved ? location.pathname === '/dispatch' : homeActive)
                   : location.pathname.startsWith(to)
-                return `flex flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors w-16 ${
+                return `flex w-16 flex-col items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                   routeActive ? 'text-[#5B5BFF]' : 'text-gray-400'
                 }`
               }}

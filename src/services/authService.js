@@ -6,9 +6,12 @@ export const completeProfile = (data) => api.post('/auth/profile', data)
 export const updateProfile = (data) => api.put('/auth/profile', data)
 export const uploadProfileAvatar = (file) => {
   const formData = new FormData()
-  formData.append('avatar', file)
+  const name = file?.name || 'avatar.jpg'
+  formData.append('avatar', file, name)
 
-  return api.post('/auth/profile/avatar', formData)
+  return api.post('/auth/profile/avatar', formData, {
+    timeout: 60_000,
+  })
 }
 export const requestEmailOtp = (data) => api.post('/auth/email', data)
 export const verifyEmailOtp = (data) => api.post('/auth/email/verify', data)

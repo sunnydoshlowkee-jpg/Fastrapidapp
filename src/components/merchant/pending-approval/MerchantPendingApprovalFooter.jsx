@@ -6,7 +6,12 @@ export default function MerchantPendingApprovalFooter({ footer }) {
           {footer.links.map((link, index) => (
             <span key={link.label} className="inline-flex items-center">
               {index > 0 ? <span className="px-1.5 text-merchant-muted" aria-hidden>·</span> : null}
-              <a href={link.href} className="font-medium transition-colors hover:text-merchant-ink">
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium transition-colors hover:text-merchant-ink"
+              >
                 {link.label}
               </a>
             </span>

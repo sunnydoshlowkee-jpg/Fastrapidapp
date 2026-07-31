@@ -1,5 +1,5 @@
-import AdminAuditLogPage from '../../../components/admin/audit-log/AdminAuditLogPage'
+import AdminLiveAuditLogPage from '../../../components/admin/audit-log/AdminLiveAuditLogPage'
 
 export default function AuditLog() {
-  return <AdminAuditLogPage />
+  return <AdminLiveAuditLogPage />
 }

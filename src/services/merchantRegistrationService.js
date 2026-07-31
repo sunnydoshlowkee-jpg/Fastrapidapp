@@ -1,5 +1,6 @@
 import api from './api'
 import { getStoredMerchantSession, merchantGetMe } from './merchantAuthService'
+import { storeMerchantSession } from './merchantAccountStore'
 import { mapUserToRegistrationDraft } from '../utils/merchantRegistrationDraft'
 import { MERCHANT_SIGNUP_EMAIL_KEY } from './data/merchantEmailVerification.mock'
 import {
@@ -8,9 +9,6 @@ import {
   validateMerchantRegistration,
 } from '../utils/merchantRegistrationValidation'
 import { getApiFieldError } from '../utils/apiErrors'
-
-const MERCHANT_TOKEN_KEY = 'rapid_merchant_token'
-const MERCHANT_USER_KEY = 'rapid_merchant_user'
 
 export function getMerchantSignupEmail() {
   return sessionStorage.getItem(MERCHANT_SIGNUP_EMAIL_KEY) || ''
@@ -25,15 +23,6 @@ export function setMerchantSignupEmail(email) {
 
 export function clearMerchantSignupEmail() {
   sessionStorage.removeItem(MERCHANT_SIGNUP_EMAIL_KEY)
-}
-
-function storeMerchantSession({ token, user }) {
-  if (token) {
-    localStorage.setItem(MERCHANT_TOKEN_KEY, token)
-  }
-  if (user) {
-    localStorage.setItem(MERCHANT_USER_KEY, JSON.stringify(user))
-  }
 }
 
 export async function fetchMerchantRegistrationDraft() {

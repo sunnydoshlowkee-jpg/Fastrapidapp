@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import MerchantMobileHeader from './MerchantMobileHeader'
 import MerchantMobileStatCard from './MerchantMobileStatCard'
 import MerchantLiveOrdersMobilePanel from './MerchantLiveOrdersMobilePanel'
 import MerchantStockAlertsMobilePanel from './MerchantStockAlertsMobilePanel'
 import { resolveMerchantOrderApiId } from '../../../services/merchantOrdersService'
-import { MERCHANT_DASHBOARD_ACTIVE } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardActiveMobile({
   stats,
   liveOrders: initialLiveOrders,
+  stockAlerts,
   onOrderAction,
 }) {
+  const navigate = useNavigate()
   const [liveOrders, setLiveOrders] = useState(initialLiveOrders)
-  const stockAlerts = MERCHANT_DASHBOARD_ACTIVE.stockAlerts
 
   useEffect(() => {
     setLiveOrders(initialLiveOrders)
@@ -31,7 +32,9 @@ export default function MerchantDashboardActiveMobile({
     try {
       await onOrderAction?.(resolveMerchantOrderApiId(orderId), 'accept')
       setLiveOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: 'ready', badge: 'Ready' } : o))
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status: 'preparing', timeRemaining: '15 min' } : o
+        )
       )
     } catch (err) {
       alert(err?.message || 'Could not accept order.')
@@ -69,7 +72,10 @@ export default function MerchantDashboardActiveMobile({
         onReject={handleRowReject}
         onDelivered={handleDelivered}
       />
-      <MerchantStockAlertsMobilePanel stockAlerts={stockAlerts} />
+      <MerchantStockAlertsMobilePanel
+        stockAlerts={stockAlerts}
+        onRestock={() => navigate('/merchant/menu')}
+      />
     </div>
   )
 }

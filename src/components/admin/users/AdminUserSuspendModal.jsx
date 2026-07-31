@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, PauseCircle, X } from 'lucide-react'
 
-export default function AdminUserSuspendModal({ isOpen, onClose, config }) {
+export default function AdminUserSuspendModal({ isOpen, onClose, config, onSubmit, submitting = false }) {
   const [infractionId, setInfractionId] = useState(
     config?.defaultInfractionId ?? config?.infractions?.[0]?.id ?? null,
   )
@@ -139,11 +139,19 @@ export default function AdminUserSuspendModal({ isOpen, onClose, config }) {
           </button>
           <button
             type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15]"
+            disabled={submitting}
+            onClick={() =>
+              onSubmit?.({
+                status: 'suspended',
+                infractionId,
+                durationId,
+                notify,
+              })
+            }
+            className="inline-flex items-center gap-2 rounded-lg bg-rapid-orange px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#E84A15] disabled:opacity-50"
           >
             <PauseCircle size={16} strokeWidth={2} aria-hidden />
-            {config.submitLabel}
+            {submitting ? 'Saving…' : config.submitLabel}
           </button>
         </footer>
       </div>

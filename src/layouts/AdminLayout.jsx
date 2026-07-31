@@ -10,19 +10,20 @@ import api from '../services/api'
 import { ADMIN_AUDIT_LOG_PATH } from '../services/data/adminAuditLog.mock'
 import { ADMIN_DISPUTES_PATH } from '../services/data/adminDisputes.mock'
 import { ADMIN_ORDERS_PATH } from '../services/data/adminOrders.mock'
-import { ADMIN_FINANCE_OVERVIEW } from '../services/data/adminFinanceOverview.mock'
 import {
   ADMIN_SETTINGS_FEATURE_FLAGS_PATH,
   ADMIN_SETTINGS_FINANCE_PATH,
   ADMIN_SETTINGS_PATH,
   ADMIN_SETTINGS_PAYMENT_PATH,
+  ADMIN_PAYOUTS_PATH,
+  ADMIN_TRANSACTIONS_PATH,
+  ADMIN_FINANCE_OVERVIEW_TITLE,
+  ADMIN_FINANCE_SEARCH_PLACEHOLDER,
 } from '../services/data/adminPaths'
 import { ADMIN_MERCHANTS_PATH } from '../services/data/adminMerchants.mock'
 import { ADMIN_MERCHANT_APPROVALS_PATH } from '../services/data/adminMerchantApprovals.mock'
-import { ADMIN_PAYOUTS_PATH } from '../services/data/adminPayouts.mock'
 import { ADMIN_RIDERS_PATH } from '../services/data/adminRiders.mock'
 import { ADMIN_SUPPORT_PATH } from '../services/data/adminSupportTickets.mock'
-import { ADMIN_TRANSACTIONS_PATH } from '../services/data/adminTransactions.mock'
 import { ADMIN_USERS_PATH } from '../services/data/adminUsers.mock'
 import {
   ADMIN_NOTIFICATIONS,
@@ -150,9 +151,9 @@ export default function AdminLayout() {
         : pathname.startsWith(ADMIN_PAYOUTS_PATH)
           ? 'Search transactions, accounts...'
           : isSettingsFinance
-            ? ADMIN_FINANCE_OVERVIEW.searchPlaceholder
+            ? ADMIN_FINANCE_SEARCH_PLACEHOLDER
             : ADMIN_DASHBOARD.searchPlaceholder
-  const headerTitle = isSettingsFinance ? ADMIN_FINANCE_OVERVIEW.pageTitle : null
+  const headerTitle = isSettingsFinance ? ADMIN_FINANCE_OVERVIEW_TITLE : null
   const isDashboard = pathname === '/admin' || pathname === '/admin/'
   const isNotifications =
     pathname === ADMIN_NOTIFICATIONS_PATH ||

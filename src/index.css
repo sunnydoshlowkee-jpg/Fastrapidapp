@@ -5,10 +5,19 @@
 @layer base {
   html {
     @apply font-sans antialiased;
+    height: 100%;
   }
 
   body {
     @apply bg-white text-gray-900 font-sans antialiased;
+    min-height: 100%;
+    min-height: 100dvh;
+    /* Avoid double-padding with page headers — headers use .pt-app */
+  }
+
+  #root {
+    min-height: 100%;
+    min-height: 100dvh;
   }
 
   button,
@@ -20,11 +29,29 @@
 }
 
 @layer utilities {
+  /* Status-bar inset only — no extra 48px gap when the WebView is already inset */
+  .pt-app {
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Clear fixed bottom tab bar + system gesture/home indicator */
   .pb-mobile-nav {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px) + 1rem);
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pb-merchant-nav {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pb-dispatch-nav {
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   }
 }

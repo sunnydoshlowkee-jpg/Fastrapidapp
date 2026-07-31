@@ -1,3 +1,4 @@
+import BrandedLoader from '../../../ui/BrandedLoader'
 import MerchantMenuItemCreateForm from './MerchantMenuItemCreateForm'
 import MerchantMenuItemCreateMobileHeader from './mobile/MerchantMenuItemCreateMobileHeader'
 
@@ -9,6 +10,7 @@ export default function MerchantMenuItemCreateMobile({
   loading,
   initialForm,
   initialImageUrls,
+  showAnnounce = false,
   submitting,
   error,
   handleCancel,
@@ -24,7 +26,7 @@ export default function MerchantMenuItemCreateMobile({
           <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
         ) : null}
         {loading ? (
-          <p className="py-8 text-center text-sm text-merchant-muted">Loading product…</p>
+          <BrandedLoader size="md" />
         ) : (
           <MerchantMenuItemCreateForm
             copy={copy}
@@ -35,6 +37,7 @@ export default function MerchantMenuItemCreateMobile({
             variant="mobile"
             initialForm={initialForm}
             initialImageUrls={initialImageUrls}
+            showAnnounce={showAnnounce}
             submitting={submitting}
             onCancel={handleCancel}
             onSubmit={handleSubmit}

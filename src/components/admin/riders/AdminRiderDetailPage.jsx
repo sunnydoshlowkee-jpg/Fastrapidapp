@@ -10,6 +10,7 @@ import {
 import AdminRiderDocumentsList from './AdminRiderDocumentsList'
 import AdminRiderProfilePanel from './AdminRiderProfilePanel'
 import AdminRidersBreadcrumbs from './AdminRidersBreadcrumbs'
+import AdminRejectRiderModal from './AdminRejectRiderModal'
 
 function MetricCard({ metric }) {
   return (
@@ -70,6 +71,7 @@ export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
   const [activeTab, setActiveTab] = useState(rider.defaultTab ?? 'profile')
   const [actionError, setActionError] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+  const [rejectOpen, setRejectOpen] = useState(false)
   const isOnline = rider.onlineLabel === 'Online'
 
   const handleDocumentReview = async (documentType, status) => {
@@ -98,8 +100,7 @@ export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
     }
   }
 
-  const handleReject = async () => {
-    const reason = window.prompt('Reason for rejection (optional):') || ''
+  const handleReject = async (reason) => {
     setActionLoading(true)
     setActionError('')
     try {
@@ -107,6 +108,7 @@ export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
       onRiderUpdated?.(payload)
     } catch (err) {
       setActionError(err.response?.data?.message || 'Could not reject rider.')
+      throw err
     } finally {
       setActionLoading(false)
     }
@@ -115,6 +117,12 @@ export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
   return (
     <div className="p-6">
       <AdminRidersBreadcrumbs items={rider.breadcrumbs} />
+      <AdminRejectRiderModal
+        isOpen={rejectOpen}
+        onClose={() => setRejectOpen(false)}
+        rider={rider}
+        onConfirm={handleReject}
+      />
 
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="relative">
@@ -150,7 +158,7 @@ export default function AdminRiderDetailPage({ rider, onRiderUpdated }) {
             {rider.status !== 'rejected' ? (
               <button
                 type="button"
-                onClick={handleReject}
+                onClick={() => setRejectOpen(true)}
                 disabled={actionLoading}
                 className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-red-600 transition-colors hover:bg-red-50"
               >

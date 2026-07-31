@@ -10,3 +10,9 @@ export const ADMIN_SETTINGS_DELIVERY_ZONES_PATH = `${ADMIN_SETTINGS_PATH}/delive
 export const ADMIN_SETTINGS_FINANCE_PATH = `${ADMIN_SETTINGS_PATH}/operations-control`
 export const ADMIN_SETTINGS_ADMIN_TEAM_PATH = `${ADMIN_SETTINGS_PATH}/admin-team`
 export const ADMIN_SETTINGS_ROLES_PATH = `${ADMIN_SETTINGS_PATH}/roles`
+
+/** Finance routes — live data via adminFinanceService (no mock money figures). */
+export const ADMIN_TRANSACTIONS_PATH = '/admin/transactions'
+export const ADMIN_PAYOUTS_PATH = '/admin/payouts'
+export const ADMIN_FINANCE_OVERVIEW_TITLE = 'Operations Control'
+export const ADMIN_FINANCE_SEARCH_PLACEHOLDER = 'Query ledger...'

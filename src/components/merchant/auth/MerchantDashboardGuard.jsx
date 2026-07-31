@@ -5,6 +5,7 @@ import {
   getMerchantOnboardingState,
   merchantRedirectPath,
 } from '../../../services/merchantOnboardingService'
+import BrandedLoader from '../../ui/BrandedLoader'
 
 export default function MerchantDashboardGuard() {
   const navigate = useNavigate()
@@ -55,8 +56,8 @@ export default function MerchantDashboardGuard() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-merchant-canvas text-sm text-merchant-muted">
-        Checking your account…
+      <div className="min-h-screen bg-merchant-canvas">
+        <BrandedLoader size="screen" />
       </div>
     )
   }

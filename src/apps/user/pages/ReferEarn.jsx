@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Copy, Share2, Search, MapPin, Home, Clock, Wallet, User, Send, ShoppingCart, Gift, Users, ChevronDown } from 'lucide-react'
 import { getReferrals } from '../../../services/referralService'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function ReferEarn() {
   const navigate = useNavigate()
@@ -36,7 +37,11 @@ export default function ReferEarn() {
   }
 
   if (loading || !referralData) {
-    return <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">Loading referral stats...</div>
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <BrandedLoader size="screen" />
+      </div>
+    )
   }
 
   return (
@@ -47,7 +52,7 @@ export default function ReferEarn() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />

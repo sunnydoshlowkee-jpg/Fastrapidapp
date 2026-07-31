@@ -7,6 +7,7 @@ import { getVendor } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 import VendorInfoTab from '../../../components/vendor/VendorInfoTab'
 import VendorReviewsTab from '../../../components/vendor/VendorReviewsTab'
 
@@ -113,7 +114,7 @@ export default function VendorDetail() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Loading vendor details...</p>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -139,7 +140,7 @@ export default function VendorDetail() {
         <img src={productImage(merchant.img)} alt="Vendor Cover" className="h-full w-full object-cover" loading="lazy" />
         
         {/* Top actions */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]">
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent p-4 pt-app">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />
           </button>
@@ -232,7 +233,14 @@ export default function VendorDetail() {
                     <div className="flex items-center justify-between mt-3">
                       <span className="font-bold text-[#4F46E5] text-sm">{formatCurrency(item.price)}</span>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); add(item); }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          add({
+                            ...item,
+                            delivery_fee: item.delivery_fee ?? merchant.delivery_fee_amount ?? 800,
+                            merchant_id: item.merchant_id ?? merchant.id,
+                          })
+                        }}
                         className="w-8 h-8 bg-[#F4F5F7] text-gray-900 rounded-full flex items-center justify-center group-hover:bg-[#4F46E5] group-hover:text-white transition-colors"
                       >
                         <Plus size={16} />
@@ -374,7 +382,14 @@ export default function VendorDetail() {
                       {item.category}
                     </div>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); add(item); }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        add({
+                          ...item,
+                          delivery_fee: item.delivery_fee ?? merchant.delivery_fee_amount ?? 800,
+                          merchant_id: item.merchant_id ?? merchant.id,
+                        })
+                      }}
                       className="w-10 h-10 bg-[#2D2AEE] text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors shadow-sm"
                     >
                       <Plus size={20} />

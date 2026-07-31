@@ -19,6 +19,7 @@ export default function MerchantOnboardingLocationHoursMobile({
   formError,
   fieldErrors,
   onSaveNext,
+  coords = null,
 }) {
   const navigate = useNavigate()
   const [panel, setPanel] = useState('location')
@@ -64,6 +65,7 @@ export default function MerchantOnboardingLocationHoursMobile({
               fieldErrors={fieldErrors}
               formError={formError}
               onSaveNext={() => setPanel('hours')}
+              coords={coords}
             />
           </main>
           <MerchantOnboardingLocationHoursMobileFooter
@@ -98,6 +100,7 @@ export default function MerchantOnboardingLocationHoursMobile({
               formError={formError}
               onSaveNext={finish}
               submitting={submitting}
+              coords={coords}
             />
           </main>
           <MerchantOnboardingLocationHoursMobileFooter

@@ -147,3 +147,14 @@ export async function uploadMerchantBusinessLogo(file) {
     throw err
   }
 }
+
+export async function updateMerchantStoreStatus(paused) {
+  try {
+    const { data } = await api.patch('/merchant/business-profile/store-status', {
+      paused: Boolean(paused),
+    })
+    return mapProfileFromApi(data?.data ?? {})
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form') || 'Unable to update store status.')
+  }
+}

@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
-import { getCurrentPosition } from '../../../utils/geolocation'
+import { getDevicePosition, watchDevicePosition } from '../../../utils/nativeLocation'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
-import L from 'leaflet'
 import {
-  ArrowLeft, Bell, Crosshair, Layers, Phone, MessageSquare,
-  Navigation, Package, Camera, CheckSquare, Square, Navigation2
+  ArrowLeft, Bell, Phone, MessageSquare,
+  Package, Camera, CheckSquare, Square, Navigation2
 } from 'lucide-react'
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet'
+import RiderNavigationMap from '../components/RiderNavigationMap'
+import GoogleMapView from '../../../components/maps/GoogleMapView'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 // ─── Step constants ───────────────────────────────────────────────
 const STEPS = {
@@ -33,77 +34,58 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return (R * c).toFixed(1);
 }
 
-// ─── Custom Leaflet Icons ────────────────────────────────────────
-const createPulseIcon = () => new L.divIcon({
-  html: `<div class="relative flex h-6 w-6 items-center justify-center">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600 border-2 border-white shadow-sm"></span>
-         </div>`,
-  className: 'bg-transparent',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-const createPinIcon = (color = '#EF4444') => new L.divIcon({
-  html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);"></div>`,
-  className: 'bg-transparent',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-// ─── Map Updater ──────────────────────────────────────────────────
-function MapUpdater({ riderLocation, targetLocation }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (riderLocation && targetLocation) {
-      const bounds = L.latLngBounds([
-        [riderLocation.lat, riderLocation.lng],
-        [targetLocation.lat, targetLocation.lng]
-      ]);
-      map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1 });
-    } else if (riderLocation) {
-      map.flyTo([riderLocation.lat, riderLocation.lng], 15, { animate: true, duration: 1 });
-    }
-  }, [riderLocation, targetLocation, map]);
-
-  return null;
-}
-
-// ─── Shared Live Leaflet Map ──────────────────────────────────────
+// ─── Shared Live Map (Google) ─────────────────────────────────────
 function LiveMap({ riderLocation, targetLocation, children }) {
-  const center = riderLocation || targetLocation || { lat: 6.5244, lng: 3.3792 };
-  const position = [Number(center.lat), Number(center.lng)];
+  const center = riderLocation || targetLocation || { lat: 6.5244, lng: 3.3792 }
+  const useNav = Boolean(riderLocation && targetLocation)
+
+  const mapChrome = (
+    <>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(10,22,40,0.4) 0%, transparent 20%, rgba(10,22,40,0.1) 100%)',
+          zIndex: 1000,
+        }}
+      />
+      {children}
+    </>
+  )
+
+  if (useNav) {
+    return (
+      <div className="absolute inset-0 z-0">
+        <RiderNavigationMap
+          destination={targetLocation}
+          position={riderLocation}
+          height="100%"
+          className="absolute inset-0"
+          showRecenter
+        >
+          {mapChrome}
+        </RiderNavigationMap>
+      </div>
+    )
+  }
+
+  const markers = [
+    ...(targetLocation ? [{ ...targetLocation, title: 'Destination' }] : []),
+    ...(riderLocation ? [{ ...riderLocation, title: 'You' }] : []),
+  ]
 
   return (
     <div className="absolute inset-0 z-0">
-      <MapContainer 
-        center={position} 
-        zoom={14} 
-        zoomControl={false}
-        style={{ width: '100%', height: '100%' }}
+      <GoogleMapView
+        center={center}
+        zoom={14}
+        height="100%"
+        className="absolute inset-0"
+        markers={markers}
+        path={riderLocation && targetLocation ? [riderLocation, targetLocation] : null}
+        showRecenter
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap'
-        />
-        <MapUpdater riderLocation={riderLocation} targetLocation={targetLocation} />
-        
-        {targetLocation && (
-          <Marker position={[targetLocation.lat, targetLocation.lng]} icon={createPinIcon('#22C55E')} />
-        )}
-        {riderLocation && (
-          <Marker position={[riderLocation.lat, riderLocation.lng]} icon={createPulseIcon()} />
-        )}
-        {riderLocation && targetLocation && (
-           <Polyline 
-            positions={[[riderLocation.lat, riderLocation.lng], [targetLocation.lat, targetLocation.lng]]} 
-            pathOptions={{ color: '#5B5BFF', weight: 4, opacity: 0.8, dashArray: '8, 8' }} 
-          />
-        )}
-      </MapContainer>
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(10,22,40,0.4) 0%, transparent 20%, rgba(10,22,40,0.1) 100%)', zIndex: 1000 }} />
-      {children}
+        {mapChrome}
+      </GoogleMapView>
     </div>
   )
 }
@@ -111,7 +93,7 @@ function LiveMap({ riderLocation, targetLocation, children }) {
 // ─── Shared order header bar ──────────────────────────────────────
 function OrderHeader({ onBack, orderId }) {
   return (
-    <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-12 pb-3 bg-gradient-to-b from-gray-900/90 to-transparent">
+    <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-app pb-3 bg-gradient-to-b from-gray-900/90 to-transparent">
       <button onClick={onBack} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm">
         <ArrowLeft size={20} className="text-white" />
       </button>
@@ -189,27 +171,28 @@ export default function ActiveDelivery() {
   const [riderLocation, setRiderLocation] = useState(null)
 
   useEffect(() => {
-    let watchId;
-    if ('geolocation' in navigator) {
-      watchId = navigator.geolocation.watchPosition(
-        (pos) => setRiderLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => {
-          console.warn('Geolocation error:', err)
-          setRiderLocation({ lat: 6.5244, lng: 3.3792 }) // Fallback to Lagos
-        },
-        { enableHighAccuracy: true, timeout: 5000 }
-      )
-    } else {
-      setRiderLocation({ lat: 6.5244, lng: 3.3792 })
-    }
+    let cancelled = false
+    let stop = () => {}
 
-    const timeout = setTimeout(() => {
-      setRiderLocation(prev => prev || { lat: 6.5244, lng: 3.3792 })
-    }, 3000)
+    ;(async () => {
+      try {
+        const coords = await getDevicePosition()
+        if (!cancelled) setRiderLocation({ lat: coords.lat, lng: coords.lng })
+      } catch (err) {
+        console.warn('Geolocation error:', err)
+      }
+
+      stop = await watchDevicePosition(
+        (coords) => {
+          if (!cancelled) setRiderLocation({ lat: coords.lat, lng: coords.lng })
+        },
+        (err) => console.warn('Geolocation watch error:', err),
+      )
+    })()
 
     return () => {
-      if (watchId) navigator.geolocation.clearWatch(watchId)
-      clearTimeout(timeout)
+      cancelled = true
+      stop?.()
     }
   }, [])
 
@@ -239,14 +222,11 @@ export default function ActiveDelivery() {
     const deliveryId = delivery?.id || id
     try {
       setIsProcessing(true)
-      await accept(deliveryId)
+      const coords = await getDevicePosition()
+      await accept(deliveryId, coords)
       setStep(STEPS.HEADING_PICKUP)
-      try {
-         const coords = await getCurrentPosition()
-         await updateStatus(deliveryId, 'accepted', coords)
-      } catch(e) {} 
     } catch (e) {
-      alert(e.response?.data?.message || "Failed to accept delivery")
+      alert(e.response?.data?.message || e.message || 'Failed to accept delivery. Enable location and try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -280,16 +260,17 @@ export default function ActiveDelivery() {
 
   const handleCompleteDelivery = async () => {
     try {
-      let coords = null;
+      let coords
       try {
-        coords = await getCurrentPosition()
+        coords = await getDevicePosition()
       } catch (geoErr) {
-        coords = {
-          lat: delivery?.order?.delivery_address?.lat || 6.5244,
-          lng: delivery?.order?.delivery_address?.lng || 3.3792
-        }
+        alert('Location is required to complete delivery. Enable GPS and try again.')
+        return
       }
-      await handleStatusUpdate('delivered', null, coords)
+      await handleStatusUpdate('delivered', null, {
+        lat: coords.lat,
+        lng: coords.lng,
+      })
       navigate(`/dispatch/delivery/${id}/success`)
     } catch (e) {
       alert(e.response?.data?.message || 'Failed to complete delivery.')
@@ -298,8 +279,8 @@ export default function ActiveDelivery() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-md mx-auto">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-[#5B5BFF] animate-spin" />
+      <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -331,6 +312,9 @@ export default function ActiveDelivery() {
   const customerPhone = customer?.phone || null
   const address = delivery?.order?.delivery_address || delivery?.order?.deliveryAddress
   const deliveryFee = delivery?.fee || delivery?.order?.delivery_fee || 0
+  const riderPayout = delivery?.rider_payout
+    ?? delivery?.order?.rider_payout
+    ?? Math.round(Number(deliveryFee) * 0.8)
   const itemsCount = delivery?.order?.items?.length || 1
 
   // Determine locations and distances
@@ -390,7 +374,7 @@ export default function ActiveDelivery() {
               </div>
               <div className="text-right">
                 <p className="text-xs font-bold text-gray-400 mb-0.5">EST. EARNINGS</p>
-                <p className="text-3xl font-black text-green-500">₦{Number(deliveryFee).toLocaleString()}</p>
+                <p className="text-3xl font-black text-green-500">₦{Number(riderPayout).toLocaleString()}</p>
               </div>
             </div>
             {/* Route summary */}
@@ -544,8 +528,8 @@ export default function ActiveDelivery() {
                 <p className="text-2xl font-black text-gray-900">{estMinsCustomer}<span className="text-sm text-gray-500 ml-1">min</span></p>
               </div>
               <div className="bg-[#5B5BFF]/5 border border-[#5B5BFF]/20 rounded-2xl p-4">
-                <p className="text-[10px] font-black text-[#5B5BFF] uppercase tracking-widest mb-1">Your payout</p>
-                <p className="text-2xl font-black text-gray-900">₦{Number(deliveryFee).toLocaleString()}</p>
+                <p className="text-[10px] font-black text-[#5B5BFF] uppercase tracking-widest mb-1">Your payout (80%)</p>
+                <p className="text-2xl font-black text-gray-900">₦{Number(riderPayout).toLocaleString()}</p>
               </div>
             </div>
 
@@ -569,7 +553,7 @@ export default function ActiveDelivery() {
                   <Camera size={24} />
                 </div>
                 <p className={`text-sm font-bold ${photoTaken ? 'text-[#5B5BFF]' : 'text-gray-500'}`}>
-                  {photoTaken ? 'Photo Captured Successfully ✓' : 'Take a proof of delivery photo (Optional)'}
+                  {photoTaken ? 'Photo saved on this device' : 'Optional photo (upload coming soon)'}
                 </p>
               </div>
             </label>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Bell, MessageSquare, ShoppingBag, Gift, Info } from 'lucide-react'
-import { getNotifications, markAsRead } from '../../../services/notificationService'
+import { getNotifications, markAsRead, markAllAsRead } from '../../../services/notificationService'
 import { useUnreadNotifications } from '../../../hooks/useUnreadNotifications'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function Notifications() {
   const navigate = useNavigate()
@@ -68,18 +69,35 @@ export default function Notifications() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-12">
-      <div className="flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-gray-900 rounded-full transition-colors hover:bg-gray-100">
             <ArrowLeft size={24} />
           </button>
           <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
         </div>
+        {notifications.some((n) => !n.is_read) ? (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await markAllAsRead()
+                setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+                refreshUnread()
+              } catch (err) {
+                console.error(err)
+              }
+            }}
+            className="text-xs font-bold text-[#4F46E5]"
+          >
+            Mark all read
+          </button>
+        ) : null}
       </div>
 
       <div className="px-6 w-full max-w-md mx-auto pt-4 flex-1">
         {loading ? (
-          <div className="text-center py-10 text-gray-500 text-sm">Loading notifications...</div>
+          <BrandedLoader size="md" />
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">

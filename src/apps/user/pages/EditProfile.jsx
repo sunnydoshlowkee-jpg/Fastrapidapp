@@ -7,6 +7,7 @@ import { getApiFieldError } from '../../../utils/apiErrors'
 import { formatPhoneDisplay, getDisplayName } from '../../../utils/userDisplay'
 import { useProfileAvatarUpload } from '../../../hooks/useProfileAvatarUpload'
 import ProfileAvatar from '../../../components/profile/ProfileAvatar'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const fieldClass = (hasError) =>
   `w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] md:text-[15px] text-gray-900 font-medium outline-none transition-all ${
@@ -97,8 +98,8 @@ export default function EditProfile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] text-gray-500">
-        Loading profile…
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA]">
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -116,7 +117,7 @@ export default function EditProfile() {
         onChange={handleFileChange}
       />
 
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />

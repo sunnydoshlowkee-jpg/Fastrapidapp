@@ -6,14 +6,19 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
+    iosScheme: 'https',
   },
   android: {
     allowMixedContent: true,
   },
+  ios: {
+    contentInset: 'automatic',
+  },
   plugins: {
-    // Native HTTP bypasses browser CORS in the Android WebView
+    // Keep CapHttp OFF — it breaks axios FormData multipart (avatar uploads hang).
+    // CORS already allows https://localhost / capacitor://localhost.
     CapacitorHttp: {
-      enabled: true,
+      enabled: false,
     },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],

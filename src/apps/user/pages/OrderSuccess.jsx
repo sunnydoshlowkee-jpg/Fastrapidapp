@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Check, Clock, Truck, Star } from 'lucide-react'
 import { getOrder } from '../../../services/orderService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
+import { trackEvent } from '../../../services/analyticsService'
 
 export default function OrderSuccess() {
   const navigate = useNavigate()
@@ -16,6 +18,7 @@ export default function OrderSuccess() {
         setLoading(true)
         const { data } = await getOrder(id)
         setOrder(data.data)
+        trackEvent('order_success', 'order', id)
       } catch (err) {
         console.error('Failed to fetch order', err)
         setOrder(null)
@@ -40,8 +43,8 @@ export default function OrderSuccess() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] text-sm text-gray-500">
-        Loading order details...
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA]">
+        <BrandedLoader size="screen" />
       </div>
     )
   }

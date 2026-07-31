@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Clock, MapPin, Wallet } from 'lucide-react'
 import { useRiderDeliveries } from '../../../hooks/useRiderDeliveries'
 import { useAuth } from '../../../context/AuthContext'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 // Distance calculator
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -44,14 +45,16 @@ export default function DeliverySuccess() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center max-w-md mx-auto">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-[#5B5BFF] animate-spin" />
+      <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
+        <BrandedLoader size="screen" />
       </div>
     )
   }
 
   const riderName = user?.first_name || 'Rider'
   const deliveryFee = delivery?.fee || delivery?.order?.delivery_fee || 0
+  const riderPayout = delivery?.rider_payout
+    ?? Math.round(Number(deliveryFee) * 0.8)
   const orderId = delivery?.order?.id || delivery?.order_id || id || '0000'
   
   const merchant = delivery?.order?.items?.[0]?.product?.merchant
@@ -75,11 +78,6 @@ export default function DeliverySuccess() {
     const diffMins = Math.max(1, Math.round((end - start) / 60000));
     timeTaken = diffMins;
   }
-
-  // Example daily bonus (mocked as 1/10 to avoid the dummy 8/10 look)
-  const progress = 1
-  const total = 10
-  const pct = (progress / total) * 100
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto px-5 pt-5 pb-10"
@@ -128,7 +126,7 @@ export default function DeliverySuccess() {
           <Wallet size={18} className="text-white" />
         </div>
         <div>
-          <p className="text-white font-black text-sm">₦{Number(deliveryFee).toLocaleString()} added to your wallet</p>
+          <p className="text-white font-black text-sm">₦{Number(riderPayout).toLocaleString()} added to your wallet</p>
           <p className="text-white/70 text-xs mt-0.5">Order #{orderId}</p>
         </div>
       </div>
@@ -151,21 +149,10 @@ export default function DeliverySuccess() {
         </div>
       </div>
 
-      {/* Daily bonus progress */}
       <div className="rounded-2xl px-5 py-4 mb-8" style={{ background: '#EBEBF5' }}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-bold text-gray-900 text-sm">Daily Bonus Progress</p>
-          <p className="font-black text-gray-900 text-sm">{progress} / {total}</p>
-        </div>
-        {/* Progress bar */}
-        <div className="w-full h-2 bg-gray-300/60 rounded-full overflow-hidden mb-2">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #5B5BFF, #4444EE)' }}
-          />
-        </div>
-        <p className="text-xs text-gray-400">
-          Complete {total - progress} more deliveries to earn ₦2,000 bonus!
+        <p className="font-bold text-gray-900 text-sm mb-1">Wallet updated</p>
+        <p className="text-xs text-gray-500 leading-relaxed">
+          Your 80% delivery payout is already in your rider wallet. Withdraw anytime from Earnings.
         </p>
       </div>
 

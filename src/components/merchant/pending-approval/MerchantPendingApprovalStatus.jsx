@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Clock } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { clearMerchantSession } from '../../../services/merchantAuthService'
+import { merchantLogout } from '../../../services/merchantAuthService'
 import { MERCHANT_HELP_SUPPORT_PATH } from '../../../services/data/merchantHelpSupport.mock'
 import { refreshMerchantOnboardingStatus } from '../../../services/merchantOnboardingService'
 
@@ -22,8 +22,12 @@ export default function MerchantPendingApprovalStatus({ status }) {
     }
   }
 
-  const handleSignOut = () => {
-    clearMerchantSession()
+  const handleSignOut = async () => {
+    const { switchedTo } = await merchantLogout({ switchToRemaining: true })
+    if (switchedTo) {
+      window.location.assign('/merchant')
+      return
+    }
     navigate('/merchant/login', { replace: true })
   }
 

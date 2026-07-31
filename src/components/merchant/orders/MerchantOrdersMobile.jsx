@@ -5,6 +5,7 @@ import MerchantOrdersMobileSummaryCards from './MerchantOrdersMobileSummaryCards
 import MerchantOrdersMobileTable from './MerchantOrdersMobileTable'
 import useMerchantOrdersPage from './useMerchantOrdersPage'
 import { MERCHANT_ORDERS_FILTERS } from '../../../services/data/merchantOrders.mock'
+import BrandedLoader from '../../ui/BrandedLoader'
 
 export default function MerchantOrdersMobile() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ export default function MerchantOrdersMobile() {
     handleSearchChange,
     pagination,
     setPage,
+    loading,
   } = useMerchantOrdersPage()
 
   return (
@@ -33,14 +35,18 @@ export default function MerchantOrdersMobile() {
         onChange={handleFilterChange}
       />
 
-      <MerchantOrdersMobileTable
-        orders={paginatedOrders}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        pagination={pagination}
-        onPageChange={setPage}
-        onViewOrder={(id) => navigate(`/merchant/orders/${id}`)}
-      />
+      {loading ? (
+        <BrandedLoader size="md" />
+      ) : (
+        <MerchantOrdersMobileTable
+          orders={paginatedOrders}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          pagination={pagination}
+          onPageChange={setPage}
+          onViewOrder={(id) => navigate(`/merchant/orders/${id}`)}
+        />
+      )}
     </div>
   )
 }

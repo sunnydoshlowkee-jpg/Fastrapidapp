@@ -8,6 +8,7 @@ export default function MerchantAccountSettingsField({
   onChange,
   type = 'text',
   variant = 'desktop',
+  readOnly = false,
 }) {
   const isMobile = variant === 'mobile'
 
@@ -28,7 +29,8 @@ export default function MerchantAccountSettingsField({
         type={type}
         value={value}
         onChange={onChange}
-        className={inputClassName}
+        readOnly={readOnly}
+        className={`${inputClassName}${readOnly ? ' cursor-default opacity-90' : ''}`}
       />
     </div>
   )

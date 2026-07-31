@@ -1,4 +1,5 @@
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+import BrandedLoader from '../../ui/BrandedLoader'
 import MerchantDashboardHeader from './MerchantDashboardHeader'
 import MerchantStatCard from './MerchantStatCard'
 import MerchantEmptyState from './MerchantEmptyState'
@@ -8,12 +9,14 @@ import useMerchantDashboard from './useMerchantDashboard'
 import { MERCHANT_DASHBOARD_OVERVIEW } from '../../../services/data/merchantDashboard.mock'
 
 export default function MerchantDashboardDesktop() {
+  const navigate = useNavigate()
   const { openMobileNav } = useOutletContext()
   const {
     merchantId,
     storeStatus,
     stats,
     liveOrders,
+    stockAlerts,
     hasLiveOrders,
     loading,
     error,
@@ -26,8 +29,8 @@ export default function MerchantDashboardDesktop() {
 
   if (loading) {
     return (
-      <div className="flex min-h-full flex-1 items-center justify-center bg-merchant-canvas p-8 text-sm text-merchant-muted">
-        Loading dashboard...
+      <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas">
+        <BrandedLoader fill className="p-8" />
       </div>
     )
   }
@@ -38,6 +41,7 @@ export default function MerchantDashboardDesktop() {
         merchantId={merchantId}
         stats={stats}
         liveOrders={liveOrders}
+        stockAlerts={stockAlerts}
         onOrderAction={handleOrderAction}
         onRefresh={refresh}
       />
@@ -81,7 +85,7 @@ export default function MerchantDashboardDesktop() {
           description={emptyState.description}
           primaryAction={emptyState.primaryAction}
           secondaryAction={emptyState.secondaryAction}
-          onPrimaryClick={() => {}}
+          onPrimaryClick={() => navigate('/merchant/menu/upload')}
           onSecondaryClick={() => window.open(customerLink, '_blank', 'noopener,noreferrer')}
         />
 

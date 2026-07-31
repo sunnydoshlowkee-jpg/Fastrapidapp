@@ -1,10 +1,9 @@
-import { ChevronDown, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 
 export default function MerchantInventoryMobileToolbar({
   searchPlaceholder,
   searchQuery,
   onSearchChange,
-  bulkUpdateLabel,
   addItemLabel,
   onAddItem,
 }) {
@@ -25,23 +24,14 @@ export default function MerchantInventoryMobileToolbar({
         />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={onAddItem}
-          className="flex items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3 text-sm font-semibold text-white shadow-merchant-btn"
-        >
-          <Plus size={18} strokeWidth={2.5} aria-hidden />
-          {addItemLabel}
-        </button>
-        <button
-          type="button"
-          className="flex items-center justify-center gap-2 rounded-lg bg-merchant-icon-tile py-3 text-sm font-semibold text-merchant-ink"
-        >
-          {bulkUpdateLabel}
-          <ChevronDown size={16} className="text-merchant-muted" aria-hidden />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onAddItem}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-merchant-primary py-3 text-sm font-semibold text-white shadow-merchant-btn"
+      >
+        <Plus size={18} strokeWidth={2.5} aria-hidden />
+        {addItemLabel}
+      </button>
     </div>
   )
 }

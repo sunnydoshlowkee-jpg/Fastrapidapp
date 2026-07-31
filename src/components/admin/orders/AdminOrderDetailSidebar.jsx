@@ -1,20 +1,7 @@
 import { useState } from 'react'
-import {
-  Ban,
-  RefreshCw,
-  SlidersHorizontal,
-  UserRound,
-  Wallet,
-} from 'lucide-react'
+import { Ban } from 'lucide-react'
 
-const actionIcons = {
-  userSwitch: UserRound,
-  sliders: SlidersHorizontal,
-  refund: Wallet,
-  cancel: Ban,
-}
-
-export default function AdminOrderDetailSidebar({ adminActions, notes }) {
+export default function AdminOrderDetailSidebar({ adminActions, notes, onForceCancel }) {
   const [note, setNote] = useState('')
 
   return (
@@ -22,22 +9,19 @@ export default function AdminOrderDetailSidebar({ adminActions, notes }) {
       <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="text-base font-bold text-gray-900">{adminActions.title}</h2>
         <ul className="mt-3 divide-y divide-gray-100">
-          {adminActions.items.map((item) => {
-            const Icon = actionIcons[item.icon] ?? RefreshCw
-            return (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  className={`flex w-full items-center gap-3 py-3.5 text-left text-sm font-semibold transition-colors hover:bg-gray-50 ${
-                    item.danger ? 'text-red-600' : 'text-gray-800'
-                  }`}
-                >
-                  <Icon size={18} strokeWidth={2} className="shrink-0" aria-hidden />
-                  {item.label}
-                </button>
-              </li>
-            )
-          })}
+          <li>
+            <button
+              type="button"
+              onClick={() => onForceCancel?.()}
+              className="flex w-full items-center gap-3 py-3.5 text-left text-sm font-semibold text-red-600 transition-colors hover:bg-gray-50"
+            >
+              <Ban size={18} strokeWidth={2} className="shrink-0" aria-hidden />
+              Force cancel order
+            </button>
+          </li>
+          <li className="py-3.5 text-xs text-gray-500">
+            Refund / reassign rider stay Phase 2. Use Update Status above for other force moves.
+          </li>
         </ul>
       </article>
 
@@ -48,14 +32,15 @@ export default function AdminOrderDetailSidebar({ adminActions, notes }) {
           onChange={(e) => setNote(e.target.value)}
           placeholder={notes.placeholder}
           rows={4}
-          className="mt-3 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-rapid-orange/40 focus:ring-2 focus:ring-rapid-orange/15"
+          disabled
+          className="mt-3 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-70"
         />
         <button
           type="button"
-          disabled={!note.trim()}
-          className="mt-3 w-full rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-500 transition-colors enabled:bg-rapid-orange enabled:text-white enabled:hover:bg-[#E84A15] disabled:cursor-not-allowed"
+          disabled
+          className="mt-3 w-full cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-500"
         >
-          {notes.saveLabel}
+          {notes.saveLabel || 'Coming soon'}
         </button>
       </article>
     </div>

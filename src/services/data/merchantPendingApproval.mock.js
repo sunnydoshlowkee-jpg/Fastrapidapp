@@ -29,8 +29,8 @@ export const MERCHANT_PENDING_APPROVAL = {
   ],
   footer: {
     links: [
-      { label: 'Privacy Policy', href: '#privacy' },
-      { label: 'Terms of Service', href: '#terms' },
+      { label: 'Privacy Policy', href: '/legal/privacy.html' },
+      { label: 'Terms of Service', href: '/legal/terms.html' },
       { label: 'Security', href: '#security' },
     ],
     copyright: '© 2024 MerchantCore. All rights reserved.',

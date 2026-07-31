@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { getMe, logout as logoutApi } from '../services/authService'
 import { clearCached, getCached, setCached } from '../utils/requestCache'
 import { clearPushTokenOnLogout, syncPushTokenAfterLogin } from '../services/pushNotifications'
+import { clearLoginSecurityVerified } from '../utils/userLoginSecurity'
 
 const AuthContext = createContext(null)
 const AUTH_USER_CACHE_KEY = 'auth-user'
@@ -89,6 +90,7 @@ export function AuthProvider({ children }) {
     }
     localStorage.removeItem('rapid_token')
     clearCached()
+    clearLoginSecurityVerified()
     setUserState(null)
     window.dispatchEvent(new Event('rapid-auth-changed'))
   }

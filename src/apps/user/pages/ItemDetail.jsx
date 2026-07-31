@@ -7,6 +7,7 @@ import { getDiscoveryItem } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const ITEM_TTL_MS = 5 * 60 * 1000
 
@@ -78,7 +79,7 @@ export default function ItemDetail() {
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FAFAFA] items-center justify-center">
-        <p className="text-gray-500">Loading item...</p>
+        <BrandedLoader size="screen" />
       </div>
     )
   }
@@ -126,7 +127,7 @@ export default function ItemDetail() {
       {/* Mobile Header Image */}
       <div className="md:hidden relative h-64 w-full">
         <img src={itemImage} alt="Item Cover" className="w-full h-full object-cover" loading="lazy" />
-        <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+        <div className="absolute top-0 left-0 right-0 p-6 pt-app flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
           <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-gray-900" />
           </button>

@@ -218,6 +218,7 @@ export default function useMerchantMenuItemCreate() {
     allowsMultipleImages,
     creatingCategory,
     isEditMode,
+    showAnnounce: !isEditMode,
     loading: loading || catalogLoading,
     initialForm,
     initialImageUrls,

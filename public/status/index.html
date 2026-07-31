@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rapid Super App — Progress Dashboard</title>
+  <meta name="description" content="Progress overview for Rapid Super App stakeholders." />
+  <meta name="color-scheme" content="dark" />
+  <style>
+    :root {
+      --bg: #12161c;
+      --surface: #1a2028;
+      --ink: #e8edf3;
+      --muted: #9aa6b5;
+      --line: #2a3340;
+      --accent: #3cb88a;
+      --warn: #d4a24c;
+      --danger: #e07070;
+      --info: #6ea4e8;
+      --ok: #3cb88a;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: none;
+      width: 100%;
+      margin: 0;
+      padding: 28px 16px 48px;
+    }
+
+    header {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0 0 14px;
+      color: var(--muted);
+      max-width: none;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0b1411;
+    }
+    .btn:hover { opacity: 0.92; }
+
+    .note {
+      background: #1c2633;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      color: #c5d0dc;
+      font-size: 0.94rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .stat .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .stat .label {
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .stat.ok .value { color: var(--ok); }
+    .stat.info .value { color: var(--info); }
+    .stat.warn .value { color: var(--warn); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .card-h {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .card-h h2, .card-h h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .card-b { padding: 14px; }
+
+    .section-title {
+      margin: 22px 0 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .pill.ok { color: var(--ok); background: rgba(60,184,138,0.12); border-color: rgba(60,184,138,0.25); }
+    .pill.info { color: var(--info); background: rgba(110,164,232,0.12); border-color: rgba(110,164,232,0.25); }
+    .pill.warn { color: var(--warn); background: rgba(212,162,76,0.12); border-color: rgba(212,162,76,0.25); }
+    .pill.critical { color: var(--danger); background: rgba(224,112,112,0.12); border-color: rgba(224,112,112,0.25); }
+    .pill.neutral { color: var(--muted); background: rgba(255,255,255,0.04); border-color: var(--line); }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
+    .progress {
+      height: 10px;
+      background: #10151c;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+    }
+    .progress .built { width: 86%; background: var(--accent); }
+    .progress .left { width: 14%; background: var(--warn); }
+
+    .bars { display: grid; gap: 10px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 190px 1fr 44px;
+      gap: 10px;
+      align-items: center;
+    }
+    .bar-row .name { font-size: 0.9rem; }
+    .bar-track {
+      height: 8px;
+      background: #10151c;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill { height: 100%; background: var(--accent); }
+    .bar-fill.mid { background: var(--info); }
+    .bar-fill.low { background: var(--warn); }
+    .bar-pct {
+      text-align: right;
+      font-size: 0.86rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-row.clickable {
+      cursor: pointer;
+      padding: 6px 8px;
+      margin: 0 -8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+    .bar-row.clickable:hover {
+      background: #151b23;
+      border-color: var(--line);
+    }
+    .bar-row.clickable.active {
+      background: #1c2633;
+      border-color: rgba(60,184,138,0.35);
+    }
+    .bar-row .hint {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-top: -2px;
+    }
+    .area-detail {
+      display: none;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .area-detail.open { display: block; }
+    .area-detail .detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .area-detail .detail-head h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .area-detail .detail-close {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .area-detail .detail-close:hover { color: var(--ink); }
+    tr.area-clickable { cursor: pointer; }
+    tr.area-clickable:hover td { color: var(--ok); }
+
+
+    .mix { display: grid; gap: 6px; }
+    .mix-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #151b23;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 6px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    tr:last-child td { border-bottom: 0; }
+
+    .weeks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .week-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .week p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .remember {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: #d5dde7;
+    }
+    .remember li { margin-bottom: 8px; }
+
+    .done-list {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: #d5dde7;
+    }
+    .done-list li { margin-bottom: 8px; }
+
+    footer {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.84rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      justify-content: space-between;
+    }
+    footer a { color: var(--info); }
+
+    @media (max-width: 860px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .grid-2, .weeks { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .bar-pct { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Rapid Super App · Stakeholder update</p>
+      <h1>Project progress</h1>
+      <p class="lede">
+        Simple status overview for product, operations, and leadership.
+        Updated <strong style="color:var(--ink)">31 Jul 2026</strong>.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="https://github.com/users/headmaster2hm/projects/2" target="_blank" rel="noopener">Open task board</a>
+        <a class="btn" href="https://github.com/headmaster2hm/rapid-superapp/issues" target="_blank" rel="noopener">Frontend tasks</a>
+        <a class="btn" href="https://github.com/headmaster2hm/rapid-superapp-api/issues" target="_blank" rel="noopener">Backend tasks</a>
+      </div>
+    </header>
+
+    <div class="note">
+      <strong style="color:var(--ink)">How to read this:</strong>
+      Higher percentages mean that area is largely built.
+      Lower percentages mean gaps remain for customers or staff.
+    </div>
+
+    <section class="stats" aria-label="Key progress numbers">
+      <article class="stat info">
+        <div class="value">86%</div>
+        <div class="label">Whole product complete</div>
+      </article>
+      <article class="stat info">
+        <div class="value">91%</div>
+        <div class="label">Ready for first launch (MVP)</div>
+      </article>
+      <article class="stat ok">
+        <div class="value">94%</div>
+        <div class="label">Customer / merchant / rider apps</div>
+      </article>
+      <article class="stat ok">
+        <div class="value">86%</div>
+        <div class="label">Admin control centre</div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Overall completion</h2>
+        <span class="pill ok">86% built</span>
+      </div>
+      <div class="card-b">
+        <div class="progress-meta">
+          <span>86% built</span>
+          <span>14% remaining</span>
+        </div>
+        <div class="progress" role="img" aria-label="86 percent complete">
+          <span class="built"></span>
+          <span class="left"></span>
+        </div>
+        <p style="margin:12px 0 0; color:var(--muted); font-size:0.94rem">
+          Ordering, payments, merchant/rider tools, admin ops (ledger, withdrawals, disputes, support, settings, rider map), analytics, and compliance basics are mostly working.
+          Main remaining gaps: strict phone verification, on-device push QA, live Paystack/VTpass smokes, and iPhone TestFlight.
+        </p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Recently completed</h2>
+        <span class="pill ok">Since 25 Jul</span>
+      </div>
+      <div class="card-b">
+        <ul class="done-list">
+          <li>Rider cash-out: bank account management after onboarding, wallet history (credits + withdrawals), Paystack withdraw path, and withdraw rate limits.</li>
+          <li>Admin money overview: live finance KPIs, recent ledger activity, platform transactions, and withdrawals monitor — sample money figures removed.</li>
+          <li>Compliance &amp; launch checks: privacy/terms pages, legal link wiring, analytics consent banner, data-rights mailto flows, rider reject modal, health/integration gates, CI workflows, store listing draft.</li>
+          <li>Reports &amp; analytics: funnel tracking, admin funnel table, CSV exports for orders/ledger, merchant custom date range, rider earnings period filters.</li>
+          <li>Admin Phase 2: live disputes + support inbox, settings CRUD, audit UI, analytics, Google Maps rider fleet map, real nav badges.</li>
+          <li>Push notifications: persona-scoped FCM + inbox, reject/cancel/assign/pickup lifecycle pushes, mark-all-read.</li>
+          <li>Merchant shop tools: pause store, operating hours, payout bank settings, CSV menu import, live stock alerts.</li>
+          <li>Payments &amp; wallet integrity: bills debit-before-provider, electricity token UI, card fund ownership + webhook credit, fake saved-cards removed.</li>
+          <li>Customer ordering: server-side delivery fees, cart validation, cancel + wallet refund, live rider GPS on track map; simulated crypto checkout removed.</li>
+          <li>Merchant/rider email OTP is production-strict.</li>
+        </ul>
+      </div>
+    </section>
+
+
+
+    <section class="grid-2">
+      <article class="card">
+        <div class="card-h">
+          <h2>Progress by area</h2>
+          <span class="pill neutral">Click a row for details</span>
+        </div>
+        <div class="card-b">
+          <div class="bars" id="area-bars"></div>
+          <div class="area-detail" id="area-detail" hidden></div>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-h">
+          <h2>Task board status</h2>
+          <span class="pill neutral">93 tasks</span>
+        </div>
+        <div class="card-b"><div class="mix" id="work-mix"></div></div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>Area status</h2>
+        <div style="display:flex; gap:6px; flex-wrap:wrap">
+          <span class="pill ok">Nearly ready</span>
+          <span class="pill info">On track</span>
+          <span class="pill warn">Needs work</span>
+        </div>
+      </div>
+      <div class="card-b" style="padding-top:4px">
+        <table>
+          <thead>
+            <tr><th>Area</th><th>Complete</th><th>Status</th></tr>
+          </thead>
+          <tbody id="area-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="card">
+        <div class="card-h">
+          <h2>Launch blockers</h2>
+          <span class="pill warn">Priority</span>
+        </div>
+        <div class="card-b" style="padding-top:4px">
+          <table>
+            <thead>
+              <tr><th>Item</th><th>Urgency</th><th>Why it matters</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>iPhone TestFlight (3 apps)</td>
+                <td><span class="pill critical">Critical</span></td>
+                <td>Android builds exist; Apple testing not published yet</td>
+              </tr>
+              <tr>
+                <td>Phone OTP strict (Twilio)</td>
+                <td><span class="pill warn">High</span></td>
+                <td>Strict phone verification still off — turn on after production SMS sender is validated</td>
+              </tr>
+              <tr>
+                <td>Rider cash-out / withdraw</td>
+                <td><span class="pill ok">Done</span></td>
+                <td>Withdraw + bank management live; staging transfer smoke still ops</td>
+              </tr>
+              <tr>
+                <td>Admin money overview</td>
+                <td><span class="pill ok">Done</span></td>
+                <td>Live KPIs + recent ledger; transactions and withdrawals use real wallet data</td>
+              </tr>
+              <tr>
+                <td>Hide simulated crypto checkout</td>
+                <td><span class="pill ok">Done</span></td>
+                <td>Crypto option removed from checkout; old crypto URL redirects to normal checkout</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-h"><h2>Waiting on dependencies</h2></div>
+        <div class="card-b" style="padding-top:4px">
+          <table>
+            <thead>
+              <tr><th>Waiting item</th><th>Depends on</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Rider / merchant Paystack transfer smoke</td>
+                <td>Funded staging Paystack transfer balance</td>
+              </tr>
+              <tr>
+                <td>Live bill payments (VTpass)</td>
+                <td>VTpass API keys provisioned</td>
+              </tr>
+              <tr>
+                <td>On-device push QA (3 Android apps)</td>
+                <td>Physical devices + push smoke tests</td>
+              </tr>
+              <tr>
+                <td>Phone OTP strict go-live</td>
+                <td>Validated production SMS sender</td>
+              </tr>
+              <tr>
+                <td>iPhone login / push testing</td>
+                <td>TestFlight builds for Customer, Merchant, Rider</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <h2 class="section-title">4-week plan</h2>
+    <section class="weeks">
+      <article class="card">
+        <div class="card-h"><h3>Money &amp; security</h3></div>
+        <div class="card-b">
+          <div class="week-label">Week 1</div>
+          <p>Strict phone verification after SMS sender validation; Paystack transfer smoke on staging; provision VTpass keys for bills.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-h"><h3>Device &amp; polish</h3></div>
+        <div class="card-b">
+          <div class="week-label">Week 2</div>
+          <p>On-device push QA for three Android apps; merchant screen polish; reports cleanup.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-h"><h3>iPhone testing</h3></div>
+        <div class="card-b">
+          <div class="week-label">Week 3</div>
+          <p>Publish Customer, Merchant, and Rider apps to TestFlight; test login and notifications.</p>
+        </div>
+      </article>
+      <article class="card">
+        <div class="card-h"><h3>Launch checklist</h3></div>
+        <div class="card-b">
+          <div class="week-label">Week 4</div>
+          <p>Production security fully on, uptime monitoring, secrets rotation, final launch checklist.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card" style="margin-top:12px">
+      <div class="card-h"><h2>Key takeaways</h2></div>
+      <div class="card-b">
+        <ol class="remember">
+          <li>Login &amp; security is launch-ready except strict phone verification (deferred until production SMS is validated). Customers can sign in from browsers even with biometric enabled on mobile.</li>
+          <li>Customer ordering pricing integrity, cancel/refund, and live rider tracking are in place; simulated crypto checkout is off.</li>
+          <li>Payments &amp; wallet money-path integrity is hardened; live bill purchases still need VTpass keys configured.</li>
+          <li>Merchants can onboard, manage menu, pause the store, set hours, and take orders; Paystack withdraw smoke still needs staging funding.</li>
+          <li>Riders can deliver, manage payout banks, and cash out; wallet history shows credits and withdrawals.</li>
+          <li>Admin ops can use live ledger, withdrawals, disputes, support, settings, analytics, and the rider map; dispute auto-refund stays later.</li>
+          <li>Android packaging is ahead of iOS; on-device push QA and TestFlight remain the next mobile milestones.</li>
+        </ol>
+      </div>
+    </section>
+
+    <footer>
+      <span>Source: product audit · 31 Jul 2026</span>
+      <span><a href="https://app.fastrapid.com/status/">app.fastrapid.com/status</a></span>
+    </footer>
+  </div>
+
+  <script>
+    const AREAS = [
+      { name: "Login & security", pct: 98, status: "Nearly ready" },
+      { name: "Customer ordering", pct: 97, status: "Nearly ready" },
+      { name: "Payments & wallet", pct: 96, status: "Nearly ready" },
+      { name: "Merchant shop tools", pct: 95, status: "Nearly ready" },
+      { name: "Rider delivery app", pct: 93, status: "Nearly ready" },
+      { name: "Mobile apps (Android)", pct: 91, status: "Nearly ready" },
+      { name: "Push notifications", pct: 90, status: "Nearly ready" },
+      { name: "iPhone apps (TestFlight)", pct: 40, status: "Needs work" },
+      { name: "Admin control centre", pct: 86, status: "Nearly ready" },
+      { name: "Reports & analytics", pct: 82, status: "Nearly ready" },
+      { name: "Compliance & launch checks", pct: 76, status: "On track" },
+    ];
+
+    const MIX = [
+      { label: "Finished", value: 42 },
+      { label: "Being worked on", value: 4 },
+      { label: "Ready to start", value: 34 },
+      { label: "Later (Phase 2)", value: 11 },
+      { label: "Backlog ideas", value: 2 },
+    ];
+
+    function barClass(pct) {
+      if (pct >= 80) return "";
+      if (pct >= 60) return "mid";
+      return "low";
+    }
+
+    function statusPill(status) {
+      if (status === "Nearly ready") return "ok";
+      if (status === "On track") return "info";
+      return "warn";
+    }
+
+    const AREA_DETAILS = {
+      "Login & security": {
+        badge: "98% (phone OTP deferred)",
+        badgeClass: "ok",
+        summary: "Login and security hardening for this milestone is done. Strict phone verification stays deferred until the production SMS sender is validated.",
+        rows: [
+          ["Customer email OTP strict", "Done", "ok", "Production-strict email verification for customers"],
+          ["Merchant / rider email OTP strict", "Done", "ok", "Strict email OTP for merchant and rider signup"],
+          ["OTP rate limiting & lockout", "Done", "ok", "Request and verify attempts throttled by IP and identifier"],
+          ["Real admin 2FA + password reset", "Done", "ok", "Email OTP before admin session; password reset live"],
+          ["Biometric money-action trust", "Done", "ok", "Wallet and order money actions use email, authenticator, or PIN — not client biometric flags alone"],
+          ["Wallet debit auth parity", "Done", "ok", "Bank transfer and bills enforce transaction security"],
+          ["Token expiry + admin logout revoke", "Done", "ok", "Sessions expire after 7 days; logout revokes the token"],
+          ["Local authenticator QR", "Done", "ok", "QR generated in-app (no third-party QR service)"],
+          ["Web biometric browser fallback", "Done", "ok", "Email code on browsers; biometric on native app"],
+          ["Phone OTP strict (Twilio)", "Deferred", "neutral", "Strict mode still off — enable after production SMS sender is validated"],
+        ],
+      },
+      "Customer ordering": {
+        badge: "97% (promo/ratings Phase 2)",
+        badgeClass: "ok",
+        summary: "Browse → cart → checkout → track → cancel is production-hardened. Promo codes and post-delivery ratings stay Phase 2.",
+        rows: [
+          ["Server delivery fee", "Done", "ok", "Fee computed from merchant category; client fee ignored"],
+          ["Cart price/stock validation", "Done", "ok", "Cart save/load overwrites price/name and drops out-of-stock items"],
+          ["Hide simulated crypto", "Done", "ok", "Crypto option removed; old crypto URL redirects to checkout"],
+          ["Live rider map position", "Done", "ok", "Order tracking shows the rider’s latest location when available"],
+          ["Cancel + wallet refund", "Done", "ok", "Pending orders only; restock + reverse merchant sale"],
+          ["Cash on delivery UI", "Done", "ok", "Wallet, card, and cash on delivery at checkout"],
+          ["Address ownership check", "Done", "ok", "Delivery address must belong to the signed-in customer"],
+          ["Orders pagination", "Done", "ok", "Load more uses real pagination metadata"],
+          ["Vendor info + mock cleanup", "Done", "ok", "Store info wired; dead cart/home mocks removed"],
+          ["Promo apply / ratings", "Phase 2", "neutral", "Promo input hidden; ratings empty-state only"],
+        ],
+      },
+      "Payments & wallet": {
+        badge: "96% (VTpass keys / saved cards Phase 2)",
+        badgeClass: "ok",
+        summary: "Customer wallet fund, send, transfer, and bills path is integrity-hardened. Live VTpass keys are still required for bill purchases; saved cards, crypto, and QR stay Phase 2.",
+        rows: [
+          ["Bill debit-before-provider", "Done", "ok", "Wallet debited first; auto-refund if the bill provider fails"],
+          ["Electricity token UX", "Done", "ok", "Token shown with copy; stored on the transaction receipt"],
+          ["Card fund ownership check", "Done", "ok", "Card funding reference must match the signed-in user"],
+          ["Card fund webhook credit", "Done", "ok", "Successful charges credit the wallet without double-counting"],
+          ["Webhook failure alerting", "Done", "ok", "Failed payment webhooks are logged; optional Slack alert"],
+          ["Fake saved-cards UI removed", "Done", "ok", "Coming soon — no card number collection"],
+          ["Virtual account retry", "Done", "ok", "Retry on Wallet and Receive screens"],
+          ["Transaction PIN change", "Done", "ok", "Change PIN from Privacy & Security"],
+          ["Bill purchase tests", "Done", "ok", "Automated tests cover debit, refund, and electricity token"],
+          ["VTpass live keys", "Waiting", "warn", "Keys not provisioned yet — Pay Bills stays gated until then"],
+          ["Saved cards / crypto / QR", "Phase 2", "neutral", "Saved cards, real crypto, and QR payments later"],
+        ],
+      },
+      "Merchant shop tools": {
+        badge: "95% (team / holidays / bulk Phase 2)",
+        badgeClass: "ok",
+        summary: "Catalog, orders, wallet, analytics, pause store, hours, payout bank, and CSV import are live. Team access, holiday closures, and bulk inventory stay Phase 2. Staging Paystack withdraw smoke still waiting.",
+        rows: [
+          ["Pause store + Instant Close", "Done", "ok", "Business Profile and Hours can pause or reopen the store"],
+          ["Operating hours load/save", "Done", "ok", "Settings hours load and save from the live API"],
+          ["Payout bank in Settings", "Done", "ok", "Merchants manage payout bank under Payment Methods"],
+          ["CSV menu import", "Done", "ok", "Product import with real success stats"],
+          ["Dashboard stock alerts", "Done", "ok", "Derived from low-stock products on the dashboard"],
+          ["Account settings from profile", "Done", "ok", "Read-only contact details; team invite hidden"],
+          ["Document reupload", "Done", "ok", "Rejected docs can be re-uploaded"],
+          ["Fake Bulk Update removed", "Done", "ok", "Inventory toolbar no longer shows a dead bulk action"],
+          ["Accept status bug (mobile)", "Done", "ok", "Accept correctly sets preparing (not ready)"],
+          ["Paystack withdraw smoke", "Waiting", "warn", "Needs funded staging Paystack transfer balance"],
+          ["Team / holidays / bulk inventory", "Phase 2", "neutral", "Staff invites, holiday closures, multi-edit later"],
+        ],
+      },
+      "Rider delivery app": {
+        badge: "93% (zones / tiers / POD Phase 2)",
+        badgeClass: "ok",
+        summary: "Accept → deliver → wallet credit → cash-out is production-hardened, including bank management and wallet history. Zone heatmaps, tiers/bonuses, and proof-of-delivery photo upload stay Phase 2.",
+        rows: [
+          ["Rider cash-out withdraw", "Done", "ok", "Withdraw to verified bank from Earnings"],
+          ["Post-onboarding bank management", "Done", "ok", "Profile Bank Account verifies and saves payout details"],
+          ["Wallet history (credits + withdraws)", "Done", "ok", "History shows earnings credits and withdrawal debits"],
+          ["Payout bank code persisted", "Done", "ok", "Onboarding and settings save the bank needed for transfers"],
+          ["Accept requires GPS", "Done", "ok", "Accept sends real location; no fake accepted status"],
+          ["80% payout honesty", "Done", "ok", "UI shows the rider’s share of delivery fees"],
+          ["Complete geofence integrity", "Done", "ok", "No Lagos GPS fallback; destination coordinates required"],
+          ["Edit profile save", "Done", "ok", "Vehicle brand/year save to the rider profile"],
+          ["Help Center democked", "Done", "ok", "Real FAQ answers; email support; fake ticket removed"],
+          ["Withdraw tests", "Done", "ok", "Automated tests cover withdraw, bank save, and wallet history"],
+          ["Admin live rider map", "Done", "ok", "Ops fleet map is live; needs riders online with location on"],
+          ["Zones / tiers / POD upload", "Phase 2", "neutral", "Heatmaps, bonuses, proof photo upload later"],
+        ],
+      },
+      "Mobile apps (Android)": {
+        badge: "91% (device QA / Play listing)",
+        badgeClass: "ok",
+        summary: "Three Android apps (customer, rider, merchant) build with native GPS and push deep-links. Remaining: on-device push/auth smoke and Play Store listing.",
+        rows: [
+          ["Native upload reliability", "Done", "ok", "Capacitor sync keeps uploads from hanging"],
+          ["Login redirect on mobile", "Done", "ok", "Session expiry returns users to the correct login screen"],
+          ["Push notification deep links", "Done", "ok", "Notification taps open the right in-app screen"],
+          ["Active delivery native GPS", "Done", "ok", "Live location watch; no Lagos fallback on the map"],
+          ["Addresses native GPS", "Done", "ok", "Save address uses the device location"],
+          ["Flavor-only APK scripts", "Done", "ok", "Build scripts require an explicit app flavor"],
+          ["Rider push / live tracking toggles", "Done", "ok", "Edit Profile controls push registration and location pings"],
+          ["On-device push / auth QA", "Waiting", "warn", "Needs physical devices for each Android app"],
+          ["Play listing / App Bundle", "Phase 2", "neutral", "Store listing, App Bundle, background location later"],
+        ],
+      },
+      "Push notifications": {
+        badge: "90% (device QA / realtime later)",
+        badgeClass: "ok",
+        summary: "Push is scoped per persona (customer, merchant, rider). Inboxes filter correctly; reject, cancel, assign, and pickup events notify. Remaining: physical-device verify and realtime admin inbox.",
+        rows: [
+          ["Persona-scoped device tokens", "Done", "ok", "Each notify targets the correct app audience"],
+          ["Persona-scoped inboxes", "Done", "ok", "Customer, merchant, and rider inboxes filter correctly"],
+          ["Customer reject notify", "Done", "ok", "Merchant reject sends Order declined with deep link"],
+          ["Cancel / assign / pickup pushes", "Done", "ok", "Merchant cancel, rider claimed, and order picked up"],
+          ["Mark all as read", "Done", "ok", "Available on all three apps"],
+          ["Deep-link payload", "Done", "ok", "Notification data includes a path for in-app navigation"],
+          ["Rider Earnings tab filter", "Done", "ok", "Wallet and payout notifications bucket correctly"],
+          ["Push tests", "Done", "ok", "Automated tests cover targeting, reject, and inbox scope"],
+          ["On-device push verify", "Waiting", "warn", "Needs physical devices for each Android app"],
+          ["Realtime / admin inbox", "Phase 2", "neutral", "Polling works; live admin feed later"],
+        ],
+      },
+      "iPhone apps (TestFlight)": {
+        badge: "40% (TestFlight not published)",
+        badgeClass: "warn",
+        summary: "iOS Capacitor project exists for Customer, Merchant, and Rider. Apple TestFlight builds are not published yet — this is the main mobile launch gap versus Android.",
+        rows: [
+          ["iOS Capacitor scaffold", "Done", "ok", "Shared iOS project present for the three apps"],
+          ["Android builds ahead", "Done", "ok", "Android flavors build and can be sideloaded for QA"],
+          ["TestFlight — Customer", "Waiting", "warn", "Not published to TestFlight yet"],
+          ["TestFlight — Merchant", "Waiting", "warn", "Not published to TestFlight yet"],
+          ["TestFlight — Rider", "Waiting", "warn", "Not published to TestFlight yet"],
+          ["iPhone login / push QA", "Waiting", "warn", "Blocked until TestFlight builds are available"],
+        ],
+      },
+      "Admin control centre": {
+        badge: "86% (auto-refund later)",
+        badgeClass: "ok",
+        summary: "Ops control centre is live end-to-end: auth, dashboard, users/merchants/riders/orders, ledger/payouts, disputes, support, audit log, analytics, settings, and live rider map. Dispute resolve records outcomes only — wallet auto-refund stays later.",
+        rows: [
+          ["Live platform ledger", "Done", "ok", "Transactions across customer, merchant, and rider wallets"],
+          ["Live withdrawals monitor", "Done", "ok", "Read-only withdrawal queue — no fake Approve button"],
+          ["Finance overview KPIs", "Done", "ok", "Live pending/today figures plus recent ledger activity"],
+          ["Order force-status", "Done", "ok", "Ops can update order status with a reason"],
+          ["User suspend / ban", "Done", "ok", "User status controls wired to live actions"],
+          ["Merchant suspend", "Done", "ok", "Merchant status controls wired to live actions"],
+          ["Disputes queue + resolve", "Done", "ok", "Create, status, notes, and resolve in admin UI"],
+          ["Support inbox", "Done", "ok", "Tickets, messages, status, and real nav badges"],
+          ["Settings CRUD", "Done", "ok", "General, feature flags, zones, alerts, team, integration status"],
+          ["Audit log UI", "Done", "ok", "Instrumented mutations with a filterable audit page"],
+          ["Analytics + rider map", "Done", "ok", "Period KPIs/series plus Google Maps fleet/single rider view"],
+          ["Dispute auto wallet refund", "Later", "neutral", "Resolve records outcome; refunds not auto-executed yet"],
+        ],
+      },
+      "Reports & analytics": {
+        badge: "82% (exports + funnel live; reviews later)",
+        badgeClass: "ok",
+        summary: "Admin and merchant analytics are live with period KPIs. Funnel tracking covers home → cart → checkout → success. Ops can export orders and the platform ledger. Merchant reviews and rider tiers stay later.",
+        rows: [
+          ["Admin platform analytics", "Done", "ok", "KPIs, daily series, top merchants, funnel table"],
+          ["Merchant analytics", "Done", "ok", "Revenue/stats/peaks/customers with custom date range"],
+          ["Client funnel tracking", "Done", "ok", "Home, cart, checkout, and success events tracked"],
+          ["Admin CSV exports", "Done", "ok", "Orders and platform ledger exports"],
+          ["Rider period earnings", "Done", "ok", "Today / 7-day / 30-day earnings filters; fake tier card removed"],
+          ["Merchant reviews in analytics", "Phase 2", "neutral", "Empty feedback until ratings ship"],
+          ["Rider tiers / heatmaps", "Phase 2", "neutral", "Deferred with rider zone bonuses"],
+        ],
+      },
+      "Compliance & launch checks": {
+        badge: "76% (SMS strict / device QA / TestFlight)",
+        badgeClass: "info",
+        summary: "Legal pages, consent, data-rights requests, KYC reject UX, CI, and health/integration gates are live. Strict phone OTP, live payment smokes, device push QA, monitoring, and TestFlight still need external validation or hardware.",
+        rows: [
+          ["Privacy + Terms pages", "Done", "ok", "Public privacy and terms pages published"],
+          ["Legal link wiring", "Done", "ok", "User, merchant, and rider footers plus legal hub"],
+          ["Analytics consent banner", "Done", "ok", "Analytics blocked until accept or essential-only"],
+          ["Data rights requests", "Done", "ok", "Export and delete mailto from Privacy & Security"],
+          ["Rider KYC reject UX", "Done", "ok", "Required-reason modal (parity with merchant)"],
+          ["CI workflows", "Done", "ok", "Frontend build and API test workflows on GitHub Actions"],
+          ["Health / integration gates", "Done", "ok", "Health check plus admin status for payments, bills, SMS, maps"],
+          ["Auth hardening checklist", "Done", "ok", "Internal checklist for launch security review"],
+          ["Store listing draft", "Done", "ok", "Store listing draft with privacy URLs"],
+          ["Phone OTP strict (Twilio)", "Deferred", "neutral", "Strict mode still off — enable after production SMS sender is validated"],
+          ["Push / Paystack / VTpass smokes", "Waiting", "warn", "Needs devices and live provider credentials"],
+          ["Uptime monitor / secrets rotation", "Later", "neutral", "External monitor account + ops runbook"],
+        ],
+      },
+    };
+
+    let activeArea = null;
+
+    function renderAreaDetail(name) {
+      const panel = document.getElementById("area-detail");
+      const detail = AREA_DETAILS[name];
+
+      document.querySelectorAll(".bar-row.clickable").forEach((el) => {
+        el.classList.toggle("active", el.dataset.area === name && activeArea === name);
+      });
+
+      if (!detail || activeArea !== name) {
+        panel.classList.remove("open");
+        panel.hidden = true;
+        panel.innerHTML = "";
+        return;
+      }
+
+      panel.hidden = false;
+      panel.classList.add("open");
+      panel.innerHTML = `
+        <div class="detail-head">
+          <h3>${name}</h3>
+          <div style="display:flex; gap:8px; align-items:center">
+            <span class="pill ${detail.badgeClass}">${detail.badge}</span>
+            <button type="button" class="detail-close" id="area-detail-close">Close</button>
+          </div>
+        </div>
+        <p style="margin:0 0 12px; color:var(--muted); font-size:0.92rem">${detail.summary}</p>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Status</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            ${detail.rows.map(([item, status, cls, notes]) => `
+              <tr>
+                <td>${item}</td>
+                <td><span class="pill ${cls}">${status}</span></td>
+                <td>${notes}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById("area-detail-close").onclick = () => {
+        activeArea = null;
+        renderAreaDetail(null);
+      };
+
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function selectArea(name) {
+      if (!AREA_DETAILS[name]) return;
+      activeArea = activeArea === name ? null : name;
+      renderAreaDetail(name);
+    }
+
+    document.getElementById("area-bars").innerHTML = AREAS.map((a) => {
+      const clickable = Boolean(AREA_DETAILS[a.name]);
+      return `
+      <div class="bar-row ${clickable ? "clickable" : ""}" data-area="${a.name}" ${clickable ? 'role="button" tabindex="0"' : ""}>
+        <div class="name">${a.name}${clickable ? " ›" : ""}</div>
+        <div class="bar-track"><div class="bar-fill ${barClass(a.pct)}" style="width:${a.pct}%"></div></div>
+        <div class="bar-pct">${a.pct}%</div>
+        ${clickable ? '<div class="hint">Click to view checklist</div>' : ""}
+      </div>`;
+    }).join("");
+
+    document.getElementById("area-bars").addEventListener("click", (event) => {
+      const row = event.target.closest(".bar-row.clickable");
+      if (!row) return;
+      selectArea(row.dataset.area);
+    });
+
+    document.getElementById("area-bars").addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const row = event.target.closest(".bar-row.clickable");
+      if (!row) return;
+      event.preventDefault();
+      selectArea(row.dataset.area);
+    });
+
+    document.getElementById("area-table").innerHTML = AREAS.map((a) => `
+      <tr class="${AREA_DETAILS[a.name] ? "area-clickable" : ""}" data-area="${a.name}">
+        <td>${a.name}${AREA_DETAILS[a.name] ? " ›" : ""}</td>
+        <td><strong>${a.pct}%</strong></td>
+        <td><span class="pill ${statusPill(a.status)}">${a.status}</span></td>
+      </tr>
+    `).join("");
+
+    document.getElementById("area-table").addEventListener("click", (event) => {
+      const row = event.target.closest("tr.area-clickable");
+      if (!row) return;
+      selectArea(row.dataset.area);
+      document.getElementById("area-detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    document.getElementById("work-mix").innerHTML = MIX.map((m) => `
+      <div class="mix-item">
+        <span>${m.label}</span>
+        <span class="pill neutral">${m.value}</span>
+      </div>
+    `).join("");
+  </script>
+</body>
+</html>

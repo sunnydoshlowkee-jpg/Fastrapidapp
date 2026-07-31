@@ -6,11 +6,11 @@ export const useRiderEarnings = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (period = 'all') => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getEarnings();
+      const response = await getEarnings(period);
       setEarnings(response.data || response);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to fetch earnings');

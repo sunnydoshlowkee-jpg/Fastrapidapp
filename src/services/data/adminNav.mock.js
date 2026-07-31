@@ -1,11 +1,12 @@
-/** Sidebar navigation [365:3701](https://www.figma.com/design/w336KCNkLvp8mdckFFaN2B/RAPID-V1-DRAFTS?node-id=365-3701) */
+/** Sidebar navigation */
 import {
-  AlertTriangle,
-  ArrowLeftRight,
+  BarChart3,
   Bike,
+  ClipboardList,
   Headphones,
   LayoutDashboard,
-  ScrollText,
+  MapPinned,
+  Scale,
   Settings,
   ShoppingBag,
   Store,
@@ -19,14 +20,18 @@ export const ADMIN_NAV_SECTIONS = [
     label: 'Overview',
     items: [
       { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
+      { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
     ],
   },
   {
     id: 'operations',
     label: 'Operations',
     items: [
-      { to: '/admin/orders', icon: ShoppingBag, label: 'Orders', count: 12 },
+      { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
       { to: '/admin/riders', icon: Bike, label: 'Riders' },
+      { to: '/admin/rider-map', icon: MapPinned, label: 'Live map' },
+      { to: '/admin/disputes', icon: Scale, label: 'Disputes' },
+      { to: '/admin/support', icon: Headphones, label: 'Support' },
     ],
   },
   {
@@ -34,7 +39,7 @@ export const ADMIN_NAV_SECTIONS = [
     label: 'People',
     items: [
       { to: '/admin/users', icon: Users, label: 'Users' },
-      { to: '/admin/merchants', icon: Store, label: 'Merchants', count: 5 },
+      { to: '/admin/merchants', icon: Store, label: 'Merchants' },
     ],
   },
   {
@@ -42,28 +47,15 @@ export const ADMIN_NAV_SECTIONS = [
     label: 'Finance',
     items: [
       { to: '/admin/transactions', icon: ArrowLeftRight, label: 'Transactions' },
-      {
-        to: '/admin/payouts',
-        icon: Wallet,
-        label: 'Payouts',
-        count: 3,
-        countTone: 'amber',
-      },
-      { to: '/admin/disputes', icon: AlertTriangle, label: 'Disputes', count: 2 },
+      { to: '/admin/payouts', icon: Wallet, label: 'Payouts' },
     ],
   },
   {
     id: 'platform',
     label: 'Platform',
     items: [
+      { to: '/admin/audit-log', icon: ClipboardList, label: 'Audit log' },
       { to: '/admin/settings', icon: Settings, label: 'Settings' },
-      { to: '/admin/audit-log', icon: ScrollText, label: 'Audit Log' },
-      {
-        to: '/admin/support',
-        icon: Headphones,
-        label: 'Support Tickets',
-        count: 8,
-      },
     ],
   },
 ]
@@ -83,7 +75,7 @@ export function buildAdminNavSections(counts = {}) {
     ...section,
     items: section.items.map((item) => {
       const key = NAV_COUNT_KEYS[item.to]
-      const count = key ? counts[key] : item.count
+      const count = key ? counts[key] : undefined
 
       return {
         ...item,

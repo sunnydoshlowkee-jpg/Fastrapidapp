@@ -17,6 +17,7 @@ import MerchantDocumentReview from '../apps/admin/pages/MerchantDocumentReview'
 import Riders from '../apps/admin/pages/Riders'
 import RiderDetail from '../apps/admin/pages/RiderDetail'
 import RiderTracking from '../apps/admin/pages/RiderTracking'
+import RiderMap from '../apps/admin/pages/RiderMap'
 import AdminOrders from '../apps/admin/pages/Orders'
 import OrderDetail from '../apps/admin/pages/OrderDetail'
 import AdminAnalytics from '../apps/admin/pages/Analytics'
@@ -54,6 +55,7 @@ export default function AdminRoutes() {
         />
         <Route path="merchants/:merchantId" element={<MerchantDetail />} />
         <Route path="riders" element={<Riders />} />
+        <Route path="rider-map" element={<RiderMap />} />
         <Route path="riders/:riderId/tracking" element={<RiderTracking />} />
         <Route path="riders/:riderId" element={<RiderDetail />} />
         <Route path="orders" element={<AdminOrders />} />

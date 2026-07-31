@@ -77,6 +77,13 @@ export const ADMIN_SETTINGS = {
           path: ADMIN_SETTINGS_DELIVERY_ZONES_PATH,
         },
         {
+          id: 'alerts',
+          label: 'Alert thresholds',
+          description: 'SLA and rider availability alerts',
+          icon: 'bell',
+          path: ADMIN_SETTINGS_ALERTS_PATH,
+        },
+        {
           id: 'commission',
           label: 'Commission',
           description: 'Set merchant and driver rates',

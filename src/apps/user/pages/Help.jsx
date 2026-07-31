@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, ChevronDown, ChevronUp, MessageSquare, MapPin, Plus } from 'lucide-react'
 import { getFaqs } from '../../../services/faqService'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 export default function Help() {
   const navigate = useNavigate()
@@ -39,7 +40,7 @@ export default function Help() {
       {/* -------------------------------------------------------------------------------- */}
 
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between px-6 pt-12 pb-4 bg-[#FAFAFA] sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between px-6 pt-app pb-4 bg-[#FAFAFA] sticky top-0 z-30">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#4F46E5] rounded-full transition-colors">
             <ArrowLeft size={24} />
@@ -70,7 +71,7 @@ export default function Help() {
           <h3 className="text-sm font-bold text-gray-900 mb-4">Frequently Asked Questions</h3>
           <div className="flex flex-col gap-2">
             {loading ? (
-              <p className="text-center text-sm text-gray-500 py-4">Loading FAQs...</p>
+              <BrandedLoader size="md" />
             ) : (
               filteredFaqs.map(faq => (
                 <div key={faq.id} className="flex flex-col">
@@ -173,7 +174,7 @@ export default function Help() {
               </div>
               
               <div className="flex flex-col gap-4">
-                {loading && <p className="text-center text-sm text-gray-500 py-4">Loading FAQs...</p>}
+                {loading && <BrandedLoader size="md" />}
                 {!loading && filteredFaqs.map((faq) => (
                   <div key={faq.id} className="bg-white rounded-[20px] p-5 shadow-sm border border-gray-100 transition-all">
                     <div 

@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight } from 'lucide-react'
 import { getDiscoveryCategories } from '../../../services/discoveryService'
 import { useLocation } from '../../../context/LocationContext'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const CATEGORIES_TTL_MS = 5 * 60 * 1000
 
@@ -74,7 +75,7 @@ export default function Categories() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAFA] pb-24 md:pb-8">
-      <div className="px-5 md:px-10 pt-12 md:pt-8 pb-4 flex items-center gap-3 border-b border-gray-100 bg-[#FAFAFA]/95 backdrop-blur-md sticky top-0 z-30">
+      <div className="px-5 md:px-10 pt-app md:pt-8 pb-4 flex items-center gap-3 border-b border-gray-100 bg-[#FAFAFA]/95 backdrop-blur-md sticky top-0 z-30">
         <button
           onClick={() => navigate(-1)}
           className="p-1 -ml-1 text-gray-900 bg-white md:bg-gray-50 md:border md:border-gray-200 md:rounded-full hover:bg-gray-100 transition-colors shadow-sm md:w-10 md:h-10 md:flex md:items-center md:justify-center"
@@ -89,7 +90,7 @@ export default function Categories() {
 
       <div className="px-5 md:px-10 py-6 w-full max-w-3xl mx-auto flex-1">
         {loading || locationLoading ? (
-          <p className="text-sm text-gray-500 py-10 text-center">Loading categories…</p>
+          <BrandedLoader size="md" />
         ) : error ? (
           <p className="text-sm text-red-600 py-10 text-center">{error}</p>
         ) : categories.length === 0 ? (

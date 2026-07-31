@@ -1,5 +1,5 @@
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { clearMerchantSession } from '../../../services/merchantAuthService'
+import { merchantLogout } from '../../../services/merchantAuthService'
 import { MERCHANT_SETTINGS } from '../../../services/data/merchantSettings.mock'
 import { MERCHANT_SETTINGS_CARD_ROUTES } from '../../../services/data/merchantSettingsRoutes'
 import MerchantSettingsGrid from './MerchantSettingsGrid'
@@ -12,8 +12,12 @@ export default function MerchantSettingsDesktop() {
   const { openMobileNav } = useOutletContext()
   const data = MERCHANT_SETTINGS
 
-  const handleLogout = () => {
-    clearMerchantSession()
+  const handleLogout = async () => {
+    const { switchedTo } = await merchantLogout({ switchToRemaining: true })
+    if (switchedTo) {
+      window.location.assign('/merchant')
+      return
+    }
     navigate('/merchant/login', { replace: true })
   }
 

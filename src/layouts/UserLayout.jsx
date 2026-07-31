@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Search, ShoppingBag, Wallet, User, Car } from 'lucide-react'
 import Logo from '../components/brand/Logo'
@@ -6,6 +6,9 @@ import { NavBadge } from '../components/notifications/NotificationBellButton'
 import { useUnreadNotifications } from '../hooks/useUnreadNotifications'
 import { getOrders } from '../services/orderService'
 import LocationRequiredGate from '../components/location/LocationRequiredGate'
+import LoginSecurityGate from '../components/auth/LoginSecurityGate'
+import PullToRefresh from '../components/ui/PullToRefresh'
+import { createPullRefreshHandler } from '../utils/pullRefresh'
 
 const navItems = [
   { to: '/app', icon: Home, label: 'Home', desktopLabel: 'Home' },
@@ -21,6 +24,8 @@ export default function UserLayout() {
   const mainRef = useRef(null)
   const isHome = location.pathname === '/app'
   const [activeOrder, setActiveOrder] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const handlePullRefresh = useCallback(createPullRefreshHandler(setRefreshKey), [])
   const { unread, chatUnread, refresh: refreshUnread } = useUnreadNotifications({
     role: 'user',
     enabled: Boolean(localStorage.getItem('rapid_token')),
@@ -175,9 +180,13 @@ export default function UserLayout() {
           showMobileNav ? 'pb-mobile-nav' : ''
         }`}
       >
-        <LocationRequiredGate>
-          <Outlet />
-        </LocationRequiredGate>
+        <LoginSecurityGate>
+          <LocationRequiredGate>
+            <PullToRefresh scrollRef={mainRef} onRefresh={handlePullRefresh}>
+              <Outlet key={refreshKey} />
+            </PullToRefresh>
+          </LocationRequiredGate>
+        </LoginSecurityGate>
       </main>
 
       {/* --- MOBILE BOTTOM NAV --- */}

@@ -72,6 +72,7 @@ export async function sendBankTransfer(payload) {
       bank_code: payload.bankCode,
       bank_name: payload.bankName,
       pin: payload.pin,
+      auth_code: payload.auth_code,
     })
     return data
   } catch (err) {
@@ -136,9 +137,27 @@ export async function setWalletPin(pin) {
   }
 }
 
-export async function purchaseAirtime({ network, phone, amount }) {
+export async function changeWalletPin({ newPin, currentPin, authCode } = {}) {
   try {
-    const { data } = await api.post('/user/wallet/bills/airtime', { network, phone, amount })
+    await api.post('/user/wallet/pin/change', {
+      new_pin: newPin,
+      current_pin: currentPin,
+      auth_code: authCode,
+    })
+  } catch (err) {
+    throw new Error(getApiFieldError(err, 'form'))
+  }
+}
+
+export async function purchaseAirtime({ network, phone, amount, pin, auth_code }) {
+  try {
+    const { data } = await api.post('/user/wallet/bills/airtime', {
+      network,
+      phone,
+      amount,
+      pin,
+      auth_code,
+    })
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
@@ -154,9 +173,16 @@ export async function getDataPlans(network) {
   }
 }
 
-export async function purchaseData({ network, phone, planId }) {
+export async function purchaseData({ network, phone, planId, amount, pin, auth_code }) {
   try {
-    const { data } = await api.post('/user/wallet/bills/data', { network, phone, plan_id: planId })
+    const { data } = await api.post('/user/wallet/bills/data', {
+      network,
+      phone,
+      plan_id: planId,
+      amount,
+      pin,
+      auth_code,
+    })
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
@@ -172,9 +198,17 @@ export async function verifyMeter({ serviceId, meterNumber, type }) {
   }
 }
 
-export async function purchaseElectricity({ serviceId, meterNumber, type, amount, phone }) {
+export async function purchaseElectricity({ serviceId, meterNumber, type, amount, phone, pin, auth_code }) {
   try {
-    const { data } = await api.post('/user/wallet/bills/electricity', { service_id: serviceId, meter_number: meterNumber, type, amount, phone })
+    const { data } = await api.post('/user/wallet/bills/electricity', {
+      service_id: serviceId,
+      meter_number: meterNumber,
+      type,
+      amount,
+      phone,
+      pin,
+      auth_code,
+    })
     return data
   } catch (err) {
     throw new Error(getApiFieldError(err, 'form'))
@@ -202,7 +236,7 @@ export async function verifySmartcard({ service, smartcardNumber }) {
   }
 }
 
-export async function purchaseCable({ service, smartcardNumber, planId, phone, amount }) {
+export async function purchaseCable({ service, smartcardNumber, planId, phone, amount, pin, auth_code }) {
   try {
     const { data } = await api.post('/user/wallet/bills/cable', {
       service,
@@ -210,6 +244,8 @@ export async function purchaseCable({ service, smartcardNumber, planId, phone, a
       plan_id: planId,
       phone,
       amount,
+      pin,
+      auth_code,
     })
     return data
   } catch (err) {
@@ -229,6 +265,13 @@ export function walletTransactionLabel(tx) {
     electricity: 'Electricity',
     cable: 'Cable TV',
     order_debit: 'Order payment',
+    order_refund: 'Order refund',
+    bank_transfer: 'Bank transfer',
+    bank_transfer_refund: 'Bank transfer refund',
+    airtime_refund: 'Airtime refund',
+    data_refund: 'Data refund',
+    electricity_refund: 'Electricity refund',
+    cable_refund: 'Cable TV refund',
   }
   return labels[tx.category] || tx.reference || 'Wallet transaction'
 }
@@ -246,7 +289,9 @@ export function walletTransactionPaymentMethod(tx) {
     electricity: 'Rapid Wallet',
     cable: 'Rapid Wallet',
     bank_transfer: 'Rapid Wallet',
+    bank_transfer_refund: 'Bank Transfer',
     order_debit: 'Rapid Wallet',
+    order_refund: 'Rapid Wallet',
   }
 
   return methods[tx?.category] || 'Rapid Wallet'
@@ -261,11 +306,17 @@ export function walletTransactionCategoryLabel(tx) {
     p2p_send: 'Wallet Transfer',
     p2p_receive: 'Wallet Transfer',
     bank_transfer: 'Bank Transfer',
+    bank_transfer_refund: 'Bank Transfer Refund',
     airtime: 'Airtime',
     data: 'Data Bundle',
     electricity: 'Electricity',
     cable: 'Cable TV',
     order_debit: 'Order Payment',
+    order_refund: 'Order Refund',
+    airtime_refund: 'Airtime Refund',
+    data_refund: 'Data Refund',
+    electricity_refund: 'Electricity Refund',
+    cable_refund: 'Cable TV Refund',
   }
 
   return labels[tx?.category] || 'Wallet Transaction'

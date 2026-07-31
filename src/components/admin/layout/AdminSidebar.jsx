@@ -3,7 +3,7 @@ import { LogOut, X } from 'lucide-react'
 import Logo from '../../brand/Logo'
 import { ADMIN_NAV_SECTIONS, buildAdminNavSections } from '../../../services/data/adminNav.mock'
 import { ADMIN_LOGIN_PATH } from '../../../services/data/adminAuth.mock'
-import { clearAdminSession } from '../../../services/adminAuthService'
+import { adminLogout } from '../../../services/adminAuthService'
 
 function NavBadge({ count, tone }) {
   if (count === undefined || count === null) return null
@@ -23,8 +23,8 @@ export default function AdminSidebar({ sidebar, navCounts, variant = 'static', o
   const isDrawer = variant === 'drawer'
   const navSections = buildAdminNavSections(navCounts)
 
-  const handleLogout = () => {
-    clearAdminSession()
+  const handleLogout = async () => {
+    await adminLogout()
     navigate(ADMIN_LOGIN_PATH, { replace: true })
   }
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Delete } from 'lucide-react'
 import { sendSecurityActionCode } from '../../services/securityService'
-import { verifyBiometricCredential } from '../../utils/biometricAuth'
 
 export default function SecurityAuthPanel({
   purpose,
@@ -11,47 +10,32 @@ export default function SecurityAuthPanel({
   onCancel,
   onVerified,
   pinMode = false,
+  hasExistingPin = false,
 }) {
+  // Client biometric is not a trusted API factor for money/order/login step-up.
+  const effectiveMethod = method === 'biometric' ? 'email' : method
   const [code, setCode] = useState('')
   const [pin, setPin] = useState('')
   const [pendingPin, setPendingPin] = useState('')
   const [pinStep, setPinStep] = useState('create')
-  const [hasPin, setHasPin] = useState(false)
+  const [hasPin, setHasPin] = useState(Boolean(hasExistingPin))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
 
   useEffect(() => {
-    if (method === 'email' && !codeSent) {
+    setHasPin(Boolean(hasExistingPin))
+  }, [hasExistingPin])
+
+  useEffect(() => {
+    if (effectiveMethod === 'email' && !codeSent) {
       setLoading(true)
       sendSecurityActionCode(purpose)
         .then(() => setCodeSent(true))
         .catch((err) => setError(err?.message || 'Could not send verification code.'))
         .finally(() => setLoading(false))
     }
-  }, [method, purpose, codeSent])
-
-  useEffect(() => {
-    if (method !== 'biometric') return undefined
-
-    let active = true
-    setLoading(true)
-
-    verifyBiometricCredential('Confirm this action with your biometrics')
-      .then(() => {
-        if (active) onVerified({ biometric_verified: true })
-      })
-      .catch((err) => {
-        if (active) setError(err?.message || 'Biometric verification failed.')
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [method])
+  }, [effectiveMethod, purpose, codeSent])
 
   const handlePinPress = (val) => {
     if (val === 'delete') {
@@ -87,23 +71,19 @@ export default function SecurityAuthPanel({
   }, [pin, pinMode, pinStep, pendingPin, hasPin, onVerified])
 
   const submitCode = async () => {
-    if (code.length !== 6) return
+    if (code.length !== 6 || loading) return
     setError('')
-    onVerified({ auth_code: code })
+    setLoading(true)
+    try {
+      await onVerified({ auth_code: code })
+    } catch (err) {
+      setError(err?.message || 'Verification failed.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (method === 'biometric') {
-    return (
-      <div className="px-5 py-10 text-center">
-        <p className="text-[15px] font-semibold text-gray-900 mb-2">{title}</p>
-        <p className="text-[13px] text-gray-500 mb-4">{loading ? 'Waiting for biometric confirmation…' : subtitle}</p>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <button type="button" onClick={onCancel} className="mt-6 text-sm font-semibold text-gray-500">Cancel</button>
-      </div>
-    )
-  }
-
-  if (pinMode || method === 'pin') {
+  if (pinMode || effectiveMethod === 'pin') {
     return (
       <div className="px-5 py-8">
         <h2 className="text-[20px] font-bold text-gray-900 mb-1 text-center">{title}</h2>
@@ -145,7 +125,7 @@ export default function SecurityAuthPanel({
     <div className="px-5 py-8">
       <h2 className="text-[20px] font-bold text-gray-900 mb-1 text-center">{title}</h2>
       <p className="text-[13px] text-gray-500 mb-6 text-center">
-        {method === 'email'
+        {effectiveMethod === 'email'
           ? (codeSent ? 'Enter the 6-digit code sent to your email.' : 'Sending verification code…')
           : 'Enter the 6-digit code from your authenticator app.'}
       </p>
@@ -163,7 +143,7 @@ export default function SecurityAuthPanel({
         disabled={code.length !== 6 || loading}
         className="w-full bg-[#4F46E5] text-white py-4 rounded-xl font-bold disabled:opacity-50"
       >
-        Continue
+        {loading ? 'Processing…' : 'Continue'}
       </button>
       <button type="button" onClick={onCancel} className="w-full mt-3 text-sm font-semibold text-gray-500 py-2">
         Cancel

@@ -1,4 +1,5 @@
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import BrandedLoader from '../../ui/BrandedLoader'
 import MerchantDashboardHeader from '../dashboard/MerchantDashboardHeader'
 import MerchantOrdersFilterBar from './MerchantOrdersFilterBar'
 import MerchantOrdersSummaryCards from './MerchantOrdersSummaryCards'
@@ -49,7 +50,7 @@ export default function MerchantOrdersDesktop() {
       ) : null}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-merchant-muted">Loading orders...</div>
+        <BrandedLoader size="md" />
       ) : (
       <MerchantOrdersTable
         orders={paginatedOrders}

@@ -1,0 +1,22 @@
+Task Name,Task Content,Status,Priority,Tags,Time Estimate,Start Date,Due Date,Assignees
+Create users roles and Sanctum tokens schema,"Migrations for users (profile fields) roles role_user personal_access_tokens. Foundation for all personas.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** None",Completed,Urgent,"Database,Backend,Authentication",8.0h,,,
+Add user location and avatar fields,"Migrations for user geo fields and avatar_path used during onboarding and profile.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 1
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,High,"Database,Backend,Authentication",4.0h,,,
+Add security settings columns to users,"Migration for TOTP secret biometric flags login/transaction security method preferences.
+
+**Developer:** Backend
+**Progress:** 100%
+**Sprint:** Sprint 3
+**Milestone:** M1 Authentication
+**Dependencies:** Create users roles and Sanctum tokens schema",Completed,High,"Database,Backend,Security,Authentication",6.0h,,,

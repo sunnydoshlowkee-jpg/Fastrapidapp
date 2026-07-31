@@ -1,3 +1,4 @@
+import BrandedLoader from '../../ui/BrandedLoader'
 import MerchantDashboardMobileEmpty from './MerchantDashboardMobileEmpty'
 import MerchantDashboardActiveMobile from './MerchantDashboardActiveMobile'
 import useMerchantDashboard from './useMerchantDashboard'
@@ -8,6 +9,7 @@ export default function MerchantDashboardMobile() {
     storeStatus,
     stats,
     liveOrders,
+    stockAlerts,
     hasLiveOrders,
     loading,
     error,
@@ -17,8 +19,8 @@ export default function MerchantDashboardMobile() {
 
   if (loading) {
     return (
-      <div className="flex min-h-full flex-1 items-center justify-center bg-merchant-canvas p-8 text-sm text-merchant-muted lg:hidden">
-        Loading dashboard...
+      <div className="flex min-h-full flex-1 flex-col bg-merchant-canvas lg:hidden">
+        <BrandedLoader fill className="p-8" />
       </div>
     )
   }
@@ -28,6 +30,7 @@ export default function MerchantDashboardMobile() {
       <MerchantDashboardActiveMobile
         stats={stats}
         liveOrders={liveOrders}
+        stockAlerts={stockAlerts}
         onOrderAction={handleOrderAction}
         onRefresh={refresh}
       />

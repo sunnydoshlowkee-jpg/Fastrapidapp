@@ -8,6 +8,8 @@ import {
   provisionMerchantVirtualAccount,
 } from '../../../services/merchantWalletService'
 import { getCached, setCached } from '../../../utils/requestCache'
+import MerchantHeaderActions from '../../../components/merchant/layout/MerchantHeaderActions'
+import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const WALLET_TTL_MS = 60 * 1000
 
@@ -110,19 +112,28 @@ export default function MerchantWallet() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAFA] pb-24 lg:pb-8">
-      <div className="flex items-center justify-between border-b border-gray-100 px-5 pb-3 pt-12 md:border-none md:px-8 md:pt-8">
+      <div className="flex items-center justify-between border-b border-gray-100 px-5 pb-3 pt-app md:border-none md:px-8 md:pt-8">
         <div>
           <h1 className="text-[20px] font-bold text-gray-900 md:text-[24px]">Wallet</h1>
           <p className="mt-1 text-sm text-gray-500">Order payments land here instantly</p>
         </div>
-        <button
-          type="button"
-          onClick={() => fetchData({ showSpinner: true })}
-          className="rounded-full border border-gray-200 bg-white p-2 text-gray-600 shadow-sm transition-colors hover:text-gray-900"
-          aria-label="Refresh wallet"
-        >
-          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fetchData({ showSpinner: true })}
+            className="rounded-full border border-gray-200 bg-white p-2 text-gray-600 shadow-sm transition-colors hover:text-gray-900 lg:mr-0"
+            aria-label="Refresh wallet"
+          >
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          </button>
+          <div className="lg:hidden">
+            <MerchantHeaderActions
+              iconClassName="text-gray-600"
+              bellClassName="h-10 w-10 rounded-full border border-gray-200 bg-white"
+              profileClassName="h-10 w-10 rounded-full border border-gray-200 bg-white text-gray-800"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="mx-auto flex w-full max-w-md flex-col px-5 pt-2 md:max-w-5xl md:px-8 lg:max-w-[1200px]">
@@ -235,7 +246,7 @@ export default function MerchantWallet() {
 
             <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
               {loading && transactions.length === 0 ? (
-                <p className="px-5 py-10 text-center text-sm text-gray-500">Loading activity…</p>
+                <BrandedLoader size="md" className="px-5" />
               ) : transactions.length === 0 ? (
                 <p className="px-5 py-10 text-center text-sm text-gray-500">
                   No wallet activity yet. Paid orders will show up here.

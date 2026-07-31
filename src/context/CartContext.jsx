@@ -4,12 +4,14 @@ import { fetchUserCart, saveUserCart, getConsumerAuthToken } from '../services/c
 
 const CartContext = createContext(null)
 const CART_STORAGE_KEY = 'rapid_cart'
+const DEFAULT_DELIVERY_FEE = 800
 
 function normalizeCartItem(item) {
   if (!item) return item
   return {
     ...item,
     img: resolveStorageUrl(item.img) || item.img,
+    delivery_fee: Number(item.delivery_fee) || DEFAULT_DELIVERY_FEE,
   }
 }
 
@@ -23,13 +25,22 @@ function readLocalCart() {
   }
 }
 
+function itemsSignature(list) {
+  return JSON.stringify(
+    (list || []).map((item) => ({
+      id: item.id,
+      qty: item.qty,
+      price: item.price,
+      name: item.name,
+      delivery_fee: item.delivery_fee,
+    })),
+  )
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(readLocalCart)
   const [hydrated, setHydrated] = useState(false)
   const skipNextSync = useRef(false)
-
-  const deliveryFee = 1500
-  const serviceChargePercent = 0.05
 
   useEffect(() => {
     let active = true
@@ -56,7 +67,11 @@ export function CartProvider({ children }) {
         } else if (localItems.length > 0) {
           skipNextSync.current = true
           setItems(localItems)
-          await saveUserCart(localItems)
+          const validated = (await saveUserCart(localItems)).map(normalizeCartItem)
+          if (active) {
+            skipNextSync.current = true
+            setItems(validated)
+          }
         }
       } catch (err) {
         console.error('Failed to sync cart from server', err)
@@ -92,9 +107,17 @@ export function CartProvider({ children }) {
     }
 
     const timer = setTimeout(() => {
-      saveUserCart(items).catch((err) => {
-        console.error('Failed to save cart to server', err)
-      })
+      saveUserCart(items)
+        .then((validatedRaw) => {
+          const validated = validatedRaw.map(normalizeCartItem)
+          if (itemsSignature(validated) !== itemsSignature(items)) {
+            skipNextSync.current = true
+            setItems(validated)
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to save cart to server', err)
+        })
     }, 400)
 
     return () => clearTimeout(timer)
@@ -131,11 +154,17 @@ export function CartProvider({ children }) {
     }, 0)
   }, [items])
 
+  const deliveryFee = useMemo(() => {
+    if (items.length === 0) return 0
+    return Math.max(...items.map((i) => Number(i.delivery_fee) || DEFAULT_DELIVERY_FEE))
+  }, [items])
+
   const count = items.reduce((sum, i) => sum + i.qty, 0)
+  const serviceChargePercent = 0.05
   const serviceCharge = useMemo(() => subtotal * serviceChargePercent, [subtotal])
   const total = useMemo(
     () => (items.length > 0 ? subtotal + deliveryFee + serviceCharge : 0),
-    [subtotal, items.length, serviceCharge],
+    [subtotal, items.length, serviceCharge, deliveryFee],
   )
 
   return (

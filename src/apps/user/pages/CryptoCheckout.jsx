@@ -62,7 +62,7 @@ export default function CryptoCheckout() {
   return (
     <div className="min-h-screen bg-[#111] text-white flex flex-col max-w-md mx-auto">
       {/* Header */}
-      <div className="px-5 pt-12 pb-4 flex items-center justify-between sticky top-0 z-50 bg-[#111]/90 backdrop-blur-md border-b border-gray-800">
+      <div className="px-5 pt-app pb-4 flex items-center justify-between sticky top-0 z-50 bg-[#111]/90 backdrop-blur-md border-b border-gray-800">
         <button onClick={() => navigate(-1)} className="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full active:scale-95 transition-transform">
           <ArrowLeft size={20} className="text-white" />
         </button>

@@ -7,6 +7,7 @@ import {
   getMerchantOnboardingState,
   merchantRedirectPath,
 } from '../../../services/merchantOnboardingService'
+import BrandedLoader from '../../ui/BrandedLoader'
 
 const PUBLIC_AUTH_PATHS = new Set([
   '/merchant/login',
@@ -92,8 +93,8 @@ export default function MerchantOnboardingRouteGuard() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-merchant-canvas text-sm text-merchant-muted">
-        Loading…
+      <div className="min-h-screen bg-merchant-canvas">
+        <BrandedLoader size="screen" />
       </div>
     )
   }
