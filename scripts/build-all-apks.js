@@ -38,4 +38,15 @@ for (const { persona, flavor, apk } of personas) {
   })
 }
 
-console.log('\nAll persona APKs are ready in releases/\n')
+// DocumentRoot is dist/ — persona APK builds must not leave the site pinned to one app.
+console.log('\n=== Restoring full web production build (no persona pin) ===\n')
+const env = { ...process.env }
+delete env.VITE_APP_PERSONA
+execSync('npm run build', {
+  cwd: root,
+  stdio: 'inherit',
+  env,
+})
+
+console.log('\nAll persona APKs are ready in releases/')
+console.log('Web dist/ restored for app.fastrapid.com (admin / merchant / user / dispatch).\n')

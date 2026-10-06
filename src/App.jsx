@@ -4,6 +4,7 @@ import AppRoutes from './routes/AppRoutes'
 import MerchantRoutes from './routes/MerchantRoutes'
 import DispatchRoutes from './routes/DispatchRoutes'
 import AdminRoutes from './routes/AdminRoutes'
+import PipelineAdminRoutes from './routes/PipelineAdminRoutes'
 import BiometricAppLock from './components/auth/BiometricAppLock'
 import NativePersonaBootstrap from './components/auth/NativePersonaBootstrap'
 import PushNotificationsBootstrap from './components/auth/PushNotificationsBootstrap'
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/merchant/*" element={<MerchantRoutes />} />
         <Route path="/dispatch/*" element={<DispatchRoutes />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/pipeline-admin/*" element={<PipelineAdminRoutes />} />
         <Route path="/*" element={<OnboardingRoutes />} />
       </Routes>
     </BiometricAppLock>

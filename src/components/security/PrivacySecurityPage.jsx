@@ -21,6 +21,7 @@ import { setBiometricUnlockEnabled } from '../../utils/biometricSession'
 import { detectAppRole, getRoleConfig } from '../../utils/appRole'
 import { isNativeApp } from '../../utils/userLoginSecurity'
 import { changeWalletPin } from '../../services/walletService'
+import BrandedLoader from '../ui/BrandedLoader'
 
 const ICONS = {
   email: Mail,

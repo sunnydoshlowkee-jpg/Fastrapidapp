@@ -41,6 +41,7 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState(readLocalCart)
   const [hydrated, setHydrated] = useState(false)
   const skipNextSync = useRef(false)
+  const tokenRef = useRef(getConsumerAuthToken())
 
   useEffect(() => {
     let active = true
@@ -49,10 +50,23 @@ export function CartProvider({ children }) {
       const token = getConsumerAuthToken()
 
       if (!token) {
+        // Logged out — the cart must not leak across accounts/sessions.
+        if (tokenRef.current) {
+          tokenRef.current = null
+          skipNextSync.current = true
+          setItems([])
+        }
         if (active) {
           setHydrated(true)
         }
         return
+      }
+
+      if (token !== tokenRef.current) {
+        // A different account just signed in — start fresh, then fetch its cart.
+        tokenRef.current = token
+        skipNextSync.current = true
+        setItems([])
       }
 
       try {
@@ -124,8 +138,21 @@ export function CartProvider({ children }) {
   }, [items, hydrated])
 
   const add = (item, qty = 1) => {
-    const nextItem = normalizeCartItem(item)
+    const nextItem = normalizeCartItem({
+      ...item,
+      merchant_id: item.merchant_id ?? item.merchant?.id ?? null,
+    })
+    const nextMerchantId = nextItem.merchant_id
     setItems((prev) => {
+      if (prev.length > 0 && nextMerchantId != null) {
+        const existingMerchantIds = new Set(
+          prev.map((i) => i.merchant_id).filter((id) => id != null),
+        )
+        if (!existingMerchantIds.has(nextMerchantId)) {
+          // Switching stores — a cart holds items from one store at a time.
+          return [{ ...nextItem, qty }]
+        }
+      }
       const existing = prev.find((i) => i.id === nextItem.id)
       if (existing) {
         return prev.map((i) => (i.id === nextItem.id ? { ...i, qty: i.qty + qty } : i))
@@ -145,6 +172,11 @@ export function CartProvider({ children }) {
   }
 
   const clear = () => setItems([])
+
+  const pruneForMerchant = (merchantId) => {
+    if (merchantId == null) return
+    setItems((prev) => prev.filter((i) => Number(i.merchant_id) === Number(merchantId)))
+  }
 
   const subtotal = useMemo(() => {
     return items.reduce((sum, i) => {
@@ -175,6 +207,7 @@ export function CartProvider({ children }) {
         remove,
         updateQty,
         clear,
+        pruneForMerchant,
         count,
         subtotal,
         serviceCharge,

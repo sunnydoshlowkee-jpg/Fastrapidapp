@@ -25,8 +25,14 @@ export default function AdminAuthGuard() {
 
     api
       .get('/admin/me')
-      .then(() => {
-        if (!cancelled) setReady(true)
+      .then((response) => {
+        if (cancelled) return
+        const user = response?.data?.data?.user
+        if (user?.must_change_password) {
+          navigate('/admin/change-password', { replace: true })
+          return
+        }
+        setReady(true)
       })
       .catch(() => {
         if (!cancelled) {

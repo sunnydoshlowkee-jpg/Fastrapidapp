@@ -7,6 +7,7 @@ import { getDiscoveryItem } from '../../../services/discoveryService'
 import { trackEvent } from '../../../services/analyticsService'
 import { resolveStorageUrl } from '../../../utils/mediaUrl'
 import { cacheKey, getCached, setCached } from '../../../utils/requestCache'
+import { isFoodBusiness } from '../../../utils/merchantBusinessType'
 import BrandedLoader from '../../../components/ui/BrandedLoader'
 
 const ITEM_TTL_MS = 5 * 60 * 1000
@@ -95,6 +96,7 @@ export default function ItemDetail() {
 
   const basePrice = Number(itemData.price)
   const addonPrice = 1200
+  const isFood = isFoodBusiness(itemData.merchant?.business_type)
   const total = (basePrice + (hasAddon ? addonPrice : 0)) * quantity
   const itemImage = resolveStorageUrl(itemData.img) || itemData.img
 
@@ -108,6 +110,7 @@ export default function ItemDetail() {
       img: itemImage,
       price: basePrice + (hasAddon ? addonPrice : 0),
       qty: quantity,
+      merchant_id: itemData.merchant?.id ?? null,
       notes
     }
     for (let i = 0; i < quantity; i++) {
@@ -172,29 +175,35 @@ export default function ItemDetail() {
           </div>
         </div>
 
-        {/* Addons */}
-        <label className="flex items-center justify-between p-4 bg-indigo-50/50 rounded-2xl mb-8 cursor-pointer border border-transparent hover:border-indigo-100 transition-colors">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🍴</span>
-            <span className="text-sm font-semibold text-gray-900">Extra Grilled Chicken</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-[#4F46E5]">+₦1,200</span>
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#4F46E5] border-[#4F46E5]' : 'border-gray-300'}`}>
-              {hasAddon && <div className="w-2 h-2 bg-white rounded-full" />}
+        {/* Food / grocery only: addons */}
+        {isFood ? (
+          <label className="flex items-center justify-between p-4 bg-indigo-50/50 rounded-2xl mb-8 cursor-pointer border border-transparent hover:border-indigo-100 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🍴</span>
+              <span className="text-sm font-semibold text-gray-900">Extra Grilled Chicken</span>
             </div>
-          </div>
-          <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
-        </label>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-[#4F46E5]">+₦1,200</span>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#4F46E5] border-[#4F46E5]' : 'border-gray-300'}`}>
+                {hasAddon && <div className="w-2 h-2 bg-white rounded-full" />}
+              </div>
+            </div>
+            <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
+          </label>
+        ) : null}
 
-        {/* Special Instructions */}
-        <h3 className="text-sm font-bold text-gray-900 mb-2">Special Instructions</h3>
-        <textarea 
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add a note (e.g. no onions, extra spicy...)"
-          className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] resize-none h-24 mb-4 border border-transparent"
-        ></textarea>
+        {/* Food / grocery only: special instructions */}
+        {isFood ? (
+          <>
+            <h3 className="text-sm font-bold text-gray-900 mb-2">Special Instructions</h3>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add a note (e.g. no onions, extra spicy...)"
+              className="w-full bg-[#F4F5F7] rounded-2xl p-4 text-[13px] text-gray-900 outline-none focus:ring-2 focus:ring-[#4F46E5] resize-none h-24 mb-4 border border-transparent"
+            ></textarea>
+          </>
+        ) : null}
 
       </div>
 
@@ -284,29 +293,35 @@ export default function ItemDetail() {
             </div>
           </div>
 
-          {/* Addons */}
-          <label className="flex items-center justify-between p-6 bg-indigo-50/50 rounded-2xl mb-10 cursor-pointer border-2 border-transparent hover:border-indigo-100 transition-colors">
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">🍴</span>
-              <span className="text-[17px] font-semibold text-gray-900">Extra Grilled Chicken</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-[17px] font-bold text-[#2D2AEE]">+₦1,200</span>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#2D2AEE] border-[#2D2AEE]' : 'border-gray-300'}`}>
-                {hasAddon && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+          {/* Food / grocery only: addons */}
+          {isFood ? (
+            <label className="flex items-center justify-between p-6 bg-indigo-50/50 rounded-2xl mb-10 cursor-pointer border-2 border-transparent hover:border-indigo-100 transition-colors">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">🍴</span>
+                <span className="text-[17px] font-semibold text-gray-900">Extra Grilled Chicken</span>
               </div>
-            </div>
-            <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
-          </label>
+              <div className="flex items-center gap-4">
+                <span className="text-[17px] font-bold text-[#2D2AEE]">+₦1,200</span>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${hasAddon ? 'bg-[#2D2AEE] border-[#2D2AEE]' : 'border-gray-300'}`}>
+                  {hasAddon && <div className="w-2.5 h-2.5 bg-white rounded-full" />}
+                </div>
+              </div>
+              <input type="checkbox" className="hidden" checked={hasAddon} onChange={() => setHasAddon(!hasAddon)} />
+            </label>
+          ) : null}
 
-          {/* Special Instructions */}
-          <h3 className="text-[16px] font-bold text-gray-900 mb-3">Special Instructions</h3>
-          <textarea 
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add a note (e.g. no onions, extra spicy...)"
-            className="w-full bg-[#F4F5F7] rounded-2xl p-5 text-[16px] text-gray-900 outline-none focus:ring-2 focus:ring-[#2D2AEE] resize-none h-32 mb-10 border border-transparent"
-          ></textarea>
+          {/* Food / grocery only: special instructions */}
+          {isFood ? (
+            <>
+              <h3 className="text-[16px] font-bold text-gray-900 mb-3">Special Instructions</h3>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add a note (e.g. no onions, extra spicy...)"
+                className="w-full bg-[#F4F5F7] rounded-2xl p-5 text-[16px] text-gray-900 outline-none focus:ring-2 focus:ring-[#2D2AEE] resize-none h-32 mb-10 border border-transparent"
+              ></textarea>
+            </>
+          ) : null}
 
           {/* Add to Cart Button */}
           <button 

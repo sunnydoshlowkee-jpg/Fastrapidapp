@@ -8,13 +8,21 @@ export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
+  const [toast, setToast] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const showToast = (message) => {
+    setToast(message)
+    setTimeout(() => setToast(''), 4000)
+  }
 
   const handleLogin = async () => {
     setEmailError('')
+    setToast('')
 
     if (!email.trim()) {
       setEmailError('Email is required.')
+      showToast('Email is required.')
       return
     }
 
@@ -29,7 +37,9 @@ export default function Login() {
         },
       })
     } catch (err) {
-      setEmailError(getApiFieldError(err, 'email'))
+      const msg = getApiFieldError(err, 'email')
+      setEmailError(msg)
+      showToast(msg)
     } finally {
       setLoading(false)
     }
@@ -68,15 +78,9 @@ export default function Login() {
               placeholder="you@example.com"
               autoComplete="email"
               aria-invalid={emailError ? 'true' : 'false'}
-              aria-describedby={emailError ? 'login-email-error' : undefined}
               className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
             />
           </div>
-          {emailError ? (
-            <p id="login-email-error" className="mt-2 text-sm font-medium text-red-600" role="alert">
-              {emailError}
-            </p>
-          ) : null}
           <p className="text-center text-sm text-[#6B7280] mt-4 w-full">
             <Link to="/auth/login/phone" className="text-[#4342FF] font-bold hover:underline">
               Switch to phone number
@@ -100,6 +104,19 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-sm">
+          <div className="bg-red-500 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span className="font-semibold text-[14px]">{toast}</span>
+          </div>
+        </div>
+      )}
     </CenteredLayout>
   )
 }

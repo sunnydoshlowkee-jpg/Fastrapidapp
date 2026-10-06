@@ -7,7 +7,16 @@ import AdminForgotPassword from '../apps/admin/pages/auth/ForgotPassword'
 import AdminResetPassword from '../apps/admin/pages/auth/ResetPassword'
 import AdminResetSuccess from '../apps/admin/pages/auth/ResetSuccess'
 import AdminSessionExpired from '../apps/admin/pages/auth/SessionExpired'
+import AdminChangePassword from '../apps/admin/pages/auth/ChangePassword'
 import Overview from '../apps/admin/pages/Overview'
+import PipelineOverview from '../apps/admin/pages/PipelineOverview'
+import PipelineBoard from '../apps/admin/pages/PipelineBoard'
+import PipelineMyItems from '../apps/admin/pages/PipelineMyItems'
+import PipelineDocuments from '../apps/admin/pages/PipelineDocuments'
+import PipelineActivity from '../apps/admin/pages/PipelineActivity'
+import PipelineCreate from '../apps/admin/pages/PipelineCreate'
+import PipelineDetail from '../apps/admin/pages/PipelineDetail'
+import PipelineEdit from '../apps/admin/pages/PipelineEdit'
 import Users from '../apps/admin/pages/Users'
 import UserDetail from '../apps/admin/pages/UserDetail'
 import Merchants from '../apps/admin/pages/Merchants'
@@ -31,6 +40,10 @@ import Notifications from '../apps/admin/pages/Notifications'
 import Disputes from '../apps/admin/pages/Disputes'
 import DisputeDetail from '../apps/admin/pages/DisputeDetail'
 import AuditLog from '../apps/admin/pages/AuditLog'
+import AdminStaff from '../apps/admin/pages/AdminStaff'
+import AdminStaffDetail from '../apps/admin/pages/AdminStaffDetail'
+import Roles from '../apps/admin/pages/Roles'
+import Permissions from '../apps/admin/pages/Permissions'
 
 export default function AdminRoutes() {
   return (
@@ -41,6 +54,7 @@ export default function AdminRoutes() {
       <Route path="forgot-password/reset" element={<AdminResetPassword />} />
       <Route path="forgot-password/success" element={<AdminResetSuccess />} />
       <Route path="session-expired" element={<AdminSessionExpired />} />
+      <Route path="change-password" element={<AdminChangePassword />} />
       <Route element={<AdminAuthGuard />}>
         <Route element={<AdminLayout />}>
           <Route index element={<Overview />} />
@@ -68,6 +82,18 @@ export default function AdminRoutes() {
         <Route path="disputes" element={<Disputes />} />
         <Route path="disputes/:disputeId" element={<DisputeDetail />} />
         <Route path="audit-log" element={<AuditLog />} />
+        <Route path="admins" element={<AdminStaff />} />
+        <Route path="admins/:adminId" element={<AdminStaffDetail />} />
+        <Route path="roles" element={<Roles />} />
+        <Route path="permissions" element={<Permissions />} />
+        <Route path="pipeline" element={<PipelineOverview />} />
+        <Route path="pipeline/board" element={<PipelineBoard />} />
+        <Route path="pipeline/my-items" element={<PipelineMyItems />} />
+        <Route path="pipeline/documents" element={<PipelineDocuments />} />
+        <Route path="pipeline/activity" element={<PipelineActivity />} />
+        <Route path="pipeline/create" element={<PipelineCreate />} />
+        <Route path="pipeline/:itemId" element={<PipelineDetail />} />
+        <Route path="pipeline/:itemId/edit" element={<PipelineEdit />} />
         <Route path="support" element={<Support />} />
           <Route path="support/:ticketId" element={<SupportTicketDetail />} />
         </Route>

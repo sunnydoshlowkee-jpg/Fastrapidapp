@@ -29,7 +29,9 @@ import FundWallet from '../apps/user/pages/FundWallet'
 import PayBills from '../apps/user/pages/PayBills'
 import WalletReceipt from '../apps/user/pages/WalletReceipt'
 import WalletTransactions from '../apps/user/pages/WalletTransactions'
+import KycVerification from '../apps/user/pages/KycVerification'
 import Notifications from '../apps/user/pages/Notifications'
+import WalletGate from '../components/kyc/WalletGate'
 
 export default function AppRoutes() {
   return (
@@ -50,14 +52,17 @@ export default function AppRoutes() {
         <Route path="search" element={<Search />} />
         <Route path="promotions" element={<Promotions />} />
         <Route path="orders" element={<Orders />} />
-        {/* Wallet Routes */}
-        <Route path="wallet" element={<Wallet />} />
-        <Route path="wallet/send" element={<SendMoney />} />
-        <Route path="wallet/receive" element={<ReceiveMoney />} />
-        <Route path="wallet/fund" element={<FundWallet />} />
-        <Route path="wallet/pay-bills" element={<PayBills />} />
-        <Route path="wallet/receipt/:id" element={<WalletReceipt />} />
-        <Route path="wallet/transactions" element={<WalletTransactions />} />
+        {/* Wallet Routes - gated by KYC verification */}
+        <Route path="wallet" element={<WalletGate><Wallet /></WalletGate>} />
+        <Route path="wallet/send" element={<WalletGate><SendMoney /></WalletGate>} />
+        <Route path="wallet/receive" element={<WalletGate><ReceiveMoney /></WalletGate>} />
+        <Route path="wallet/fund" element={<WalletGate><FundWallet /></WalletGate>} />
+        <Route path="wallet/pay-bills" element={<WalletGate><PayBills /></WalletGate>} />
+        <Route path="wallet/receipt/:id" element={<WalletGate><WalletReceipt /></WalletGate>} />
+        <Route path="wallet/transactions" element={<WalletGate><WalletTransactions /></WalletGate>} />
+
+        {/* KYC Routes */}
+        <Route path="kyc/verify" element={<KycVerification />} />
 
         {/* Profile Routes */}
         <Route path="notifications" element={<Notifications />} />

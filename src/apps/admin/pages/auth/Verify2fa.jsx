@@ -124,8 +124,12 @@ export default function AdminVerify2fa() {
 
     setLoading(true)
     try {
-      await adminVerify2fa({ code })
-      navigate('/admin', { replace: true })
+      const session = await adminVerify2fa({ code })
+      if (session?.user?.must_change_password) {
+        navigate('/admin/change-password', { replace: true })
+      } else {
+        navigate('/admin', { replace: true })
+      }
     } catch (err) {
       if (err.code === 'SESSION_EXPIRED') {
         navigate('/admin/session-expired', { replace: true })

@@ -18,10 +18,10 @@ function NavBadge({ count, tone }) {
   )
 }
 
-export default function AdminSidebar({ sidebar, navCounts, variant = 'static', onClose }) {
+export default function AdminSidebar({ sidebar, navCounts, permissions, variant = 'static', onClose }) {
   const navigate = useNavigate()
   const isDrawer = variant === 'drawer'
-  const navSections = buildAdminNavSections(navCounts)
+  const navSections = buildAdminNavSections(navCounts, permissions)
 
   const handleLogout = async () => {
     await adminLogout()

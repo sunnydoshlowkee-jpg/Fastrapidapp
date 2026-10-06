@@ -30,7 +30,12 @@ export default function Splash() {
       let security = null
 
       try {
-        const { data } = await getMe()
+        // Never let a slow /me response hold the splash screen hostage at
+        // cold start — fall back to the local session/biometric flags.
+        const { data } = await Promise.race([
+          getMe(),
+          new Promise((resolve) => setTimeout(() => resolve({ data: null }), 2500)),
+        ])
         if (cancelled) return true
         user = data?.data?.user || null
         security = resolveUserLoginSecurity(user)

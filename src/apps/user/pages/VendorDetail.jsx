@@ -17,7 +17,7 @@ export default function VendorDetail() {
   const navigate = useNavigate()
   const { id } = useParams()
   const { location } = useLocation()
-  const { items: cartItems, add, updateQty, remove, count, total, subtotal, deliveryFee } = useCart()
+  const { items: cartItems, add, updateQty, remove, count, total, subtotal, deliveryFee, pruneForMerchant } = useCart()
   const [activeTab, setActiveTab] = useState('Menu')
   const [activeCategory, setActiveCategory] = useState('Popular')
   const [desktopActiveTab, setDesktopActiveTab] = useState('Popular')
@@ -85,6 +85,11 @@ export default function VendorDetail() {
   const productImage = (url) => resolveStorageUrl(url) || url
 
   const { merchant, products } = vendorData || {}
+  const merchantId = merchant?.id
+
+  useEffect(() => {
+    if (merchantId != null) pruneForMerchant(merchantId)
+  }, [merchantId, pruneForMerchant])
 
   const categories = useMemo(() => {
     if (!products) return []

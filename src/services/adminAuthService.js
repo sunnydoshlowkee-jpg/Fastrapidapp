@@ -236,3 +236,56 @@ export async function adminResetPassword({ email, code, newPassword, confirmPass
     throw error
   }
 }
+
+/**
+ * Change the current administrator's password. Required on first login for
+ * invited admins who signed in with a temporary password. Clears the
+ * `must_change_password` flag via the updated user payload.
+ */
+export async function changeAdminPassword({ currentPassword, newPassword, confirmPassword }) {
+  const password = newPassword || ''
+  if (!currentPassword) {
+    throw new Error('Enter your current password.')
+  }
+  if (password.length < 8) {
+    throw new Error('Password must be at least 8 characters.')
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password)) {
+    throw new Error('Password must include upper and lower case letters.')
+  }
+  if (!/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    throw new Error('Password must include at least 1 number and 1 symbol.')
+  }
+  if (password !== confirmPassword) {
+    throw new Error('Passwords do not match.')
+  }
+
+  try {
+    const { data } = await api.post('/admin/change-password', {
+      current_password: currentPassword,
+      password,
+      password_confirmation: confirmPassword,
+    })
+
+    const updatedUser = data?.data?.user
+    if (updatedUser) updateStoredAdminUser(updatedUser)
+
+    return {
+      message: data?.message || 'Password changed successfully.',
+      user: updatedUser,
+    }
+  } catch (err) {
+    const message = err.response?.data?.message || 'Unable to change your password.'
+    const error = new Error(message)
+    error.code = err.response?.status === 422 ? 'INVALID_CURRENT_PASSWORD' : 'CHANGE_FAILED'
+    throw error
+  }
+}
+
+function updateStoredAdminUser(user) {
+  try {
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user))
+  } catch {
+    // ignore storage failures
+  }
+}

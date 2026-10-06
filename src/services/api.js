@@ -18,10 +18,15 @@ api.interceptors.request.use(config => {
   const requestUrl = String(config.url ?? '')
   const isMerchantApi = requestUrl.includes('/merchant')
   const isAdminApi = requestUrl.includes('/admin')
+  const isPipelineApi = requestUrl.includes('/admin/pipeline') || getAppPathname().startsWith('/pipeline-admin')
   const isRiderApi = requestUrl.includes('/rider')
 
   let token = null
-  if (isAdminApi) {
+  if (isPipelineApi) {
+    token =
+      localStorage.getItem('rapid_pipeline_token') ||
+      sessionStorage.getItem('rapid_pipeline_session_token')
+  } else if (isAdminApi) {
     token =
       localStorage.getItem('rapid_admin_token') ||
       sessionStorage.getItem('rapid_admin_session_token')
@@ -60,12 +65,22 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       const requestUrl = String(err.config?.url ?? '')
       const path = getAppPathname()
+      const isPipelineRoute = requestUrl.includes('/admin/pipeline') || path.startsWith('/pipeline-admin')
       const isMerchantRoute =
         requestUrl.includes('/merchant') || path.startsWith('/merchant')
       const isAdminRoute =
         requestUrl.includes('/admin') || path.startsWith('/admin')
       const isRiderRoute =
         requestUrl.includes('/rider') || path.startsWith('/dispatch')
+
+      if (isPipelineRoute) {
+        localStorage.removeItem('rapid_pipeline_token')
+        localStorage.removeItem('rapid_pipeline_user')
+        sessionStorage.removeItem('rapid_pipeline_session_token')
+        sessionStorage.removeItem('rapid_pipeline_pending_session')
+        navigateAppPath('/pipeline-admin/login')
+        return Promise.reject(err)
+      }
 
       if (isAdminRoute) {
         localStorage.removeItem('rapid_admin_token')

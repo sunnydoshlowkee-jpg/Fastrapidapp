@@ -13,6 +13,15 @@ export function allowsStoreFormat(businessType) {
   return normalized === 'grocery' || normalized === 'retail'
 }
 
+export function isFoodBusiness(businessType) {
+  const normalized = String(businessType ?? '').trim().toLowerCase()
+  return normalized === 'restaurant' || normalized === 'grocery'
+}
+
+export function isGroceryBusiness(businessType) {
+  return String(businessType ?? '').trim().toLowerCase() === 'grocery'
+}
+
 export function storeFormatLabel(storeFormat) {
   return STORE_FORMATS.find((item) => item.value === storeFormat)?.label || null
 }

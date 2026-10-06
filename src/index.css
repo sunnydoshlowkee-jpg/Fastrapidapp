@@ -29,6 +29,21 @@
 }
 
 @layer utilities {
+  .animate-toast-in {
+    animation: toast-slide-in 0.3s ease-out;
+  }
+
+  @keyframes toast-slide-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
   /* Status-bar inset only — no extra 48px gap when the WebView is already inset */
   .pt-app {
     padding-top: max(0.75rem, env(safe-area-inset-top, 0px));

@@ -18,13 +18,21 @@ export default function EmailLogin() {
   const [phone, setPhone] = useState('')
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0])
   const [phoneError, setPhoneError] = useState('')
+  const [toast, setToast] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const showToast = (message) => {
+    setToast(message)
+    setTimeout(() => setToast(''), 4000)
+  }
 
   const handleLogin = async () => {
     setPhoneError('')
+    setToast('')
 
     if (!phone.trim()) {
       setPhoneError('Phone number is required.')
+      showToast('Phone number is required.')
       return
     }
 
@@ -44,7 +52,9 @@ export default function EmailLogin() {
         },
       })
     } catch (err) {
-      setPhoneError(getApiFieldError(err, 'phone'))
+      const msg = getApiFieldError(err, 'phone')
+      setPhoneError(msg)
+      showToast(msg)
     } finally {
       setLoading(false)
     }
@@ -106,15 +116,9 @@ export default function EmailLogin() {
                   }}
                   placeholder="0000000000"
                   aria-invalid={phoneError ? 'true' : 'false'}
-                  aria-describedby={phoneError ? 'login-phone-error' : undefined}
                   className="bg-transparent text-[#111827] outline-none text-[16px] md:text-[18px] font-medium w-full placeholder:text-[#9CA3AF]"
                 />
               </div>
-              {phoneError ? (
-                <p id="login-phone-error" className="mt-2 text-sm font-medium text-red-600" role="alert">
-                  {phoneError}
-                </p>
-              ) : null}
             </div>
           </div>
           <p className="text-center text-sm text-[#6B7280] mt-4 w-full">
@@ -140,6 +144,19 @@ export default function EmailLogin() {
           </p>
         </div>
       </div>
+
+{toast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-[92%] max-w-sm">
+          <div className="bg-red-500 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span className="font-semibold text-[14px]">{toast}</span>
+          </div>
+        </div>
+      )}
     </CenteredLayout>
   )
 }

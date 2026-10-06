@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Fingerprint } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
@@ -36,6 +36,7 @@ export default function BiometricUnlock({ onUnlocked, inline = false, role: role
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [preparing, setPreparing] = useState(true)
+  const autoAttemptedRef = useRef(false)
 
   const setupDevice = Boolean(location.state?.setupDevice)
   const fromLogin = Boolean(location.state?.fromLogin)
@@ -142,6 +143,9 @@ export default function BiometricUnlock({ onUnlocked, inline = false, role: role
   }, [finishUnlock, navigate, role, roleConfig.brandLabel, roleConfig.loginPath, setUser, user])
 
   useEffect(() => {
+    if (autoAttemptedRef.current) return undefined
+    autoAttemptedRef.current = true
+
     let active = true
 
     const prepare = async () => {
@@ -157,8 +161,13 @@ export default function BiometricUnlock({ onUnlocked, inline = false, role: role
 
       if (role === 'user' && Capacitor.isNativePlatform()) {
         try {
-          const { data } = await getMe()
-          const meUser = data?.data?.user
+          // Never let a slow /me response hold the unlock screen hostage —
+          // the local biometric flag is enough to proceed with unlocking.
+          const meUser = await Promise.race([
+            getMe().then((res) => res?.data?.data?.user),
+            new Promise((resolve) => setTimeout(() => resolve(undefined), 2500)),
+          ])
+          if (!active) return
           if (meUser && setUser) setUser(meUser)
           if (meUser?.first_name) setProfileName(meUser.first_name)
           const security = resolveUserLoginSecurity(meUser)
@@ -184,8 +193,16 @@ export default function BiometricUnlock({ onUnlocked, inline = false, role: role
 
     return () => {
       active = false
+      // Allow React StrictMode dev double-invoke to retry; the first run is
+      // cancelled via `active` before it can show the native prompt.
+      autoAttemptedRef.current = false
     }
-  }, [attemptUnlock, fromLogin, navigate, role, roleConfig.homePath, roleConfig.loginPath, setUser, setupDevice])
+    // Only ever auto-attempt once per mount. The callback identity of
+    // `attemptUnlock` changes when the user/profile state refreshes, and
+    // re-running this effect would re-trigger the native biometric prompt
+    // (rapid flicker) or keep the screen stuck on the loading state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromLogin, navigate, role, roleConfig.homePath, roleConfig.loginPath, setupDevice])
 
   const handleUseAnotherAccount = async () => {
     await setBiometricUnlockEnabled(false, role)

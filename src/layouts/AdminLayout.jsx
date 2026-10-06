@@ -35,6 +35,7 @@ export default function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [navCounts, setNavCounts] = useState({})
   const [sidebarUser, setSidebarUser] = useState(ADMIN_DASHBOARD.sidebar.user)
+  const [adminPermissions, setAdminPermissions] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -58,10 +59,14 @@ export default function AdminLayout() {
 
           setSidebarUser({
             name: user.name,
-            role: 'Super Admin',
+            role: user.role_label || 'Super Admin',
             initials: initials || 'AD',
             showRolePill: true,
           })
+        }
+
+        if (Array.isArray(user?.permissions)) {
+          setAdminPermissions(user.permissions)
         }
 
         setNavCounts(counts)
@@ -204,7 +209,7 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-[#F5F6F8] font-sans text-gray-900">
       <div className="hidden lg:flex">
-        <AdminSidebar sidebar={sidebar} navCounts={navCounts} />
+        <AdminSidebar sidebar={sidebar} navCounts={navCounts} permissions={adminPermissions} />
       </div>
 
       {drawerOpen ? (
@@ -219,6 +224,7 @@ export default function AdminLayout() {
             <AdminSidebar
               sidebar={sidebar}
               navCounts={navCounts}
+              permissions={adminPermissions}
               variant="drawer"
               onClose={() => setDrawerOpen(false)}
             />
